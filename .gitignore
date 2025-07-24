@@ -1,0 +1,9 @@
+/*
+
+!/.github
+!.gitignore
+!/plots
+!install_package.sh
+!pyproject.toml
+!README.md
+!requirements.txt
