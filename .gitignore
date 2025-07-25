@@ -2,7 +2,7 @@
 
 !/.github
 !.gitignore
-!/plots
+!/kvbiii_plots
 !install_package.sh
 !pyproject.toml
 !README.md
