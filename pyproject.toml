@@ -3,10 +3,10 @@ requires = ["setuptools>=65.5.0"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["plots", "plots.eda"]
+packages = ["kvbiii_plots", "kvbiii_plots.eda"]
 
 [project]
-name = "plots"
+name = "kvbiii_plots"
 version = "0.1.0"
 description = "A collection of plotting functions for data visualization in Python."
 readme = "README.md"
