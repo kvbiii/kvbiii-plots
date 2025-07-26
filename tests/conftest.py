@@ -14,7 +14,9 @@ class TestSettings(BaseSettings):
 
     SEED: int = 17
 
-    model_config = SettingsConfigDict(env_file=".env.test", frozen=True, extra="forbid")
+    model_config = SettingsConfigDict(
+        env_file=".env", frozen=True, extra="ignore", hide_input_in_errors=True
+    )
 
 
 @pytest.fixture(scope="session")
