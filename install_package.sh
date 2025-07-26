@@ -1,2 +1,2 @@
-python3 -m pip install --upgrade build
-python3 -m build
+python -m pip install --upgrade build
+python -m build

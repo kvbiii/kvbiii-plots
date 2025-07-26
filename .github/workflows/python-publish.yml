@@ -28,23 +28,25 @@ jobs:
 
   pytest:
     runs-on: ubuntu-latest
+    env:
+      SEED: ${{ secrets.TEST_SEED }}
     needs: black-format
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
       - name: Install pytest
         run: |
+          echo "SEED=$SEED" > .env.test
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest==8.4.0
+          pip install -r tests/test_requirements.txt
 
       - name: Run pytest
         run: |
-          python -m pytest tests/
+          python -m pytest -vs tests/
 
   release-build:
     runs-on: ubuntu-latest
