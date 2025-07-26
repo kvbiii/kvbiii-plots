@@ -7,7 +7,7 @@ packages = ["kvbiii_plots", "kvbiii_plots.eda"]
 
 [project]
 name = "kvbiii_plots"
-version = "0.1.0"
+version = "0.2.0"
 description = "A collection of plotting functions for data visualization in Python."
 readme = "README.md"
 authors = [
