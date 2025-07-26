@@ -29,7 +29,7 @@ jobs:
   pytest:
     runs-on: ubuntu-latest
     env:
-      SEED: ${{ secrets.TEST_SEED }}
+      SEED: ${{ vars.TEST_SEED }}
     needs: black-format
     steps:
       - uses: actions/checkout@v4
