@@ -983,6 +983,406 @@ class ClassificationPlots(BasePlots):
 
         fig.show("png", width=width, height=height)
 
+    def plot_precision_vs_recall_curve(
+        self,
+        y_true: np.ndarray | pd.Series | list,
+        probabilities: np.ndarray,
+        id2label: dict[int, str],
+        plot_title: str = "",
+        width: int = 1200,
+        height: int = 1200,
+        xaxis_title: str = "Recall",
+        yaxis_title: str = "Precision",
+        font_size: int = 22,
+        line_width: int = 5,
+        cutoffs: float | np.ndarray | None = None,
+        cutoff_marker_size: int = 15,
+        cutoff_marker_color: str = "red",
+    ) -> None:
+        """Plots Precision vs Recall curves at different probability thresholds.
+
+        Args:
+            y_true (np.ndarray | pd.Series | list): True labels.
+            probabilities (np.ndarray): Predicted probabilities. For binary: (n_samples,) or (n_samples, 2).
+                For multiclass: (n_samples, n_classes).
+            id2label (dict[int, str]): Mapping from class indices to labels.
+            plot_title (str, optional): Custom plot title. Defaults to "".
+            width (int, optional): Plot width in pixels. Defaults to 1200.
+            height (int, optional): Plot height in pixels. Defaults to 1200.
+            xaxis_title (str, optional): X-axis title. Defaults to "Recall".
+            yaxis_title (str, optional): Y-axis title. Defaults to "Precision".
+            font_size (int, optional): Font size for text elements. Defaults to 22.
+            line_width (int, optional): Width of curve lines. Defaults to 5.
+            cutoffs (float | np.ndarray | None, optional): Threshold values to mark on curves. Defaults to None.
+            cutoff_marker_size (int, optional): Size of cutoff markers. Defaults to 15.
+            cutoff_marker_color (str, optional): Color for cutoff markers. Defaults to "red".
+        """
+        y_true = np.array(y_true)
+        probabilities = np.array(probabilities)
+        if probabilities.ndim == 1:
+            probabilities = np.stack([1 - probabilities, probabilities], axis=1)
+        n_classes = probabilities.shape[1]
+
+        if n_classes != len(id2label):
+            raise ValueError(
+                f"Number of classes in probabilities ({n_classes}) does not match length of id2label ({len(id2label)})"
+            )
+
+        if cutoffs is not None:
+            if isinstance(cutoffs, float) or isinstance(cutoffs, int):
+                cutoffs = np.full(n_classes, float(cutoffs))
+            elif isinstance(cutoffs, np.ndarray):
+                if cutoffs.shape == ():
+                    cutoffs = np.full(n_classes, float(cutoffs))
+                elif cutoffs.shape[0] != n_classes:
+                    raise ValueError(
+                        f"cutoffs shape {cutoffs.shape} does not match number of classes {n_classes}"
+                    )
+            else:
+                raise TypeError("cutoffs must be float, int, or np.ndarray")
+
+        ids = list(id2label.keys())
+        labels = list(id2label.values())
+        fig = go.Figure()
+
+        if n_classes == 2:
+            precision, recall, avg_precision = self._compute_binary_pr(
+                y_true, probabilities, ids
+            )
+            fig.add_trace(
+                go.Scatter(
+                    x=recall,
+                    y=precision,
+                    mode="lines",
+                    name=f"Class {labels[1]} (AP = {avg_precision:.3f})",
+                    line=dict(width=line_width),
+                )
+            )
+            avg_ap = avg_precision
+
+            if cutoffs is not None:
+                cutoff = cutoffs[1]
+                precision_cutoff, recall_cutoff, _ = self._compute_binary_pr(
+                    y_true, probabilities, ids
+                )
+                cutoff_idx = np.argmin(np.abs(recall_cutoff - cutoff))
+                fig.add_trace(
+                    go.Scatter(
+                        x=[recall_cutoff[cutoff_idx]],
+                        y=[precision_cutoff[cutoff_idx]],
+                        mode="markers",
+                        marker=dict(
+                            size=cutoff_marker_size,
+                            color=cutoff_marker_color,
+                            symbol="diamond",
+                        ),
+                        name=f"Cutoff: {cutoff:.2f}",
+                        showlegend=True,
+                    )
+                )
+        else:
+            precision_list, recall_list, avg_precision_list = (
+                self._compute_multiclass_pr(y_true, probabilities, ids)
+            )
+
+            for i, (precision, recall, avg_precision) in enumerate(
+                zip(precision_list, recall_list, avg_precision_list)
+            ):
+                color = px.colors.qualitative.Plotly[
+                    i % len(px.colors.qualitative.Plotly)
+                ]
+                fig.add_trace(
+                    go.Scatter(
+                        x=recall,
+                        y=precision,
+                        mode="lines",
+                        name=f"Class {labels[i]} (AP = {avg_precision:.3f})",
+                        line=dict(width=line_width, color=color),
+                    )
+                )
+
+                if cutoffs is not None:
+                    cutoff = cutoffs[i]
+                    cutoff_idx = np.argmin(np.abs(recall - cutoff))
+                    fig.add_trace(
+                        go.Scatter(
+                            x=[recall[cutoff_idx]],
+                            y=[precision[cutoff_idx]],
+                            mode="markers",
+                            marker=dict(
+                                size=cutoff_marker_size,
+                                color=cutoff_marker_color,
+                                symbol="diamond",
+                            ),
+                            name=f"Cutoff {labels[i]}: {cutoff:.2f}",
+                            showlegend=False,
+                            legendgroup=f"class_{i}",
+                        )
+                    )
+
+            avg_ap = np.mean(avg_precision_list)
+
+        curve_text = (
+            "Precision-Recall Curves" if n_classes > 2 else "Precision-Recall Curve"
+        )
+        title = (
+            f"{plot_title}<br>(Average Precision = {avg_ap:.3f})"
+            if plot_title
+            else f"{curve_text} (Average Precision = {avg_ap:.3f})"
+        )
+
+        self.apply_default_layout(fig, title, width, height, xaxis_title, yaxis_title)
+
+        fig.update_layout(
+            showlegend=True,
+            legend=dict(
+                font=dict(size=font_size - 2),
+                bordercolor="black",
+                borderwidth=1,
+                bgcolor="white",
+                traceorder="normal",
+                x=0.8,
+                y=0.01,
+                orientation="v",
+                itemclick="toggleothers",
+                itemdoubleclick="toggle",
+                tracegroupgap=5,
+            ),
+        )
+
+        fig.update_xaxes(range=[-0.01, 1.01])
+        fig.update_yaxes(range=[-0.01, 1.01])
+
+        fig.show("png", width=width, height=height)
+
+    def _compute_f1_at_thresholds(
+        self,
+        y_true: np.ndarray,
+        probabilities: np.ndarray,
+        id2label: dict[int, str],
+        thresholds: np.ndarray = np.linspace(0, 1, 101),
+    ) -> dict[str, tuple[np.ndarray, np.ndarray]]:
+        """Computes F1 scores at different probability thresholds for each class.
+
+        Args:
+            y_true (np.ndarray): True labels.
+            probabilities (np.ndarray): Predicted probabilities (n_samples, n_classes).
+            id2label (dict[int, str]): Mapping from class indices to labels.
+            thresholds (np.ndarray, optional): Threshold values to evaluate. Defaults to np.linspace(0, 1, 101).
+
+        Returns:
+            dict[str, tuple[np.ndarray, np.ndarray]]: Dictionary mapping class names to (thresholds, f1_scores) tuples.
+        """
+        n_classes = probabilities.shape[1]
+        ids = list(id2label.keys())
+        labels = list(id2label.values())
+
+        if y_true.dtype != np.str_ and y_true.dtype != np.object_:
+            y_true_labels = np.array([id2label[int(label)] for label in y_true])
+        else:
+            y_true_labels = y_true
+
+        results = {}
+
+        if n_classes == 2:
+            f1_scores = []
+            for threshold in thresholds:
+                y_pred = (probabilities[:, 1] >= threshold).astype(int)
+                y_pred_labels = [id2label[int(pred)] for pred in y_pred]
+                f1 = f1_score(
+                    y_true_labels,
+                    y_pred_labels,
+                    average="binary",
+                    pos_label=labels[1],
+                    zero_division=0,
+                )
+                f1_scores.append(f1)
+            results[labels[1]] = (thresholds, np.array(f1_scores))
+        else:
+            for class_idx, label in enumerate(labels):
+                f1_scores = []
+                for threshold in thresholds:
+                    y_pred = np.argmax(probabilities >= threshold, axis=1)
+                    y_pred_labels = [id2label[int(pred)] for pred in y_pred]
+                    f1 = f1_score(
+                        y_true_labels,
+                        y_pred_labels,
+                        labels=labels,
+                        average=None,
+                        zero_division=0,
+                    )[class_idx]
+                    f1_scores.append(f1)
+                results[label] = (thresholds, np.array(f1_scores))
+
+        return results
+
+    def plot_f1_score_vs_threshold(
+        self,
+        y_true: np.ndarray | pd.Series | list,
+        probabilities_1: np.ndarray,
+        id2label: dict[int, str],
+        probabilities_2: np.ndarray | None = None,
+        subset_1_name: str = "Subset 1",
+        subset_2_name: str = "Subset 2",
+        thresholds: np.ndarray = np.linspace(0, 1, 101),
+        plot_title: str = "",
+        width: int = 1200,
+        height: int = 800,
+        xaxis_title: str = "Threshold",
+        yaxis_title: str = "F1 Score",
+        font_size: int = 22,
+        line_width: int = 3,
+        optimal_threshold_marker: bool = True,
+        marker_size: int = 12,
+    ) -> None:
+        """Plots F1 scores vs probability thresholds for one or two prediction subsets.
+
+        Args:
+            y_true (np.ndarray | pd.Series | list): True labels.
+            probabilities_1 (np.ndarray): First set of predicted probabilities (n_samples, n_classes).
+            id2label (dict[int, str]): Mapping from class indices to labels.
+            probabilities_2 (np.ndarray | None, optional): Second set of predicted probabilities. Defaults to None.
+            subset_1_name (str, optional): Name for first subset. Defaults to "Subset 1".
+            subset_2_name (str, optional): Name for second subset. Defaults to "Subset 2".
+            thresholds (np.ndarray, optional): Threshold values to evaluate. Defaults to np.linspace(0, 1, 101).
+            plot_title (str, optional): Custom plot title. Defaults to "".
+            width (int, optional): Plot width in pixels. Defaults to 1200.
+            height (int, optional): Plot height in pixels. Defaults to 800.
+            xaxis_title (str, optional): X-axis title. Defaults to "Threshold".
+            yaxis_title (str, optional): Y-axis title. Defaults to "F1 Score".
+            font_size (int, optional): Font size for text elements. Defaults to 22.
+            line_width (int, optional): Width of curve lines. Defaults to 3.
+            optimal_threshold_marker (bool, optional): Whether to mark optimal thresholds. Defaults to True.
+            marker_size (int, optional): Size of optimal threshold markers. Defaults to 12.
+        """
+        y_true = np.array(y_true)
+        probabilities_1 = np.array(probabilities_1)
+        if probabilities_1.ndim == 1:
+            probabilities_1 = np.stack([1 - probabilities_1, probabilities_1], axis=1)
+
+        if probabilities_2 is not None:
+            probabilities_2 = np.array(probabilities_2)
+            if probabilities_2.ndim == 1:
+                probabilities_2 = np.stack(
+                    [1 - probabilities_2, probabilities_2], axis=1
+                )
+
+        n_classes = probabilities_1.shape[1]
+
+        if n_classes != len(id2label):
+            raise ValueError(
+                f"Number of classes in probabilities ({n_classes}) does not match length of id2label ({len(id2label)})"
+            )
+
+        labels = list(id2label.values())
+        fig = go.Figure()
+
+        results_1 = self._compute_f1_at_thresholds(
+            y_true, probabilities_1, id2label, thresholds
+        )
+
+        color_palette_1 = px.colors.qualitative.Plotly
+        color_palette_2 = px.colors.qualitative.Set2
+
+        for idx, (label, (thresh_vals, f1_vals)) in enumerate(results_1.items()):
+            color = color_palette_1[idx % len(color_palette_1)]
+            fig.add_trace(
+                go.Scatter(
+                    x=thresh_vals,
+                    y=f1_vals,
+                    mode="lines",
+                    name=f"{subset_1_name} - {label}",
+                    line=dict(width=line_width, color=color, dash="solid"),
+                    legendgroup=f"subset1_{label}",
+                )
+            )
+
+            if optimal_threshold_marker:
+                optimal_idx = np.argmax(f1_vals)
+                optimal_threshold = thresh_vals[optimal_idx]
+                optimal_f1 = f1_vals[optimal_idx]
+                fig.add_trace(
+                    go.Scatter(
+                        x=[optimal_threshold],
+                        y=[optimal_f1],
+                        mode="markers",
+                        marker=dict(
+                            size=marker_size,
+                            color=color,
+                            symbol="diamond",
+                            line=dict(width=2, color="white"),
+                        ),
+                        name=f"Optimal {label}: {optimal_threshold:.2f}",
+                        legendgroup=f"subset1_{label}",
+                        showlegend=True,
+                    )
+                )
+
+        if probabilities_2 is not None:
+            results_2 = self._compute_f1_at_thresholds(
+                y_true, probabilities_2, id2label, thresholds
+            )
+
+            for idx, (label, (thresh_vals, f1_vals)) in enumerate(results_2.items()):
+                color = color_palette_2[idx % len(color_palette_2)]
+                fig.add_trace(
+                    go.Scatter(
+                        x=thresh_vals,
+                        y=f1_vals,
+                        mode="lines",
+                        name=f"{subset_2_name} - {label}",
+                        line=dict(width=line_width, color=color, dash="dash"),
+                        legendgroup=f"subset2_{label}",
+                    )
+                )
+
+                if optimal_threshold_marker:
+                    optimal_idx = np.argmax(f1_vals)
+                    optimal_threshold = thresh_vals[optimal_idx]
+                    optimal_f1 = f1_vals[optimal_idx]
+                    fig.add_trace(
+                        go.Scatter(
+                            x=[optimal_threshold],
+                            y=[optimal_f1],
+                            mode="markers",
+                            marker=dict(
+                                size=marker_size,
+                                color=color,
+                                symbol="square",
+                                line=dict(width=2, color="white"),
+                            ),
+                            name=f"Optimal {label}: {optimal_threshold:.2f}",
+                            legendgroup=f"subset2_{label}",
+                            showlegend=True,
+                        )
+                    )
+
+        title = plot_title or "F1 Score vs Threshold"
+
+        self.apply_default_layout(fig, title, width, height, xaxis_title, yaxis_title)
+
+        fig.update_layout(
+            showlegend=True,
+            legend=dict(
+                font=dict(size=font_size - 4),
+                bordercolor="black",
+                borderwidth=1,
+                bgcolor="white",
+                traceorder="normal",
+                x=1.02,
+                y=1,
+                orientation="v",
+                itemclick="toggleothers",
+                itemdoubleclick="toggle",
+                tracegroupgap=5,
+            ),
+        )
+
+        fig.update_xaxes(range=[-0.01, 1.01])
+        fig.update_yaxes(range=[-0.01, 1.01])
+
+        fig.show("png", width=width, height=height)
+
 
 if __name__ == "__main__":
     import numpy as np
@@ -1055,4 +1455,12 @@ if __name__ == "__main__":
         probabilities=probabilities,
         id2label=id2label,
         plot_title="Sample Precision-Recall Curves",
+    )
+
+    # Create Precision vs Recall curve
+    plotter.plot_precision_vs_recall_curve(
+        y_true=y_test,
+        probabilities=probabilities,
+        id2label=id2label,
+        plot_title="Sample Precision vs Recall Curves",
     )
