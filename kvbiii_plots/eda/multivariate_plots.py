@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
-from scipy.stats import gaussian_kde
 import plotly.express as px
+from scipy.stats import gaussian_kde
 from kvbiii_plots.base_plots import BasePlots
 
 
@@ -60,10 +60,12 @@ class MultivariatePlots(BasePlots):
         else:
             data_mask = corr
 
-        # Use diverging colorscale from plotly
         if hasattr(px.colors.diverging, colorscale):
             color_scale = getattr(px.colors.diverging, colorscale)
         else:
+            print(
+                f"Warning: colorscale '{colorscale}' not found. Using default 'RdBu'."
+            )
             color_scale = px.colors.diverging.RdBu
 
         fig = ff.create_annotated_heatmap(
@@ -92,10 +94,129 @@ class MultivariatePlots(BasePlots):
             font=dict(family="Times New Roman", size=26, color="Black"),
         )
 
-        # Remove nan annotations
-        for i in range(len(fig.layout.annotations)):
-            if fig.layout.annotations[i].text == "nan":
-                fig.layout.annotations[i].text = ""
+        for _, annotation in enumerate(fig.layout.annotations):
+            if annotation.text == "nan":
+                annotation.text = ""
+
+        fig.show("png", width=width, height=height)
+
+    def matrix_plot(
+        self,
+        matrix: np.ndarray | pd.DataFrame,
+        features_names: list[str] | None = None,
+        plot_title: str = "",
+        width: int = 1500,
+        height: int = 1500,
+        show_upper: bool = False,
+        colorscale: str = "RdBu",
+        vmin: float | None = None,
+        vmax: float | None = None,
+        max_label_length: int = 15,
+        auto_font_size: bool = True,
+    ) -> None:
+        """
+        Plot a heatmap for a precomputed correlation or association matrix.
+
+        Args:
+            matrix (np.ndarray | pd.DataFrame): Precomputed matrix (e.g., Cramér's V, correlation).
+            features_names (list[str] | None): Feature names for axis labels. If None, uses DataFrame columns or generic names.
+            plot_title (str): Plot title.
+            width (int): Plot width in pixels.
+            height (int): Plot height in pixels.
+            show_upper (bool): If True, show upper triangle. If False, mask upper triangle.
+            colorscale (str): Plotly diverging color scale name.
+            vmin (float | None): Minimum value for color scale. If None, uses matrix min.
+            vmax (float | None): Maximum value for color scale. If None, uses matrix max.
+            max_label_length (int): Maximum length for feature labels before truncation.
+            auto_font_size (bool): If True, automatically adjust font size based on matrix dimensions.
+
+        Returns:
+            None
+        """
+        if isinstance(matrix, pd.DataFrame):
+            mat = matrix.copy()
+            if features_names is None:
+                features_names = mat.columns.tolist()
+            mat = mat.loc[features_names, features_names]
+        else:
+            mat = np.asarray(matrix)
+            if features_names is None:
+                features_names = [f"Feature_{i}" for i in range(mat.shape[0])]
+            mat = pd.DataFrame(mat, index=features_names, columns=features_names)
+
+        original_names = mat.columns.tolist()
+        shortened_names = []
+        seen_names = {}
+
+        for name in original_names:
+            if len(name) <= max_label_length:
+                short_name = name
+            else:
+                short_name = f"{name[:max_label_length-2]}.."
+
+            if short_name in seen_names:
+                seen_names[short_name] += 1
+                short_name = f"{short_name[:-2]}_{seen_names[short_name]}"
+            else:
+                seen_names[short_name] = 0
+
+            shortened_names.append(short_name)
+
+        mat.columns = shortened_names
+        mat.index = shortened_names
+
+        if not show_upper:
+            mask = np.triu(np.ones_like(mat, dtype=bool))
+            mat_masked = mat.mask(mask)
+        else:
+            mat_masked = mat
+
+        mat_masked_rounded = np.round(mat_masked.to_numpy(), 2)
+
+        zmin = vmin if vmin is not None else np.nanmin(mat_masked_rounded)
+        zmax = vmax if vmax is not None else np.nanmax(mat_masked_rounded)
+
+        if auto_font_size:
+            n_features = len(mat)
+            font_size = max(8, min(26, int(1500 / n_features)))
+            annotation_font_size = max(6, min(12, int(800 / n_features)))
+        else:
+            font_size = 26
+            annotation_font_size = 10
+
+        fig = ff.create_annotated_heatmap(
+            z=mat_masked_rounded,
+            x=mat_masked.columns.tolist(),
+            y=mat_masked.index.tolist(),
+            colorscale=colorscale,
+            hoverinfo="none",
+            showscale=True,
+            ygap=1,
+            xgap=1,
+            zmin=zmin,
+            zmax=zmax,
+        )
+
+        fig.update_xaxes(side="bottom")
+        fig.update_layout(
+            width=width,
+            height=height,
+            xaxis_showgrid=False,
+            yaxis_showgrid=False,
+            xaxis_zeroline=False,
+            yaxis_zeroline=False,
+            yaxis_autorange="reversed",
+            template="plotly_white",
+            title=f"<b>{plot_title}<b>" if plot_title else "",
+            title_x=0.5,
+            font=dict(family="Times New Roman", size=font_size, color="Black"),
+        )
+
+        for _, annotation in enumerate(fig.layout.annotations):
+            if annotation.text == "nan":
+                annotation.text = ""
+            else:
+                annotation.font.size = annotation_font_size
 
         fig.show("png", width=width, height=height)
 
