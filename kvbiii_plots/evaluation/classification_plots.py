@@ -383,14 +383,6 @@ class ClassificationPlots(BasePlots):
 
         # Apply layout and styling
         self.apply_default_layout(fig, title, width, height, "", "")
-
-        # Add custom layout adjustments
-        fig.update_layout(
-            showlegend=False,
-            title_y=0.97,
-            font=dict(family="Times New Roman", size=font_size, color="Black"),
-        )
-
         self._add_axis_annotations(fig, font_size)
 
         fig.show("png", width=width, height=height)
@@ -571,6 +563,182 @@ class ClassificationPlots(BasePlots):
                     font_size=font_size,
                 )
 
+            fig.show("png", width=width, height=height)
+
+    def _prepare_probability_histogram_data(
+        self,
+        y_true: np.ndarray,
+        probabilities: np.ndarray,
+        id2label: dict[int, str],
+    ) -> pd.DataFrame:
+        """Builds long-format data for class-wise probability histograms.
+
+        Args:
+            y_true (np.ndarray): True labels.
+            probabilities (np.ndarray): Predicted probabilities (n_samples, n_classes).
+            id2label (dict[int, str]): Mapping from class indices to labels.
+
+        Returns:
+            pd.DataFrame: Long-format dataframe with columns ``True Class`` and ``Probability``.
+
+        Raises:
+            ValueError: If no class from ``id2label`` is present in ``y_true``.
+        """
+        labels = list(id2label.values())
+        if y_true.dtype != np.str_ and y_true.dtype != np.object_:
+            y_true_labels = np.array(
+                [id2label[int(label_item)] for label_item in y_true]
+            )
+        else:
+            y_true_labels = y_true.astype(str)
+
+        histogram_frames = []
+        for class_idx, class_label in enumerate(labels):
+            class_probabilities = probabilities[y_true_labels == class_label, class_idx]
+            if class_probabilities.size == 0:
+                continue
+            histogram_frames.append(
+                pd.DataFrame(
+                    {
+                        "True Class": np.repeat(class_label, class_probabilities.size),
+                        "Probability": class_probabilities,
+                    }
+                )
+            )
+
+        if not histogram_frames:
+            raise ValueError("No samples available for any class in y_true.")
+
+        return pd.concat(histogram_frames, ignore_index=True)
+
+    def plot_probabilities_histogram(
+        self,
+        y_true: np.ndarray | pd.Series | list,
+        probabilities: np.ndarray,
+        id2label: dict[int, str],
+        alpha: bool = True,
+        opacity: float = 0.55,
+        bins: int = 40,
+        histnorm: str | None = "probability density",
+        plot_title: str = "",
+        width: int = 1600,
+        height: int = 800,
+        xaxis_title: str = "Predicted Probability",
+        yaxis_title: str = "Density",
+        font_size: int = 22,
+    ) -> None:
+        """Plots class-wise model probability distributions as histograms.
+
+        Args:
+            y_true (np.ndarray | pd.Series | list): True labels.
+            probabilities (np.ndarray): Predicted probabilities (n_samples, n_classes).
+            id2label (dict[int, str]): Mapping from class indices to labels.
+            alpha (bool, optional): Overlay mode selector. If ``True``, all classes are shown on a
+                single histogram with transparency; if ``False``, one histogram per class is shown.
+                Defaults to ``True``.
+            opacity (float, optional): Opacity used for histogram bars. Defaults to 0.55.
+            bins (int, optional): Number of histogram bins. Defaults to 40.
+            histnorm (str | None, optional): Histogram normalization mode passed to plotly.
+                Defaults to "probability density".
+            plot_title (str, optional): Custom plot title. Defaults to "".
+            width (int, optional): Plot width in pixels. Defaults to 1600.
+            height (int, optional): Plot height in pixels. Defaults to 800.
+            xaxis_title (str, optional): X-axis title. Defaults to "Predicted Probability".
+            yaxis_title (str, optional): Y-axis title. Defaults to "Density".
+            font_size (int, optional): Font size for text elements. Defaults to 22.
+
+        Raises:
+            ValueError: If class dimensions mismatch, ``opacity`` is out of bounds, or ``bins`` is invalid.
+            TypeError: If ``alpha`` is not a bool.
+        """
+        y_true = np.array(y_true)
+        probabilities = np.array(probabilities)
+        if probabilities.ndim == 1:
+            probabilities = np.stack([1 - probabilities, probabilities], axis=1)
+        n_classes = probabilities.shape[1]
+
+        if n_classes != len(id2label):
+            raise ValueError(
+                f"Number of classes in probabilities ({n_classes}) does not match length of id2label ({len(id2label)})"
+            )
+        if not isinstance(alpha, bool):
+            raise TypeError("alpha must be bool")
+        if opacity <= 0 or opacity > 1:
+            raise ValueError("opacity must be in the range (0, 1].")
+        if bins <= 0:
+            raise ValueError("bins must be greater than 0.")
+
+        labels = list(id2label.values())
+        histogram_data = self._prepare_probability_histogram_data(
+            y_true, probabilities, id2label
+        )
+        colors = self._get_colors(len(labels))
+        color_map = {
+            class_label: colors[idx % len(colors)]
+            for idx, class_label in enumerate(labels)
+        }
+
+        if alpha:
+            fig = px.histogram(
+                histogram_data,
+                x="Probability",
+                color="True Class",
+                nbins=bins,
+                histnorm=histnorm,
+                barmode="overlay",
+                opacity=opacity,
+                color_discrete_map=color_map,
+            )
+            title = plot_title or "Probability Distribution by True Class"
+            self.apply_default_layout(
+                fig, title, width, height, xaxis_title, yaxis_title
+            )
+            fig.update_layout(
+                bargap=0.03,
+                showlegend=True,
+                legend=dict(
+                    font=dict(size=font_size - 2),
+                    bordercolor="black",
+                    borderwidth=1,
+                    bgcolor="white",
+                    traceorder="normal",
+                    x=0.99,
+                    y=0.99,
+                    xanchor="right",
+                    yanchor="top",
+                    orientation="v",
+                    itemclick="toggleothers",
+                    itemdoubleclick="toggle",
+                ),
+            )
+            fig.update_traces(marker_line=dict(width=1, color="white"))
+            fig.update_xaxes(range=[-0.01, 1.01])
+            fig.show("png", width=width, height=height)
+            return
+
+        for class_label in labels:
+            class_data = histogram_data[histogram_data["True Class"] == class_label]
+            if class_data.empty:
+                continue
+            fig = px.histogram(
+                class_data,
+                x="Probability",
+                nbins=bins,
+                histnorm=histnorm,
+                opacity=opacity,
+                color_discrete_sequence=[color_map[class_label]],
+            )
+            title = (
+                f"{plot_title}<br>True class: {class_label}"
+                if plot_title
+                else f"Probability Distribution for True Class: {class_label}"
+            )
+            self.apply_default_layout(
+                fig, title, width, height, xaxis_title, yaxis_title
+            )
+            fig.update_layout(showlegend=False, bargap=0.03)
+            fig.update_traces(marker_line=dict(width=1, color="white"))
+            fig.update_xaxes(range=[-0.01, 1.01])
             fig.show("png", width=width, height=height)
 
     def _compute_binary_roc(
@@ -991,15 +1159,17 @@ class ClassificationPlots(BasePlots):
         plot_title: str = "",
         width: int = 1200,
         height: int = 1200,
-        xaxis_title: str = "Recall",
-        yaxis_title: str = "Precision",
+        xaxis_title: str = "Threshold",
+        yaxis_title: str = "Score",
         font_size: int = 22,
         line_width: int = 5,
         cutoffs: float | np.ndarray | None = None,
         cutoff_marker_size: int = 15,
         cutoff_marker_color: str = "red",
+        marker_interval: float = 0.1,
+        marker_size: int = 8,
     ) -> None:
-        """Plots Precision vs Recall curves at different probability thresholds.
+        """Plots Precision and Recall as separate lines against probability thresholds.
 
         Args:
             y_true (np.ndarray | pd.Series | list): True labels.
@@ -1009,13 +1179,15 @@ class ClassificationPlots(BasePlots):
             plot_title (str, optional): Custom plot title. Defaults to "".
             width (int, optional): Plot width in pixels. Defaults to 1200.
             height (int, optional): Plot height in pixels. Defaults to 1200.
-            xaxis_title (str, optional): X-axis title. Defaults to "Recall".
-            yaxis_title (str, optional): Y-axis title. Defaults to "Precision".
+            xaxis_title (str, optional): X-axis title. Defaults to "Threshold".
+            yaxis_title (str, optional): Y-axis title. Defaults to "Score".
             font_size (int, optional): Font size for text elements. Defaults to 22.
             line_width (int, optional): Width of curve lines. Defaults to 5.
             cutoffs (float | np.ndarray | None, optional): Threshold values to mark on curves. Defaults to None.
             cutoff_marker_size (int, optional): Size of cutoff markers. Defaults to 15.
             cutoff_marker_color (str, optional): Color for cutoff markers. Defaults to "red".
+            marker_interval (float, optional): Interval for threshold markers. Defaults to 0.1.
+            marker_size (int, optional): Size of interval markers. Defaults to 8.
         """
         y_true = np.array(y_true)
         probabilities = np.array(probabilities)
@@ -1043,33 +1215,101 @@ class ClassificationPlots(BasePlots):
 
         ids = list(id2label.keys())
         labels = list(id2label.values())
+
+        if y_true.dtype != np.str_ and y_true.dtype != np.object_:
+            y_true_labels = np.array([id2label[int(label)] for label in y_true])
+        else:
+            y_true_labels = y_true
+
+        thresholds = np.linspace(0, 1, 101)
+        marker_thresholds = np.arange(0, 1.01, marker_interval)
+
         fig = go.Figure()
 
         if n_classes == 2:
-            precision, recall, avg_precision = self._compute_binary_pr(
-                y_true, probabilities, ids
-            )
+            precision_scores = []
+            recall_scores = []
+
+            for threshold in thresholds:
+                y_pred = (probabilities[:, 1] >= threshold).astype(int)
+                y_pred_labels = [id2label[int(pred)] for pred in y_pred]
+
+                precision, recall, _ = precision_recall_curve(
+                    label_binarize(y_true_labels, classes=labels).ravel(),
+                    probabilities[:, 1],
+                )
+
+                cm = confusion_matrix(y_true_labels, y_pred_labels, labels=labels)
+                tp = cm[1, 1]
+                fp = cm[0, 1]
+                fn = cm[1, 0]
+
+                prec = tp / (tp + fp) if (tp + fp) > 0 else 0
+                rec = tp / (tp + fn) if (tp + fn) > 0 else 0
+
+                precision_scores.append(prec)
+                recall_scores.append(rec)
+
+            precision_scores = np.array(precision_scores)
+            recall_scores = np.array(recall_scores)
+
             fig.add_trace(
                 go.Scatter(
-                    x=recall,
-                    y=precision,
+                    x=thresholds,
+                    y=precision_scores,
                     mode="lines",
-                    name=f"Class {labels[1]} (AP = {avg_precision:.3f})",
-                    line=dict(width=line_width),
+                    name=f"Precision - {labels[1]}",
+                    line=dict(width=line_width, color=px.colors.qualitative.Plotly[0]),
                 )
             )
-            avg_ap = avg_precision
+
+            marker_indices = [
+                np.argmin(np.abs(thresholds - mt)) for mt in marker_thresholds
+            ]
+            fig.add_trace(
+                go.Scatter(
+                    x=thresholds[marker_indices],
+                    y=precision_scores[marker_indices],
+                    mode="markers",
+                    marker=dict(
+                        size=marker_size, color=px.colors.qualitative.Plotly[0]
+                    ),
+                    showlegend=False,
+                )
+            )
+
+            fig.add_trace(
+                go.Scatter(
+                    x=thresholds,
+                    y=recall_scores,
+                    mode="lines",
+                    name=f"Recall - {labels[1]}",
+                    line=dict(width=line_width, color=px.colors.qualitative.Plotly[1]),
+                )
+            )
+
+            marker_indices = [
+                np.argmin(np.abs(thresholds - mt)) for mt in marker_thresholds
+            ]
+            fig.add_trace(
+                go.Scatter(
+                    x=thresholds[marker_indices],
+                    y=recall_scores[marker_indices],
+                    mode="markers",
+                    marker=dict(
+                        size=marker_size, color=px.colors.qualitative.Plotly[1]
+                    ),
+                    showlegend=False,
+                )
+            )
 
             if cutoffs is not None:
                 cutoff = cutoffs[1]
-                precision_cutoff, recall_cutoff, _ = self._compute_binary_pr(
-                    y_true, probabilities, ids
-                )
-                cutoff_idx = np.argmin(np.abs(recall_cutoff - cutoff))
+                cutoff_idx = np.argmin(np.abs(thresholds - cutoff))
                 fig.add_trace(
                     go.Scatter(
-                        x=[recall_cutoff[cutoff_idx]],
-                        y=[precision_cutoff[cutoff_idx]],
+                        x=[cutoff, cutoff],
+                        y=[precision_scores[cutoff_idx], recall_scores[cutoff_idx]],
                         mode="markers",
                         marker=dict(
                             size=cutoff_marker_size,
@@ -1081,55 +1321,102 @@ class ClassificationPlots(BasePlots):
                     )
                 )
         else:
-            precision_list, recall_list, avg_precision_list = (
-                self._compute_multiclass_pr(y_true, probabilities, ids)
-            )
+            for class_idx, label in enumerate(labels):
+                precision_scores = []
+                recall_scores = []
 
-            for i, (precision, recall, avg_precision) in enumerate(
-                zip(precision_list, recall_list, avg_precision_list)
-            ):
-                color = px.colors.qualitative.Plotly[
-                    i % len(px.colors.qualitative.Plotly)
+                for threshold in thresholds:
+                    y_pred = np.argmax(probabilities >= threshold, axis=1)
+                    y_pred_labels = [id2label[int(pred)] for pred in y_pred]
+
+                    cm = confusion_matrix(y_true_labels, y_pred_labels, labels=labels)
+                    tp = cm[class_idx, class_idx]
+                    fp = cm[:, class_idx].sum() - tp
+                    fn = cm[class_idx, :].sum() - tp
+
+                    prec = tp / (tp + fp) if (tp + fp) > 0 else 0
+                    rec = tp / (tp + fn) if (tp + fn) > 0 else 0
+
+                    precision_scores.append(prec)
+                    recall_scores.append(rec)
+
+                precision_scores = np.array(precision_scores)
+                recall_scores = np.array(recall_scores)
+
+                color_prec = px.colors.qualitative.Plotly[
+                    (class_idx * 2) % len(px.colors.qualitative.Plotly)
+                ]
+                color_rec = px.colors.qualitative.Plotly[
+                    (class_idx * 2 + 1) % len(px.colors.qualitative.Plotly)
+                ]
+
+                fig.add_trace(
+                    go.Scatter(
+                        x=thresholds,
+                        y=precision_scores,
+                        mode="lines",
+                        name=f"Precision - (class: {label})",
+                        line=dict(width=line_width, color=color_prec),
+                        legendgroup=f"class_{class_idx}",
+                    )
+                )
+
+                marker_indices = [
+                    np.argmin(np.abs(thresholds - mt)) for mt in marker_thresholds
                 ]
                 fig.add_trace(
                     go.Scatter(
-                        x=recall,
-                        y=precision,
+                        x=thresholds[marker_indices],
+                        y=precision_scores[marker_indices],
+                        mode="markers",
+                        marker=dict(size=marker_size, color=color_prec),
+                        showlegend=False,
+                        legendgroup=f"class_{class_idx}",
+                    )
+                )
+
+                fig.add_trace(
+                    go.Scatter(
+                        x=thresholds,
+                        y=recall_scores,
                         mode="lines",
-                        name=f"Class {labels[i]} (AP = {avg_precision:.3f})",
-                        line=dict(width=line_width, color=color),
+                        name=f"Recall (class: {label})",
+                        line=dict(width=line_width, color=color_rec),
+                        legendgroup=f"class_{class_idx}",
+                    )
+                )
+
+                fig.add_trace(
+                    go.Scatter(
+                        x=thresholds[marker_indices],
+                        y=recall_scores[marker_indices],
+                        mode="markers",
+                        marker=dict(size=marker_size, color=color_rec),
+                        showlegend=False,
+                        legendgroup=f"class_{class_idx}",
                     )
                 )
 
                 if cutoffs is not None:
-                    cutoff = cutoffs[i]
-                    cutoff_idx = np.argmin(np.abs(recall - cutoff))
+                    cutoff = cutoffs[class_idx]
+                    cutoff_idx = np.argmin(np.abs(thresholds - cutoff))
                     fig.add_trace(
                         go.Scatter(
-                            x=[recall[cutoff_idx]],
-                            y=[precision[cutoff_idx]],
+                            x=[cutoff, cutoff],
+                            y=[precision_scores[cutoff_idx], recall_scores[cutoff_idx]],
                             mode="markers",
                             marker=dict(
                                 size=cutoff_marker_size,
                                 color=cutoff_marker_color,
                                 symbol="diamond",
                             ),
-                            name=f"Cutoff {labels[i]}: {cutoff:.2f}",
+                            name=f"Cutoff {label}: {cutoff:.2f}",
                             showlegend=False,
-                            legendgroup=f"class_{i}",
+                            legendgroup=f"class_{class_idx}",
                         )
                     )
 
-            avg_ap = np.mean(avg_precision_list)
-
-        curve_text = (
-            "Precision-Recall Curves" if n_classes > 2 else "Precision-Recall Curve"
-        )
-        title = (
-            f"{plot_title}<br>(Average Precision = {avg_ap:.3f})"
-            if plot_title
-            else f"{curve_text} (Average Precision = {avg_ap:.3f})"
-        )
+        title = plot_title or "Precision and Recall vs Threshold"
 
         self.apply_default_layout(fig, title, width, height, xaxis_title, yaxis_title)
 
@@ -1141,8 +1428,10 @@ class ClassificationPlots(BasePlots):
                 borderwidth=1,
                 bgcolor="white",
                 traceorder="normal",
-                x=0.8,
-                y=0.01,
+                x=0.99,
+                y=0.99,
+                xanchor="right",
+                yanchor="top",
                 orientation="v",
                 itemclick="toggleothers",
                 itemdoubleclick="toggle",
@@ -1218,9 +1507,10 @@ class ClassificationPlots(BasePlots):
 
     def plot_f1_score_vs_threshold(
         self,
-        y_true: np.ndarray | pd.Series | list,
+        y_true_1: np.ndarray | pd.Series | list,
         probabilities_1: np.ndarray,
         id2label: dict[int, str],
+        y_true_2: np.ndarray | pd.Series | list | None = None,
         probabilities_2: np.ndarray | None = None,
         subset_1_name: str = "Subset 1",
         subset_2_name: str = "Subset 2",
@@ -1238,9 +1528,10 @@ class ClassificationPlots(BasePlots):
         """Plots F1 scores vs probability thresholds for one or two prediction subsets.
 
         Args:
-            y_true (np.ndarray | pd.Series | list): True labels.
+            y_true_1 (np.ndarray | pd.Series | list): True labels for first subset.
             probabilities_1 (np.ndarray): First set of predicted probabilities (n_samples, n_classes).
             id2label (dict[int, str]): Mapping from class indices to labels.
+            y_true_2 (np.ndarray | pd.Series | list | None, optional): True labels for second subset. Defaults to None.
             probabilities_2 (np.ndarray | None, optional): Second set of predicted probabilities. Defaults to None.
             subset_1_name (str, optional): Name for first subset. Defaults to "Subset 1".
             subset_2_name (str, optional): Name for second subset. Defaults to "Subset 2".
@@ -1255,12 +1546,23 @@ class ClassificationPlots(BasePlots):
             optimal_threshold_marker (bool, optional): Whether to mark optimal thresholds. Defaults to True.
             marker_size (int, optional): Size of optimal threshold markers. Defaults to 12.
         """
-        y_true = np.array(y_true)
+        y_true_1 = np.array(y_true_1)
         probabilities_1 = np.array(probabilities_1)
         if probabilities_1.ndim == 1:
             probabilities_1 = np.stack([1 - probabilities_1, probabilities_1], axis=1)
 
+        if probabilities_2 is not None and y_true_2 is None:
+            raise ValueError(
+                "y_true_2 must be provided when probabilities_2 is specified"
+            )
+
+        if y_true_2 is not None and probabilities_2 is None:
+            raise ValueError(
+                "probabilities_2 must be provided when y_true_2 is specified"
+            )
+
         if probabilities_2 is not None:
+            y_true_2 = np.array(y_true_2)
             probabilities_2 = np.array(probabilities_2)
             if probabilities_2.ndim == 1:
                 probabilities_2 = np.stack(
@@ -1278,7 +1580,7 @@ class ClassificationPlots(BasePlots):
         fig = go.Figure()
 
         results_1 = self._compute_f1_at_thresholds(
-            y_true, probabilities_1, id2label, thresholds
+            y_true_1, probabilities_1, id2label, thresholds
         )
 
         color_palette_1 = px.colors.qualitative.Plotly
@@ -1291,7 +1593,7 @@ class ClassificationPlots(BasePlots):
                     x=thresh_vals,
                     y=f1_vals,
                     mode="lines",
-                    name=f"{subset_1_name} - {label}",
+                    name=f"{subset_1_name} (class: {label})",
                     line=dict(width=line_width, color=color, dash="solid"),
                     legendgroup=f"subset1_{label}",
                 )
@@ -1312,15 +1614,15 @@ class ClassificationPlots(BasePlots):
                             symbol="diamond",
                             line=dict(width=2, color="white"),
                         ),
-                        name=f"Optimal {label}: {optimal_threshold:.2f}",
+                        name=f"Optimal (class: {label}): {optimal_threshold:.2f}",
                         legendgroup=f"subset1_{label}",
                         showlegend=True,
                     )
                 )
 
-        if probabilities_2 is not None:
+        if probabilities_2 is not None and y_true_2 is not None:
             results_2 = self._compute_f1_at_thresholds(
-                y_true, probabilities_2, id2label, thresholds
+                y_true_2, probabilities_2, id2label, thresholds
             )
 
             for idx, (label, (thresh_vals, f1_vals)) in enumerate(results_2.items()):
@@ -1330,7 +1632,7 @@ class ClassificationPlots(BasePlots):
                         x=thresh_vals,
                         y=f1_vals,
                         mode="lines",
-                        name=f"{subset_2_name} - {label}",
+                        name=f"{subset_2_name} (class: {label})",
                         line=dict(width=line_width, color=color, dash="dash"),
                         legendgroup=f"subset2_{label}",
                     )
@@ -1351,7 +1653,7 @@ class ClassificationPlots(BasePlots):
                                 symbol="square",
                                 line=dict(width=2, color="white"),
                             ),
-                            name=f"Optimal {label}: {optimal_threshold:.2f}",
+                            name=f"Optimal (class: {label}): {optimal_threshold:.2f}",
                             legendgroup=f"subset2_{label}",
                             showlegend=True,
                         )
