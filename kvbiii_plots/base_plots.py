@@ -1,9 +1,26 @@
+"""Utilities and tests for kvbiii_plots.base_plots."""
+
+from collections.abc import Callable
+
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
 import plotly.express as px
+import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from sklearn.metrics import *
+from sklearn.metrics import (
+    accuracy_score,
+    balanced_accuracy_score,
+    f1_score,
+    mean_absolute_error,
+    mean_absolute_percentage_error,
+    mean_squared_error,
+    precision_score,
+    r2_score,
+    recall_score,
+    roc_auc_score,
+    root_mean_squared_error,
+    root_mean_squared_log_error,
+)
 
 
 class BasePlots:
@@ -22,7 +39,7 @@ class BasePlots:
 
     def __init__(self):
         """Initialize the BasePlots class with default configurations."""
-        self.metrics_dict: dict[str, callable] = {
+        self.metrics_dict: dict[str, Callable[..., float]] = {
             "Accuracy": accuracy_score,
             "Balanced Accuracy": balanced_accuracy_score,
             "F1": f1_score,
@@ -172,42 +189,6 @@ class BasePlots:
             pd.Index: Boolean index of non-NaN values.
         """
         return ~data[feature].isna()
-
-    def add_quantile_annotations(
-        self,
-        fig: go.Figure,
-        data: np.ndarray,
-        annotations=True,
-        x_position: float = 0.4,
-    ) -> None:
-        """
-        Add quantile annotations to a plot.
-
-        Args:
-            fig (go.Figure): The plotly figure to add annotations to.
-            data (np.ndarray): Data to calculate quantiles from.
-            annotations (bool or list, optional): Whether to add annotations or specific quantiles. Defaults to True.
-            x_position (float, optional): X position for annotations. Defaults to 0.4.
-        """
-        if isinstance(annotations, list):
-            for annotation in annotations:
-                if annotation in self.quantiles_dict:
-                    quantile_value = np.quantile(data, self.quantiles_dict[annotation])
-                    fig.add_annotation(
-                        x=x_position,
-                        y=quantile_value,
-                        text=f"{annotation}: {np.round(quantile_value, 3)}",
-                        showarrow=False,
-                    )
-        elif annotations:
-            for key, value in self.quantiles_dict.items():
-                quantile_value = np.quantile(data, value)
-                fig.add_annotation(
-                    x=x_position,
-                    y=quantile_value,
-                    text=f"{key}: {np.round(quantile_value, 3)}",
-                    showarrow=False,
-                )
 
     def add_quantile_annotations(
         self,
