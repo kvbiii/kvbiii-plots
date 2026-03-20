@@ -10,10 +10,10 @@ This package contains specialized plotting classes for different types of data a
 All classes inherit from BasePlots which provides common functionality.
 """
 
-from .continuous_plots import ContinuousPlots
 from .categorical_plots import CategoricalPlots
-from .time_series_plots import TimeSeriesPlots
+from .continuous_plots import ContinuousPlots
 from .multivariate_plots import MultivariatePlots
+from .time_series_plots import TimeSeriesPlots
 
 __all__ = [
     "ContinuousPlots",
