@@ -1,7 +1,10 @@
+"""Utilities and tests for kvbiii_plots.eda.categorical_plots."""
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+
 from ..base_plots import BasePlots
 
 
@@ -51,7 +54,7 @@ class CategoricalPlots(BasePlots):
         show_other: bool = True,
         tickangle: int = 0,
         return_fig: bool = False,
-    ) -> None:
+    ) -> go.Figure | None:
         """Creates a bar plot for categorical data.
 
         Args:
@@ -93,7 +96,6 @@ class CategoricalPlots(BasePlots):
         n_colors = len(labels)
         colors = self._get_colors(n_colors)
 
-        # Prepare text for display
         text_values = None
         if show_counts:
             if percentage:
@@ -123,6 +125,7 @@ class CategoricalPlots(BasePlots):
         if return_fig:
             return fig
         fig.show("png", width=width, height=height)
+        return None
 
     def pie_barplot(
         self,
@@ -176,7 +179,6 @@ class CategoricalPlots(BasePlots):
         if not xaxis_title:
             xaxis_title = feature
 
-        # Prepare text for bar plot
         bar_text = None
         if show_counts:
             if percentage:
@@ -283,7 +285,6 @@ class CategoricalPlots(BasePlots):
 
         fig = go.Figure()
 
-        # Calculate total for percentage display
         total_count = np.sum(frequency) if percentage and show_counts else None
 
         for color_idx, category in enumerate(labels):
@@ -293,7 +294,6 @@ class CategoricalPlots(BasePlots):
                 indices = data_copy[categorical] == category
             grouped_data = list(data_copy[target][indices])
 
-            # Prepare name with count/percentage if requested
             box_name = str(category)
             if show_counts:
                 count = len(grouped_data)
@@ -396,7 +396,6 @@ class CategoricalPlots(BasePlots):
             col=1,
         )
 
-        # Calculate total for percentage display
         total_count = np.sum(frequency) if percentage and show_counts else None
 
         for color_idx, category in enumerate(labels):
@@ -406,7 +405,6 @@ class CategoricalPlots(BasePlots):
                 indices = data_copy[categorical] == category
             grouped_data = list(data_copy[target][indices])
 
-            # Prepare name with count/percentage if requested
             box_name = str(category)
             if show_counts:
                 count = len(grouped_data)
@@ -478,7 +476,6 @@ class CategoricalPlots(BasePlots):
             labels, frequency, top_n, other_category
         )
 
-        # Replace feature values in data_copy with other_category if not in top_n
         if other_labels is not None:
             data_copy[feature] = data_copy[feature].apply(
                 lambda x: x if x in labels[:-1] else other_category
@@ -505,7 +502,7 @@ class CategoricalPlots(BasePlots):
             col=1,
         )
         for color_idx, category in enumerate(crosstab.columns):
-            # Prepare text for bar plot
+
             bar_text = None
             if show_counts:
                 if percentage:
@@ -576,7 +573,6 @@ if __name__ == "__main__":
 
     cat_plots = CategoricalPlots()
 
-    # Bar plot
     cat_plots.barplot(
         sample_data["category"].value_counts(),
         plot_title="Category Frequency",
@@ -586,7 +582,6 @@ if __name__ == "__main__":
         yaxis_title="Frequency",
     )
 
-    # Pie + Bar plot
     cat_plots.pie_barplot(
         sample_data,
         feature="category",
@@ -598,7 +593,6 @@ if __name__ == "__main__":
         hole_size=0.3,
     )
 
-    # Boxplot by categorical
     cat_plots.boxplot_by_categorical(
         sample_data,
         categorical="category",
@@ -610,7 +604,6 @@ if __name__ == "__main__":
         yaxis_title="Value",
     )
 
-    # Pie + Boxplot by categorical
     cat_plots.pie_boxplot_by_categorical(
         sample_data,
         categorical="category",
@@ -624,7 +617,6 @@ if __name__ == "__main__":
         hole_size=0.3,
     )
 
-    # Pie + Stacked Barplot by hue
     cat_plots.pie_stacked_barplot_by_hue(
         sample_data,
         feature="category",
