@@ -1,9 +1,12 @@
+"""Utilities and tests for kvbiii_plots.eda.continuous_plots."""
+
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
 import plotly.express as px
+import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from sklearn.linear_model import LinearRegression
+
 from kvbiii_plots.base_plots import BasePlots
 
 
@@ -31,9 +34,7 @@ class ContinuousPlots(BasePlots):
             return 1.0
         q75, q25 = np.percentile(clean_data, [75, 25])
         iqr = q75 - q25
-        bin_size = (
-            2 * (np.std(clean_data) if iqr == 0 else iqr) / (len(clean_data) ** (1 / 3))
-        )
+        bin_size = 2 * (np.std(clean_data) if iqr == 0 else iqr) / (len(clean_data) ** (1 / 3))
         data_range = np.max(clean_data) - np.min(clean_data)
         return max(data_range / 100, min(bin_size, data_range / 5))
 
@@ -104,7 +105,7 @@ class ContinuousPlots(BasePlots):
             font=dict(family="Times New Roman", size=26, color="Black"),
         )
         fig.show("png", width=width, height=height)
-    
+
     def line_plot(
         self,
         x: np.ndarray | pd.Series | list,
@@ -133,27 +134,21 @@ class ContinuousPlots(BasePlots):
         fig = go.Figure()
         fig.add_trace(
             go.Scatter(
-            x=x,
-            y=y,
-            mode="lines+markers",
-            marker=dict(
-                color=self.default_colors["primary"],
-                size=10,
-                symbol="diamond",
-                line=dict(width=2, color=self.default_colors["accent"])
-            ),
-            line=dict(
-                color=self.default_colors["primary"],
-                width=4,
-                dash="dashdot"
-            ),
-            name="Line Plot",
-            showlegend=False,
+                x=x,
+                y=y,
+                mode="lines+markers",
+                marker=dict(
+                    color=self.default_colors["primary"],
+                    size=10,
+                    symbol="diamond",
+                    line=dict(width=2, color=self.default_colors["accent"]),
+                ),
+                line=dict(color=self.default_colors["primary"], width=4, dash="dashdot"),
+                name="Line Plot",
+                showlegend=False,
             )
         )
-        self.apply_default_layout(
-            fig, plot_title, width, height, xaxis_title, yaxis_title
-        )
+        self.apply_default_layout(fig, plot_title, width, height, xaxis_title, yaxis_title)
         fig.update_xaxes(title_text=xaxis_title)
         fig.update_yaxes(title_text=yaxis_title)
         fig.show("png", width=width, height=height)
@@ -189,9 +184,7 @@ class ContinuousPlots(BasePlots):
         Returns:
             None
         """
-        default_title = (
-            str(data.name) if hasattr(data, "name") and data.name else "Value"
-        )
+        default_title = str(data.name) if hasattr(data, "name") and data.name else "Value"
         checked_data = self.check_data(data=data)
         if not xaxis_title:
             xaxis_title = default_title
@@ -222,9 +215,7 @@ class ContinuousPlots(BasePlots):
             )
             n_colors = len(unique_hue)
             colors = (
-                px.colors.sample_colorscale(
-                    "rainbow", list(np.linspace(0, 1, n_colors))
-                )
+                px.colors.sample_colorscale("rainbow", list(np.linspace(0, 1, n_colors)))
                 if n_colors > 10
                 else px.colors.qualitative.Plotly
             )
@@ -242,9 +233,7 @@ class ContinuousPlots(BasePlots):
                         )
                     )
             fig.update_layout(barmode="overlay")
-        self.apply_default_layout(
-            fig, plot_title, width, height, xaxis_title, yaxis_title
-        )
+        self.apply_default_layout(fig, plot_title, width, height, xaxis_title, yaxis_title)
         fig.update_yaxes(title_text=yaxis_title)
         if show_legend and hue is not None:
             fig.update_layout(
@@ -287,9 +276,7 @@ class ContinuousPlots(BasePlots):
         Returns:
             None
         """
-        default_title = (
-            str(data.name) if hasattr(data, "name") and data.name else "Value"
-        )
+        default_title = str(data.name) if hasattr(data, "name") and data.name else "Value"
         checked_data = self.check_data(data=data)
         if bin_size is None:
             bin_size = self._calculate_bin_size(np.array(checked_data))
@@ -321,9 +308,7 @@ class ContinuousPlots(BasePlots):
         fig.update_xaxes(title_text=xaxis_title, row=1, col=2)
         fig.update_yaxes(title_text="Frequency", row=1, col=2)
         self.add_quantile_annotations(fig, checked_data, annotations)
-        self.apply_default_layout(
-            fig, plot_title, width, height, xaxis_title, yaxis_title
-        )
+        self.apply_default_layout(fig, plot_title, width, height, xaxis_title, yaxis_title)
         fig.update_xaxes(
             row=1,
             col=1,
@@ -449,9 +434,7 @@ class ContinuousPlots(BasePlots):
                 bgcolor="white",
             )
         self.add_quantile_annotations(fig, clean_df[feature].values, annotations)
-        self.apply_default_layout(
-            fig, plot_title, width, height, xaxis_title, yaxis_title
-        )
+        self.apply_default_layout(fig, plot_title, width, height, xaxis_title, yaxis_title)
         fig.update_xaxes(
             row=1,
             col=1,
@@ -529,9 +512,7 @@ class ContinuousPlots(BasePlots):
         fig.update_xaxes(title_text=yaxis_title, row=1, col=2)
         fig.update_yaxes(title_text="Frequency", row=1, col=2)
         fig.update_yaxes(title_text=yaxis_title, row=1, col=3)
-        fig.update_xaxes(
-            title_text=hue if not xaxis_title else xaxis_title, row=1, col=3
-        )
+        fig.update_xaxes(title_text=hue if not xaxis_title else xaxis_title, row=1, col=3)
         labels = np.array(data_copy[hue].value_counts().index)
         frequency = np.array(data_copy[hue].value_counts().values)
         sorted_indices = np.argsort(frequency)[::-1]
@@ -556,9 +537,7 @@ class ContinuousPlots(BasePlots):
                 col=3,
             )
         self.add_quantile_annotations(fig, data_copy[feature].values, annotations)
-        self.apply_default_layout(
-            fig, plot_title, width, height, xaxis_title, yaxis_title
-        )
+        self.apply_default_layout(fig, plot_title, width, height, xaxis_title, yaxis_title)
         fig.update_xaxes(
             row=1,
             col=1,
