@@ -10,9 +10,7 @@ This package provides a structured approach to data visualization with:
 The modular design allows for easy extension and maintenance of plotting functionality.
 """
 
+from . import eda, evaluation, ml
 from .base_plots import BasePlots
-from . import eda
-from . import ml
-from . import evaluation
 
 __all__ = ["BasePlots", "eda", "ml", "evaluation"]
