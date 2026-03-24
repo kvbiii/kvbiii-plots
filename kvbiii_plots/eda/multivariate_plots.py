@@ -1,9 +1,12 @@
+"""Utilities and tests for kvbiii_plots.eda.multivariate_plots."""
+
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
-import plotly.figure_factory as ff
 import plotly.express as px
+import plotly.figure_factory as ff
+import plotly.graph_objects as go
 from scipy.stats import gaussian_kde
+
 from kvbiii_plots.base_plots import BasePlots
 
 
@@ -63,9 +66,7 @@ class MultivariatePlots(BasePlots):
         if hasattr(px.colors.diverging, colorscale):
             color_scale = getattr(px.colors.diverging, colorscale)
         else:
-            print(
-                f"Warning: colorscale '{colorscale}' not found. Using default 'RdBu'."
-            )
+            print(f"Warning: colorscale '{colorscale}' not found. Using default 'RdBu'.")
             color_scale = px.colors.diverging.RdBu
 
         fig = ff.create_annotated_heatmap(
@@ -247,7 +248,7 @@ class MultivariatePlots(BasePlots):
         """
         if features is None:
             numeric_cols = data.select_dtypes(include=[np.number]).columns.tolist()
-            features = numeric_cols[: min(6, len(numeric_cols))]  # Limit to 6 features
+            features = numeric_cols[: min(6, len(numeric_cols))]
 
         data_subset = data[features + ([hue] if hue else [])].dropna()
 
@@ -269,9 +270,7 @@ class MultivariatePlots(BasePlots):
                 width=width,
                 height=height,
             )
-            fig.update_traces(
-                marker=dict(size=marker_size, color=self.default_colors["primary"])
-            )
+            fig.update_traces(marker=dict(size=marker_size, color=self.default_colors["primary"]))
 
         fig.update_layout(
             template="simple_white",
@@ -331,7 +330,6 @@ class MultivariatePlots(BasePlots):
             )
         )
 
-        # Overlay markers for highlighted cells (imputed targets)
         if highlights:
             hx = []
             hy = []
@@ -366,9 +364,7 @@ class MultivariatePlots(BasePlots):
             xaxis=dict(tickangle=45, tickfont=dict(size=26), showgrid=False),
             yaxis=dict(tickfont=dict(size=26), autorange="reversed", showgrid=False),
             margin=dict(l=60, r=20, t=60, b=100),
-            legend=dict(
-                orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
-            ),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         )
 
         fig.show("png", width=width, height=height)
@@ -396,18 +392,14 @@ class MultivariatePlots(BasePlots):
         Returns:
             None
         """
-        # Determine categorical columns
+
         if categorical_columns is None:
             categorical_columns = getattr(self, "categorical_columns", [])
         is_categorical = feature_name in categorical_columns
 
         if is_categorical:
-            original_counts = (
-                df[feature_name].value_counts(normalize=True).sort_index() * 100
-            )
-            imputed_counts = (
-                df[imputed_col].value_counts(normalize=True).sort_index() * 100
-            )
+            original_counts = df[feature_name].value_counts(normalize=True).sort_index() * 100
+            imputed_counts = df[imputed_col].value_counts(normalize=True).sort_index() * 100
             fig = go.Figure()
             fig.add_trace(
                 go.Bar(
@@ -518,9 +510,7 @@ class MultivariatePlots(BasePlots):
                 min_val = data_subset[feature].min()
                 max_val = data_subset[feature].max()
                 if max_val != min_val:
-                    data_subset[feature] = (data_subset[feature] - min_val) / (
-                        max_val - min_val
-                    )
+                    data_subset[feature] = (data_subset[feature] - min_val) / (max_val - min_val)
 
         if hue:
             if not np.issubdtype(data_subset[hue].dtype, np.number):
@@ -566,7 +556,6 @@ if __name__ == "__main__":
     import numpy as np
     import pandas as pd
 
-    # Example usage of MultivariatePlots
     np.random.seed(0)
     df = pd.DataFrame(
         {
