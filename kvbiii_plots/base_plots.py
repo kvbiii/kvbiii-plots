@@ -1,4 +1,3 @@
-"""Utilities and tests for kvbiii_plots.base_plots."""
 
 from collections.abc import Callable
 
@@ -37,7 +36,7 @@ class BasePlots:
         default_colors (dict): Default color schemes for different plot types.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the BasePlots class with default configurations."""
         self.metrics_dict: dict[str, Callable[..., float]] = {
             "Accuracy": accuracy_score,
@@ -73,7 +72,8 @@ class BasePlots:
         }
 
     def check_data(
-        self, data: pd.DataFrame | pd.Series | np.ndarray | list
+        self,
+        data: pd.DataFrame | pd.Series | np.ndarray | list[object],
     ) -> np.ndarray:
         """
         Validates and converts input data to a NumPy array.
@@ -89,7 +89,8 @@ class BasePlots:
         """
         if not isinstance(data, (pd.DataFrame, pd.Series, np.ndarray, list)):
             raise TypeError(
-                "Wrong type of data. It should be pandas DataFrame, pandas Series, numpy array, or list"
+                "Wrong type of data. It should be pandas DataFrame, pandas Series,"
+                " numpy array, or list"
             )
         data = np.array(data)
         try:
@@ -101,7 +102,10 @@ class BasePlots:
             data = data.squeeze()
         return data
 
-    def check_2d_data(self, data: pd.DataFrame | np.ndarray | list) -> np.ndarray:
+    def check_2d_data(
+        self,
+        data: pd.DataFrame | np.ndarray | list[object],
+    ) -> np.ndarray:
         """
         Validates and converts input data to a 2D NumPy array.
 
@@ -127,7 +131,7 @@ class BasePlots:
             data = data[~np.isnan(data).any(axis=1)]
         return data
 
-    def _get_colors(self, n_colors: int) -> list:
+    def _get_colors(self, n_colors: int) -> list[str]:
         """
         Get colors based on the number of colors.
 
@@ -194,13 +198,23 @@ class BasePlots:
         self,
         fig: go.Figure,
         data: np.ndarray,
-        annotations=None,
+        annotations: list[str] | bool | None = None,
         x_position: float = 0.4,
     ) -> None:
         """
-        Add quantile annotations to a plot.
-        If annotations is None, automatically decide which to show.
-        If annotations is False, don't show any annotations.
+        Add selected quantile annotations to a plot.
+
+        Args:
+            fig (go.Figure): Target figure that receives the annotation labels.
+            data (np.ndarray): Numeric data used to compute quantiles.
+            annotations (list[str] | bool | None, optional): Annotation labels to show.
+                When None, labels are selected automatically. When True, all labels are
+                shown. When False, no labels are added. Defaults to None.
+            x_position (float, optional): Horizontal position shared by all labels.
+                Defaults to 0.4.
+
+        Returns:
+            None: This method updates the figure in place.
         """
         quantiles_dict = {"Min": 0, "Q1": 0.25, "Med": 0.5, "Q3": 0.75, "Max": 1}
         if annotations is None:
@@ -228,12 +242,17 @@ class BasePlots:
 
     def _auto_quantile_annotations(
         self, data: np.ndarray, min_dist: float = 0.05
-    ) -> list:
+    ) -> list[str]:
         """
-        Decide which quantile annotations to show based on their distance.
-        Always try to show Min, Median, Max. If Q1/Q3 are too close to Median, prefer Median.
-        If there are only 2 unique values, show only Min and Max.
-        min_dist: minimum relative distance between quantiles to show both.
+        Decide which quantile labels should be displayed.
+
+        Args:
+            data (np.ndarray): Numeric values used to calculate quantiles.
+            min_dist (float, optional): Minimum relative distance required to include
+                nearby quantile labels. Defaults to 0.05.
+
+        Returns:
+            list[str]: Ordered list of quantile labels that should be rendered.
         """
         quantiles_dict = {"Min": 0, "Q1": 0.25, "Med": 0.5, "Q3": 0.75, "Max": 1}
         unique_vals = np.unique(data)
@@ -302,7 +321,8 @@ class BasePlots:
         Args:
             rows (int): Number of rows.
             cols (int): Number of columns.
-            subplot_types (list[list[str]]): 2D list of subplot types, where each inner list represents a row.
+            subplot_types (list[list[str]]): 2D list of subplot types, where
+            each inner list represents a row.
 
         Returns:
             go.Figure: Configured subplot figure.
@@ -336,3 +356,10 @@ class BasePlots:
             return float(data.median())
         else:
             raise ValueError(f"Unsupported aggregation function: {agg_func}")
+
+
+if __name__ == "__main__":
+    base_plots = BasePlots()
+    sample_values = np.array([1.0, 2.5, np.nan, 4.0])
+    cleaned_values = base_plots.check_data(sample_values)
+    print(cleaned_values.tolist())
