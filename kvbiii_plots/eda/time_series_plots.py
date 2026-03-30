@@ -1,6 +1,6 @@
-"""Utilities and tests for kvbiii_plots.eda.time_series_plots."""
 
 from collections.abc import Sequence
+from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
@@ -1057,8 +1057,6 @@ class TimeSeriesPlots(BasePlots):
 
 
 if __name__ == "__main__":
-    from datetime import datetime, timedelta
-
     np.random.seed(42)
     start_date = datetime(2020, 1, 1)
     dates = [start_date + timedelta(days=offset) for offset in range(365)]
