@@ -1,4 +1,3 @@
-"""Utilities and tests for kvbiii_plots.eda.categorical_plots."""
 
 import numpy as np
 import pandas as pd
@@ -17,8 +16,12 @@ class CategoricalPlots(BasePlots):
     """
 
     def _apply_top_n_categories(
-        self, labels, frequency, top_n=10, other_category="Other"
-    ):
+        self,
+        labels: np.ndarray,
+        frequency: np.ndarray,
+        top_n: int = 10,
+        other_category: str = "Other",
+    ) -> tuple[np.ndarray, np.ndarray, np.ndarray | None]:
         """
         Helper method to limit categories to top_n and aggregate the rest as 'Other'.
 
@@ -477,8 +480,9 @@ class CategoricalPlots(BasePlots):
         )
 
         if other_labels is not None:
+            top_labels = set(labels[:-1])
             data_copy[feature] = data_copy[feature].apply(
-                lambda x: x if x in labels[:-1] else other_category
+                lambda x: x if x in top_labels else other_category
             )
 
         crosstab = pd.crosstab(data_copy[hue], data_copy[feature])
@@ -559,9 +563,6 @@ class CategoricalPlots(BasePlots):
 
 
 if __name__ == "__main__":
-    import numpy as np
-    import pandas as pd
-
     np.random.seed(17)
     sample_data = pd.DataFrame(
         {
