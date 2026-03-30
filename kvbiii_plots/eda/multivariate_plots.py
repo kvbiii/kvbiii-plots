@@ -1,4 +1,3 @@
-"""Utilities and tests for kvbiii_plots.eda.multivariate_plots."""
 
 import numpy as np
 import pandas as pd
@@ -34,12 +33,14 @@ class MultivariatePlots(BasePlots):
 
         Args:
             data (np.ndarray | pd.DataFrame): Input data as a 2D array or DataFrame.
-            features_names (list[str] | None): List of feature names for axis labels. If None, uses DataFrame columns or generic names.
+            features_names (list[str] | None): List of feature names for axis labels. If None, uses
+            DataFrame columns or generic names.
             method (str): Correlation method. One of 'spearman', 'pearson', or 'kendall'.
             plot_title (str): Plot title.
             width (int): Plot width in pixels.
             height (int): Plot height in pixels.
-            show_upper (bool): If True, show upper triangle of correlation matrix. If False, mask upper triangle.
+            show_upper (bool): If True, show upper triangle of correlation
+                matrix. If False, mask upper triangle.
             colorscale (str): Plotly diverging color scale name.
 
         Returns:
@@ -66,7 +67,9 @@ class MultivariatePlots(BasePlots):
         if hasattr(px.colors.diverging, colorscale):
             color_scale = getattr(px.colors.diverging, colorscale)
         else:
-            print(f"Warning: colorscale '{colorscale}' not found. Using default 'RdBu'.")
+            print(
+                f"Warning: colorscale '{colorscale}' not found. Using default 'RdBu'."
+            )
             color_scale = px.colors.diverging.RdBu
 
         fig = ff.create_annotated_heatmap(
@@ -119,8 +122,10 @@ class MultivariatePlots(BasePlots):
         Plot a heatmap for a precomputed correlation or association matrix.
 
         Args:
-            matrix (np.ndarray | pd.DataFrame): Precomputed matrix (e.g., Cramér's V, correlation).
-            features_names (list[str] | None): Feature names for axis labels. If None, uses DataFrame columns or generic names.
+            matrix (np.ndarray | pd.DataFrame): Precomputed matrix
+                (e.g., Cramér's V, correlation).
+            features_names (list[str] | None): Feature names for axis labels. If None,
+                uses DataFrame columns or generic names.
             plot_title (str): Plot title.
             width (int): Plot width in pixels.
             height (int): Plot height in pixels.
@@ -129,7 +134,8 @@ class MultivariatePlots(BasePlots):
             vmin (float | None): Minimum value for color scale. If None, uses matrix min.
             vmax (float | None): Maximum value for color scale. If None, uses matrix max.
             max_label_length (int): Maximum length for feature labels before truncation.
-            auto_font_size (bool): If True, automatically adjust font size based on matrix dimensions.
+            auto_font_size (bool): If True, automatically adjust font size
+                based on matrix dimensions.
 
         Returns:
             None
@@ -236,7 +242,8 @@ class MultivariatePlots(BasePlots):
 
         Args:
             data (pd.DataFrame): Input DataFrame with features.
-            features (list[str] | None): List of feature columns to include. If None, uses up to 6 numeric columns.
+            features (list[str] | None): List of feature columns to include. If None,
+                uses up to 6 numeric columns.
             hue (str | None): Column name for color grouping. If None, no color grouping is used.
             plot_title (str): Plot title.
             width (int): Plot width in pixels.
@@ -270,7 +277,9 @@ class MultivariatePlots(BasePlots):
                 width=width,
                 height=height,
             )
-            fig.update_traces(marker=dict(size=marker_size, color=self.default_colors["primary"]))
+            fig.update_traces(
+                marker=dict(size=marker_size, color=self.default_colors["primary"])
+            )
 
         fig.update_layout(
             template="simple_white",
@@ -294,13 +303,15 @@ class MultivariatePlots(BasePlots):
         Plot a styled heatmap with optional highlight markers for imputed cells.
 
         Args:
-            data (pd.DataFrame): 2D table with rows as x-axis categories and columns as y-axis categories.
+            data (pd.DataFrame): 2D table with rows as x-axis categories and
+                columns as y-axis categories.
             plot_title (str): Figure title.
             width (int): Figure width in pixels.
             height (int): Figure height in pixels.
             xaxis_title (str): X-axis title.
             yaxis_title (str): Y-axis title.
-            highlights (list[tuple[str, str]] | None): List of (x_value, y_value) pairs to mark as imputation targets.
+            highlights (list[tuple[str, str]] | None): List of (x_value, y_value) pairs to mark as
+            imputation targets.
 
         Returns:
             go.Figure: Rendered Plotly figure.
@@ -333,9 +344,11 @@ class MultivariatePlots(BasePlots):
         if highlights:
             hx = []
             hy = []
+            x_label_set = set(x_labels)
+            y_label_set = set(y_labels)
             for xv, yv in highlights:
                 xv_s, yv_s = str(xv), str(yv)
-                if xv_s in x_labels and yv_s in y_labels:
+                if xv_s in x_label_set and yv_s in y_label_set:
                     hx.append(xv_s)
                     hy.append(yv_s)
             if hx:
@@ -364,7 +377,9 @@ class MultivariatePlots(BasePlots):
             xaxis=dict(tickangle=45, tickfont=dict(size=26), showgrid=False),
             yaxis=dict(tickfont=dict(size=26), autorange="reversed", showgrid=False),
             margin=dict(l=60, r=20, t=60, b=100),
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+            legend=dict(
+                orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1
+            ),
         )
 
         fig.show("png", width=width, height=height)
@@ -385,7 +400,8 @@ class MultivariatePlots(BasePlots):
             df (pd.DataFrame): DataFrame containing the feature and imputed column.
             feature_name (str): Name of the feature to plot.
             imputed_col (str): Name of the column with imputed values.
-            categorical_columns (list[str] | None): List of categorical columns. If None, uses self.categorical_columns if available.
+            categorical_columns (list[str] | None): List of categorical columns. If None, uses self
+            .categorical_columns if available.
             width (int): Plot width in pixels.
             height (int): Plot height in pixels.
 
@@ -398,8 +414,12 @@ class MultivariatePlots(BasePlots):
         is_categorical = feature_name in categorical_columns
 
         if is_categorical:
-            original_counts = df[feature_name].value_counts(normalize=True).sort_index() * 100
-            imputed_counts = df[imputed_col].value_counts(normalize=True).sort_index() * 100
+            original_counts = (
+                df[feature_name].value_counts(normalize=True).sort_index() * 100
+            )
+            imputed_counts = (
+                df[imputed_col].value_counts(normalize=True).sort_index() * 100
+            )
             fig = go.Figure()
             fig.add_trace(
                 go.Bar(
@@ -489,7 +509,9 @@ class MultivariatePlots(BasePlots):
 
         Args:
             data (pd.DataFrame): Input DataFrame with features.
-            features (list[str] | None): List of feature columns to include. If None, uses all numeric columns.
+            features (list[str] | None): List of feature columns to include.
+               
+                If None, uses all numeric columns.
             hue (str | None): Column name for color grouping. If None, no color grouping is used.
             plot_title (str): Plot title.
             width (int): Plot width in pixels.
@@ -510,7 +532,9 @@ class MultivariatePlots(BasePlots):
                 min_val = data_subset[feature].min()
                 max_val = data_subset[feature].max()
                 if max_val != min_val:
-                    data_subset[feature] = (data_subset[feature] - min_val) / (max_val - min_val)
+                    data_subset[feature] = (data_subset[feature] - min_val) / (
+                        max_val - min_val
+                    )
 
         if hue:
             if not np.issubdtype(data_subset[hue].dtype, np.number):
@@ -553,9 +577,6 @@ class MultivariatePlots(BasePlots):
 
 
 if __name__ == "__main__":
-    import numpy as np
-    import pandas as pd
-
     np.random.seed(0)
     df = pd.DataFrame(
         {
