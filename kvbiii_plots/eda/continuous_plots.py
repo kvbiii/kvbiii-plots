@@ -1,4 +1,3 @@
-"""Utilities and tests for kvbiii_plots.eda.continuous_plots."""
 
 import numpy as np
 import pandas as pd
@@ -34,14 +33,16 @@ class ContinuousPlots(BasePlots):
             return 1.0
         q75, q25 = np.percentile(clean_data, [75, 25])
         iqr = q75 - q25
-        bin_size = 2 * (np.std(clean_data) if iqr == 0 else iqr) / (len(clean_data) ** (1 / 3))
+        bin_size = (
+            2 * (np.std(clean_data) if iqr == 0 else iqr) / (len(clean_data) ** (1 / 3))
+        )
         data_range = np.max(clean_data) - np.min(clean_data)
         return max(data_range / 100, min(bin_size, data_range / 5))
 
     def scatter_plot(
         self,
         data: np.ndarray,
-        hue: np.ndarray | list,
+        hue: np.ndarray | list[object],
         plot_title: str = "",
         width: int = 1200,
         height: int = 1200,
@@ -108,8 +109,8 @@ class ContinuousPlots(BasePlots):
 
     def line_plot(
         self,
-        x: np.ndarray | pd.Series | list,
-        y: np.ndarray | pd.Series | list,
+        x: np.ndarray | pd.Series | list[object],
+        y: np.ndarray | pd.Series | list[object],
         plot_title: str = "",
         width: int = 1200,
         height: int = 800,
@@ -143,20 +144,24 @@ class ContinuousPlots(BasePlots):
                     symbol="diamond",
                     line=dict(width=2, color=self.default_colors["accent"]),
                 ),
-                line=dict(color=self.default_colors["primary"], width=4, dash="dashdot"),
+                line=dict(
+                    color=self.default_colors["primary"], width=4, dash="dashdot"
+                ),
                 name="Line Plot",
                 showlegend=False,
             )
         )
-        self.apply_default_layout(fig, plot_title, width, height, xaxis_title, yaxis_title)
+        self.apply_default_layout(
+            fig, plot_title, width, height, xaxis_title, yaxis_title
+        )
         fig.update_xaxes(title_text=xaxis_title)
         fig.update_yaxes(title_text=yaxis_title)
         fig.show("png", width=width, height=height)
 
     def histogram_plot(
         self,
-        data: pd.DataFrame | pd.Series | np.ndarray | list,
-        hue: np.ndarray | pd.Series | list | None = None,
+        data: pd.DataFrame | pd.Series | np.ndarray | list[object],
+        hue: np.ndarray | pd.Series | list[object] | None = None,
         plot_title: str = "",
         width: int = 1200,
         height: int = 800,
@@ -171,20 +176,26 @@ class ContinuousPlots(BasePlots):
 
         Args:
             data (pd.DataFrame | pd.Series | np.ndarray | list): Input continuous data.
-            hue (np.ndarray | pd.Series | list | None, optional): Labels for grouping data. Defaults to None.
+            hue (np.ndarray | pd.Series | list | None, optional): Labels for grouping data.
+            Defaults to None.
             plot_title (str, optional): Title for the plot. Defaults to "".
             width (int, optional): Width of the plot. Defaults to 1200.
             height (int, optional): Height of the plot. Defaults to 800.
-            bin_size (float | None, optional): Size of histogram bins. If None, auto-calculated. Defaults to None.
-            xaxis_title (str, optional): Title for the x-axis. Defaults to data name if available, otherwise "".
+            bin_size (float | None, optional): Size of histogram bins. If None, auto-calculated. 
+            Defaults to None.
+            xaxis_title (str, optional): Title for the x-axis.
+            Defaults to data name if available, otherwise "".
             yaxis_title (str, optional): Title for the y-axis. Defaults to "Frequency".
-            alpha (float, optional): Transparency for overlapping histograms (0.0 to 1.0). Defaults to 0.7.
+            alpha (float, optional): Transparency for overlapping histograms (0.0 to 1.0).
+            Defaults to 0.7.
             show_legend (bool, optional): Whether to show the legend. Defaults to True.
 
         Returns:
             None
         """
-        default_title = str(data.name) if hasattr(data, "name") and data.name else "Value"
+        default_title = (
+            str(data.name) if hasattr(data, "name") and data.name else "Value"
+        )
         checked_data = self.check_data(data=data)
         if not xaxis_title:
             xaxis_title = default_title
@@ -215,7 +226,9 @@ class ContinuousPlots(BasePlots):
             )
             n_colors = len(unique_hue)
             colors = (
-                px.colors.sample_colorscale("rainbow", list(np.linspace(0, 1, n_colors)))
+                px.colors.sample_colorscale(
+                    "rainbow", list(np.linspace(0, 1, n_colors))
+                )
                 if n_colors > 10
                 else px.colors.qualitative.Plotly
             )
@@ -233,7 +246,9 @@ class ContinuousPlots(BasePlots):
                         )
                     )
             fig.update_layout(barmode="overlay")
-        self.apply_default_layout(fig, plot_title, width, height, xaxis_title, yaxis_title)
+        self.apply_default_layout(
+            fig, plot_title, width, height, xaxis_title, yaxis_title
+        )
         fig.update_yaxes(title_text=yaxis_title)
         if show_legend and hue is not None:
             fig.update_layout(
@@ -251,7 +266,7 @@ class ContinuousPlots(BasePlots):
 
     def histogram_and_box_plot(
         self,
-        data: pd.DataFrame | pd.Series | np.ndarray | list,
+        data: pd.DataFrame | pd.Series | np.ndarray | list[object],
         plot_title: str = "",
         width: int = 1600,
         height: int = 800,
@@ -268,15 +283,23 @@ class ContinuousPlots(BasePlots):
             plot_title (str, optional): Title for the plot. Defaults to "".
             width (int, optional): Width of the plot. Defaults to 1600.
             height (int, optional): Height of the plot. Defaults to 800.
-            annotations (bool | list[str] | None, optional): Whether to show quantile annotations or specific quantiles. Defaults to None.
-            bin_size (float | None, optional): Size of histogram bins. If None, automatically calculated using Freedman-Diaconis rule. Defaults to None.
-            xaxis_title (str, optional): Title for the x-axis. Defaults to data name if available, otherwise "".
-            yaxis_title (str, optional): Title for the y-axis. Defaults to data name if available, otherwise "".
+            annotations (bool | list[str] | None, optional): Whether to show quantile annotations
+            or specific quantiles. 
+            Defaults to None.
+            bin_size (float | None, optional): Size of histogram bins. If None, automatically
+            calculated using Freedman-Diaconis rule. 
+            Defaults to None.
+            xaxis_title (str, optional): Title for the x-axis.
+            Defaults to data name if available, otherwise "".
+            yaxis_title (str, optional): Title for the y-axis.
+            Defaults to data name if available, otherwise "".
 
         Returns:
             None
         """
-        default_title = str(data.name) if hasattr(data, "name") and data.name else "Value"
+        default_title = (
+            str(data.name) if hasattr(data, "name") and data.name else "Value"
+        )
         checked_data = self.check_data(data=data)
         if bin_size is None:
             bin_size = self._calculate_bin_size(np.array(checked_data))
@@ -308,7 +331,9 @@ class ContinuousPlots(BasePlots):
         fig.update_xaxes(title_text=xaxis_title, row=1, col=2)
         fig.update_yaxes(title_text="Frequency", row=1, col=2)
         self.add_quantile_annotations(fig, checked_data, annotations)
-        self.apply_default_layout(fig, plot_title, width, height, xaxis_title, yaxis_title)
+        self.apply_default_layout(
+            fig, plot_title, width, height, xaxis_title, yaxis_title
+        )
         fig.update_xaxes(
             row=1,
             col=1,
@@ -343,11 +368,15 @@ class ContinuousPlots(BasePlots):
             plot_title (str, optional): Title for the plot. Defaults to "".
             width (int, optional): Width of the plot. Defaults to 2000.
             height (int, optional): Height of the plot. Defaults to 800.
-            annotations (bool | list[str] | None, optional): Whether to show quantile annotations. Defaults to None.
-            bin_size (float | None, optional): Size of histogram bins. If None, automatically calculated using Freedman-Diaconis rule. Defaults to None.
+            annotations (bool | list[str] | None, optional): Whether to show quantile annotations. 
+            Defaults to None.
+            bin_size (float | None, optional): Size of histogram bins. If None, automatically
+            calculated using Freedman-Diaconis rule. 
+            Defaults to None.
             xaxis_title (str, optional): Title for the x-axis. Defaults to feature name.
             yaxis_title (str, optional): Title for the y-axis. Defaults to target name.
-            show_correlation (bool, optional): Whether to show correlation annotation. Defaults to True.
+            show_correlation (bool, optional): Whether to show correlation annotation.
+            Defaults to True.
 
         Returns:
             None
@@ -434,7 +463,9 @@ class ContinuousPlots(BasePlots):
                 bgcolor="white",
             )
         self.add_quantile_annotations(fig, clean_df[feature].values, annotations)
-        self.apply_default_layout(fig, plot_title, width, height, xaxis_title, yaxis_title)
+        self.apply_default_layout(
+            fig, plot_title, width, height, xaxis_title, yaxis_title
+        )
         fig.update_xaxes(
             row=1,
             col=1,
@@ -468,8 +499,11 @@ class ContinuousPlots(BasePlots):
             plot_title (str, optional): Title for the plot. Defaults to "".
             width (int, optional): Width of the plot. Defaults to 2000.
             height (int, optional): Height of the plot. Defaults to 1000.
-            annotations (bool | list[str] | None, optional): Whether to show quantile annotations. Defaults to None.
-            bin_size (float | None, optional): Size of histogram bins. If None, automatically calculated using Freedman-Diaconis rule. Defaults to None.
+            annotations (bool | list[str] | None, optional): Whether to show quantile annotations. 
+            Defaults to None.
+            bin_size (float | None, optional): Size of histogram bins. If None, automatically
+            calculated using Freedman-Diaconis rule. 
+            Defaults to None.
             xaxis_title (str, optional): Title for the x-axis. Defaults to feature/hue names.
             yaxis_title (str, optional): Title for the y-axis. Defaults to feature name.
 
@@ -512,7 +546,9 @@ class ContinuousPlots(BasePlots):
         fig.update_xaxes(title_text=yaxis_title, row=1, col=2)
         fig.update_yaxes(title_text="Frequency", row=1, col=2)
         fig.update_yaxes(title_text=yaxis_title, row=1, col=3)
-        fig.update_xaxes(title_text=hue if not xaxis_title else xaxis_title, row=1, col=3)
+        fig.update_xaxes(
+            title_text=hue if not xaxis_title else xaxis_title, row=1, col=3
+        )
         labels = np.array(data_copy[hue].value_counts().index)
         frequency = np.array(data_copy[hue].value_counts().values)
         sorted_indices = np.argsort(frequency)[::-1]
@@ -537,7 +573,9 @@ class ContinuousPlots(BasePlots):
                 col=3,
             )
         self.add_quantile_annotations(fig, data_copy[feature].values, annotations)
-        self.apply_default_layout(fig, plot_title, width, height, xaxis_title, yaxis_title)
+        self.apply_default_layout(
+            fig, plot_title, width, height, xaxis_title, yaxis_title
+        )
         fig.update_xaxes(
             row=1,
             col=1,
