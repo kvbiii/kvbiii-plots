@@ -1,17 +1,22 @@
+
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
 import plotly.express as px
+import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from sklearn.preprocessing import label_binarize
+from sklearn.datasets import make_classification
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (
+    auc,
+    average_precision_score,
     confusion_matrix,
     f1_score,
-    roc_curve,
-    auc,
     precision_recall_curve,
-    average_precision_score,
+    roc_curve,
 )
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import label_binarize
+
 from kvbiii_plots.base_plots import BasePlots
 
 
@@ -66,6 +71,7 @@ class ClassificationPlots(BasePlots):
             fig (go.Figure): The plotly figure to annotate.
             font_size (int, optional): Font size for annotations. Defaults to 22.
         """
+        annotations: list[dict[str, object]] = []
         if len(fig.data) == 1:
             annotations = [
                 dict(
@@ -149,7 +155,7 @@ class ClassificationPlots(BasePlots):
 
     def plot_confusion_matrix(
         self,
-        y_true: np.ndarray | pd.Series | list,
+        y_true: np.ndarray | pd.Series | list[object],
         probabilities: np.ndarray,
         id2label: dict[int, str],
         cutoffs: float | np.ndarray | None = None,
@@ -167,7 +173,8 @@ class ClassificationPlots(BasePlots):
             y_true (np.ndarray | pd.Series | list): True labels.
             probabilities (np.ndarray): Predicted probabilities (n_samples, n_classes).
             id2label (dict[int, str]): Mapping from class indices to labels.
-            cutoffs (float | np.ndarray | None, optional): Threshold values for each class. Defaults to None.
+            cutoffs (float | np.ndarray | None, optional): Threshold values for each class.
+            Defaults to None.
             normalize (bool, optional): Whether to normalize confusion matrix. Defaults to False.
             plot_title (str, optional): Custom plot title. Defaults to "".
             width (int, optional): Plot width in pixels. Defaults to 1000.
@@ -176,7 +183,7 @@ class ClassificationPlots(BasePlots):
             font_size (int, optional): Font size for text elements. Defaults to 26.
             show_text (bool, optional): Whether to show values on heatmap. Defaults to True.
         """
-        # Convert inputs to numpy arrays for consistent processing
+
         y_true = np.array(y_true)
         probabilities = np.array(probabilities)
         if probabilities.ndim == 1:
@@ -185,13 +192,12 @@ class ClassificationPlots(BasePlots):
 
         if n_classes != len(id2label):
             raise ValueError(
-                f"Number of classes in probabilities ({n_classes}) does not match length of id2label ({len(id2label)})"
+                "Number of classes in probabilities must match length of id2label."
             )
 
-        # Handle cutoffs
         if cutoffs is None:
             cutoffs = np.full(n_classes, 0.5)
-        elif isinstance(cutoffs, float) or isinstance(cutoffs, int):
+        elif isinstance(cutoffs, (float, int)):
             cutoffs = np.full(n_classes, float(cutoffs))
         elif isinstance(cutoffs, np.ndarray):
             if cutoffs.shape == ():
@@ -206,18 +212,16 @@ class ClassificationPlots(BasePlots):
         if n_classes == 2 and (
             isinstance(cutoffs, np.ndarray) and np.all(cutoffs == cutoffs[0])
         ):
-            # Binary classification with single cutoff
+
             y_pred = (probabilities[:, 1] >= cutoffs[0]).astype(int)
         else:
-            # Multiclass: apply per-class cutoffs
+
             y_pred = np.argmax(probabilities >= cutoffs, axis=1)
 
         y_pred = [id2label[int(pred)] for pred in y_pred]
 
-        # Format threshold string for display
         labels = list(id2label.values())
 
-        # Compute confusion matrix
         norm_param = "true" if normalize else None
 
         if y_true.dtype != np.str_ and y_true.dtype != np.object_:
@@ -227,21 +231,17 @@ class ClassificationPlots(BasePlots):
             y_true, y_pred, normalize=norm_param, labels=labels
         )
 
-        # Generate title
         matrix_type = "Normalized" if normalize else ""
         f1_value = f1_score(y_true, y_pred, average="macro")
 
-        # title = plot_title or f"{matrix_type} Confusion matrix".strip()
         title = (
             f"{plot_title}<br>F1 Score: {f1_value:.4f}".strip()
             if plot_title
             else f"{matrix_type} Confusion matrix<br>F1 Score: {f1_value:.4f}".strip()
         )
 
-        # Create figure
         fig = go.Figure()
 
-        # Add heatmap trace
         labels_str = [str(label) for label in labels]
         fig.add_trace(
             self._create_confusion_matrix_heatmap(
@@ -249,7 +249,6 @@ class ClassificationPlots(BasePlots):
             )
         )
 
-        # Apply layout and styling
         self.apply_default_layout(fig, title, width, height, "", "")
         self._add_axis_annotations(fig, font_size)
 
@@ -257,7 +256,7 @@ class ClassificationPlots(BasePlots):
 
     def subplot_conf_matrix(
         self,
-        y_true: np.ndarray | pd.Series | list,
+        y_true: np.ndarray | pd.Series | list[object],
         probabilities: np.ndarray,
         id2label: dict[int, str],
         cutoffs: float | np.ndarray,
@@ -284,7 +283,7 @@ class ClassificationPlots(BasePlots):
             show_text (bool, optional): Whether to show values on heatmap. Defaults to True.
             font_size (int, optional): Font size for text elements. Defaults to 22.
         """
-        # Convert inputs to numpy arrays for consistent processing
+
         y_true = np.array(y_true)
         probabilities = np.array(probabilities)
         if probabilities.ndim == 1:
@@ -293,11 +292,10 @@ class ClassificationPlots(BasePlots):
 
         if n_classes != len(id2label):
             raise ValueError(
-                f"Number of classes in probabilities ({n_classes}) does not match length of id2label ({len(id2label)})"
+                "Number of classes in probabilities must match length of id2label."
             )
 
-        # Handle cutoffs with proper validation
-        if isinstance(cutoffs, float) or isinstance(cutoffs, int):
+        if isinstance(cutoffs, (float, int)):
             cutoffs = np.full(n_classes, float(cutoffs))
         elif isinstance(cutoffs, np.ndarray):
             if cutoffs.shape == ():
@@ -310,7 +308,7 @@ class ClassificationPlots(BasePlots):
             raise TypeError("cutoffs must be float, int, or np.ndarray")
 
         if n_classes == 2 and np.all(cutoffs == cutoffs[0]):
-            # Binary classification with single cutoff
+
             cutoffs = np.array([cutoffs[0]])
             y_pred_no_threshold = (probabilities[:, 1] >= 0.5).astype(int)
             y_pred_threshold = (probabilities[:, 1] >= cutoffs[0]).astype(int)
@@ -320,11 +318,9 @@ class ClassificationPlots(BasePlots):
         y_pred_no_threshold = [id2label[int(pred)] for pred in y_pred_no_threshold]
         y_pred_threshold = [id2label[int(pred)] for pred in y_pred_threshold]
 
-        # Format threshold string for display
         labels = list(id2label.values())
         thresholds_str = self._format_threshold_string(labels, cutoffs)
 
-        # Compute confusion matrices
         norm_param = "true" if normalize else None
 
         if y_true.dtype != np.str_ and y_true.dtype != np.object_:
@@ -337,15 +333,12 @@ class ClassificationPlots(BasePlots):
             y_true, y_pred_threshold, normalize=norm_param, labels=labels
         )
 
-        # Generate title
         matrix_type = "Normalized" if normalize else ""
         title = plot_title or f"{matrix_type} Confusion matrix".strip()
 
-        # Calculate F1 scores
         f1_no_threshold = f1_score(y_true, y_pred_no_threshold, average="macro")
         f1_threshold = f1_score(y_true, y_pred_threshold, average="macro")
 
-        # Create subplot figure
         fig = make_subplots(
             rows=1,
             cols=2,
@@ -381,7 +374,6 @@ class ClassificationPlots(BasePlots):
             col=2,
         )
 
-        # Apply layout and styling
         self.apply_default_layout(fig, title, width, height, "", "")
         self._add_axis_annotations(fig, font_size)
 
@@ -444,18 +436,16 @@ class ClassificationPlots(BasePlots):
             pd.DataFrame: Prepared data for plotting.
         """
         true_class_indices = np.where(y_true == class_name)[0]
-        wide_x_list = [
-            str(class_name)
-            for _ in range(len(true_class_indices))
-            for class_name in labels
-        ]
+        wide_x_list = [str(class_label) for class_label in labels] * len(
+            true_class_indices
+        )
         wide_prob_list = probabilities[true_class_indices].flatten()
 
         return pd.DataFrame({"Y": wide_x_list, "Pred_Proba": wide_prob_list})
 
     def plot_probabilities_per_class(
         self,
-        y_true: np.ndarray | pd.Series | list,
+        y_true: np.ndarray | pd.Series | list[object],
         probabilities: np.ndarray,
         id2label: dict[int, str],
         cutoffs: float | np.ndarray | None = None,
@@ -476,7 +466,8 @@ class ClassificationPlots(BasePlots):
             y_true (np.ndarray | pd.Series | list): True labels.
             probabilities (np.ndarray): Predicted probabilities (n_samples, n_classes).
             id2label (dict[int, str]): Mapping from class indices to labels.
-            cutoffs (float | np.ndarray | None, optional): Threshold values for each class. Defaults to None.
+            cutoffs (float | np.ndarray | None, optional): Threshold values for each class.
+            Defaults to None.
             plot_title (str, optional): Custom plot title. Defaults to "".
             width (int, optional): Plot width in pixels. Defaults to 1600.
             height (int, optional): Plot height in pixels. Defaults to 800.
@@ -488,7 +479,7 @@ class ClassificationPlots(BasePlots):
             jitter (float, optional): Jitter amount for strip plot. Defaults to 0.9.
             font_size (int, optional): Font size for text elements. Defaults to 22.
         """
-        # Convert inputs to numpy arrays for consistent processing
+
         y_true = np.array(y_true)
         probabilities = np.array(probabilities)
         if probabilities.ndim == 1:
@@ -497,13 +488,12 @@ class ClassificationPlots(BasePlots):
 
         if n_classes != len(id2label):
             raise ValueError(
-                f"Number of classes in probabilities ({n_classes}) does not match length of id2label ({len(id2label)})"
+                "Number of classes in probabilities must match length of id2label."
             )
 
-        # Handle cutoffs
         if cutoffs is None:
             cutoffs = np.full(n_classes, 0.5)
-        elif isinstance(cutoffs, float) or isinstance(cutoffs, int):
+        elif isinstance(cutoffs, (float, int)):
             cutoffs = np.full(n_classes, float(cutoffs))
         elif isinstance(cutoffs, np.ndarray):
             if cutoffs.shape == ():
@@ -522,7 +512,6 @@ class ClassificationPlots(BasePlots):
                 y_true, probabilities, id2label.values(), class_name
             )
 
-            # Create strip plot
             fig = px.strip(
                 df_temp,
                 y="Y",
@@ -534,25 +523,24 @@ class ClassificationPlots(BasePlots):
                 labels={"Y": yaxis_title, "Pred_Proba": xaxis_title},
             )
 
-            # Generate title
-            title = f"Probability distribution for true class: {class_name}"
+            title = (
+                f"{plot_title}<br>Probability distribution for true class: {class_name}"
+                if plot_title
+                else f"Probability distribution for true class: {class_name}"
+            )
 
-            # Apply layout and styling
             self.apply_default_layout(
                 fig, title, width, height, xaxis_title, yaxis_title
             )
 
-            # Update layout specifics
             fig.update_layout(
                 showlegend=False,
                 boxgap=0,
             )
 
-            # Update traces and axes
             fig.update_xaxes(range=[-0.01, 1.01])
             fig.update_traces(jitter=jitter, marker={"size": marker_size})
 
-            # Add threshold line
             if cutoffs is not None:
                 threshold = cutoffs[class_idx]
                 self._create_threshold_line(
@@ -613,10 +601,10 @@ class ClassificationPlots(BasePlots):
 
     def plot_probabilities_histogram(
         self,
-        y_true: np.ndarray | pd.Series | list,
+        y_true: np.ndarray | pd.Series | list[object],
         probabilities: np.ndarray,
         id2label: dict[int, str],
-        alpha: bool = True,
+        alpha: bool = False,
         opacity: float = 0.55,
         bins: int = 40,
         histnorm: str | None = "probability density",
@@ -635,7 +623,7 @@ class ClassificationPlots(BasePlots):
             id2label (dict[int, str]): Mapping from class indices to labels.
             alpha (bool, optional): Overlay mode selector. If ``True``, all classes are shown on a
                 single histogram with transparency; if ``False``, one histogram per class is shown.
-                Defaults to ``True``.
+                Defaults to ``False``.
             opacity (float, optional): Opacity used for histogram bars. Defaults to 0.55.
             bins (int, optional): Number of histogram bins. Defaults to 40.
             histnorm (str | None, optional): Histogram normalization mode passed to plotly.
@@ -648,7 +636,8 @@ class ClassificationPlots(BasePlots):
             font_size (int, optional): Font size for text elements. Defaults to 22.
 
         Raises:
-            ValueError: If class dimensions mismatch, ``opacity`` is out of bounds, or ``bins`` is invalid.
+            ValueError: If class dimensions mismatch, ``opacity`` is out of
+                bounds, or ``bins`` is invalid.
             TypeError: If ``alpha`` is not a bool.
         """
         y_true = np.array(y_true)
@@ -659,7 +648,7 @@ class ClassificationPlots(BasePlots):
 
         if n_classes != len(id2label):
             raise ValueError(
-                f"Number of classes in probabilities ({n_classes}) does not match length of id2label ({len(id2label)})"
+                "Number of classes in probabilities must match length of id2label."
             )
         if not isinstance(alpha, bool):
             raise TypeError("alpha must be bool")
@@ -742,7 +731,7 @@ class ClassificationPlots(BasePlots):
             fig.show("png", width=width, height=height)
 
     def _compute_binary_roc(
-        self, y_true: np.ndarray, probabilities: np.ndarray, ids: list[str]
+        self, y_true: np.ndarray, probabilities: np.ndarray, ids: list[int]
     ) -> tuple[np.ndarray, np.ndarray, float]:
         """Computes ROC curve for binary classification.
 
@@ -765,7 +754,7 @@ class ClassificationPlots(BasePlots):
         return fpr, tpr, roc_auc
 
     def _compute_multiclass_roc(
-        self, y_true: np.ndarray, probabilities: np.ndarray, ids: list[str]
+        self, y_true: np.ndarray, probabilities: np.ndarray, ids: list[int]
     ) -> tuple[list[np.ndarray], list[np.ndarray], list[float]]:
         """Computes ROC curves for multiclass classification.
 
@@ -775,7 +764,8 @@ class ClassificationPlots(BasePlots):
             ids (list[str]): Class labels.
 
         Returns:
-            tuple[list[np.ndarray], list[np.ndarray], list[float]]: Lists of FPR, TPR, and AUC scores for each class.
+            tuple[list[np.ndarray], list[np.ndarray], list[float]]: Lists of FPR,
+                TPR, and AUC scores for each class.
         """
         y_true_bin = label_binarize(y_true, classes=ids)
         n_classes = len(ids)
@@ -792,7 +782,7 @@ class ClassificationPlots(BasePlots):
         return fpr_list, tpr_list, roc_auc_list
 
     def _compute_binary_pr(
-        self, y_true: np.ndarray, probabilities: np.ndarray, ids: list[str]
+        self, y_true: np.ndarray, probabilities: np.ndarray, ids: list[int]
     ) -> tuple[np.ndarray, np.ndarray, float]:
         """Computes Precision-Recall curve for binary classification.
 
@@ -815,7 +805,7 @@ class ClassificationPlots(BasePlots):
         return precision, recall, avg_precision
 
     def _compute_multiclass_pr(
-        self, y_true: np.ndarray, probabilities: np.ndarray, ids: list[str]
+        self, y_true: np.ndarray, probabilities: np.ndarray, ids: list[int]
     ) -> tuple[list[np.ndarray], list[np.ndarray], list[float]]:
         """Computes Precision-Recall curves for multiclass classification.
 
@@ -825,7 +815,8 @@ class ClassificationPlots(BasePlots):
             ids (list[str]): Class labels.
 
         Returns:
-            tuple[list[np.ndarray], list[np.ndarray], list[float]]: Lists of Precision, Recall, and Average Precision scores for each class.
+            tuple[list[np.ndarray], list[np.ndarray], list[float]]: Lists of
+                Precision, Recall, and Average Precision scores for each class.
         """
         y_true_bin = label_binarize(y_true, classes=ids)
         n_classes = len(ids)
@@ -873,7 +864,7 @@ class ClassificationPlots(BasePlots):
 
     def plot_roc_auc(
         self,
-        y_true: np.ndarray | pd.Series | list,
+        y_true: np.ndarray | pd.Series | list[object],
         probabilities: np.ndarray,
         id2label: dict[int, str],
         plot_title: str = "",
@@ -890,7 +881,8 @@ class ClassificationPlots(BasePlots):
 
         Args:
             y_true (np.ndarray | pd.Series | list): True labels.
-            probabilities (np.ndarray): Predicted probabilities. For binary: (n_samples,) or (n_samples, 2).
+            probabilities (np.ndarray): Predicted probabilities. For
+                binary: (n_samples,) or (n_samples, 2).
                 For multiclass: (n_samples, n_classes).
             id2label (dict[int, str]): Mapping from class indices to labels.
             plot_title (str, optional): Custom plot title. Defaults to "".
@@ -898,19 +890,19 @@ class ClassificationPlots(BasePlots):
             height (int, optional): Plot height in pixels. Defaults to 1200.
             xaxis_title (str, optional): X-axis title. Defaults to "False Positive Rate".
             yaxis_title (str, optional): Y-axis title. Defaults to "True Positive Rate".
-            random_line_color (str, optional): Color for random classifier line. Defaults to "black".
+            random_line_color (str, optional): Color for random classifier line.
+            Defaults to "black".
             random_line_width (int, optional): Width for random classifier line. Defaults to 1.
             font_size (int, optional): Font size for text elements. Defaults to 22.
             line_width (int, optional): Width of ROC curve lines. Defaults to 2.
         """
-        # Convert inputs to numpy arrays for consistent processing
+
         y_true = np.array(y_true)
         ids = list(id2label.keys())
         labels = list(id2label.values())
         n_classes = len(ids)
         fig = go.Figure()
 
-        # Compute ROC curves based on number of classes
         if n_classes == 2:
             fpr, tpr, roc_auc = self._compute_binary_roc(y_true, probabilities, ids)
             fig.add_trace(
@@ -947,7 +939,6 @@ class ClassificationPlots(BasePlots):
             fig, random_line_color, random_line_width, show_legend=False
         )
 
-        # Generate title
         curve_text = "ROC Curves" if n_classes > 2 else "ROC Curve"
         title = (
             f"{plot_title}<br>(AUC = {avg_roc_auc:.3f})"
@@ -955,10 +946,8 @@ class ClassificationPlots(BasePlots):
             else f"{curve_text} (AUC = {avg_roc_auc:.3f})"
         )
 
-        # Apply layout and styling
         self.apply_default_layout(fig, title, width, height, xaxis_title, yaxis_title)
 
-        # Update layout specifics
         fig.update_layout(
             showlegend=True,
             legend=dict(
@@ -976,7 +965,6 @@ class ClassificationPlots(BasePlots):
             ),
         )
 
-        # Set axis ranges
         fig.update_xaxes(range=[-0.01, 1.01])
         fig.update_yaxes(range=[-0.01, 1.01])
 
@@ -984,7 +972,7 @@ class ClassificationPlots(BasePlots):
 
     def plot_precision_recall(
         self,
-        y_true: np.ndarray | pd.Series | list,
+        y_true: np.ndarray | pd.Series | list[object],
         probabilities: np.ndarray,
         id2label: dict[int, str],
         plot_title: str = "",
@@ -998,11 +986,13 @@ class ClassificationPlots(BasePlots):
         cutoff_line_color: str = "red",
         cutoff_line_width: int = 3,
     ) -> None:
-        """Plots Precision-Recall curves for multiclass or binary classification, with optional cutoff vlines.
+        """Plots Precision-Recall curves for multiclass or binary
+        classification, with optional cutoff vlines.
 
         Args:
             y_true (np.ndarray | pd.Series | list): True labels.
-            probabilities (np.ndarray): Predicted probabilities. For binary: (n_samples,) or (n_samples, 2).
+            probabilities (np.ndarray): Predicted probabilities. For binary:
+                (n_samples,) or (n_samples, 2).
                 For multiclass: (n_samples, n_classes).
             id2label (dict[int, str]): Mapping from class indices to labels.
             plot_title (str, optional): Custom plot title. Defaults to "".
@@ -1012,11 +1002,12 @@ class ClassificationPlots(BasePlots):
             yaxis_title (str, optional): Y-axis title. Defaults to "Precision".
             font_size (int, optional): Font size for text elements. Defaults to 22.
             line_width (int, optional): Width of PR curve lines. Defaults to 2.
-            cutoffs (float | np.ndarray | None, optional): Threshold values for each class. If provided, draws vlines.
+            cutoffs (float | np.ndarray | None, optional): Threshold values for each class. If
+            provided, draws vlines.
             cutoff_line_color (str, optional): Color for cutoff vlines. Defaults to "red".
             cutoff_line_width (int, optional): Width for cutoff vlines. Defaults to 3.
         """
-        # Convert inputs to numpy arrays for consistent processing
+
         y_true = np.array(y_true)
         probabilities = np.array(probabilities)
         if probabilities.ndim == 1:
@@ -1025,19 +1016,19 @@ class ClassificationPlots(BasePlots):
 
         if n_classes != len(id2label):
             raise ValueError(
-                f"Number of classes in probabilities ({n_classes}) does not match length of id2label ({len(id2label)})"
+                "Number of classes in probabilities must match length of id2label."
             )
 
-        # Handle cutoffs
         if cutoffs is not None:
-            if isinstance(cutoffs, float) or isinstance(cutoffs, int):
+            if isinstance(cutoffs, (float, int)):
                 cutoffs = np.full(n_classes, float(cutoffs))
             elif isinstance(cutoffs, np.ndarray):
                 if cutoffs.shape == ():
                     cutoffs = np.full(n_classes, float(cutoffs))
                 elif cutoffs.shape[0] != n_classes:
                     raise ValueError(
-                        f"cutoffs shape {cutoffs.shape} does not match number of classes {n_classes}"
+                        "cutoffs shape "
+                        f"{cutoffs.shape} does not match number of classes {n_classes}"
                     )
             else:
                 raise TypeError("cutoffs must be float, int, or np.ndarray")
@@ -1046,7 +1037,6 @@ class ClassificationPlots(BasePlots):
         labels = list(id2label.values())
         fig = go.Figure()
 
-        # Compute PR curves based on number of classes
         if n_classes == 2:
             precision, recall, avg_precision = self._compute_binary_pr(
                 y_true, probabilities, ids
@@ -1062,7 +1052,6 @@ class ClassificationPlots(BasePlots):
             )
             avg_ap = avg_precision
 
-            # Add cutoff vline if provided
             if cutoffs is not None:
                 cutoff = cutoffs[1]
                 fig.add_vline(
@@ -1098,7 +1087,7 @@ class ClassificationPlots(BasePlots):
                         ),
                     )
                 )
-                # Add cutoff vline for each class if provided
+
                 if cutoffs is not None:
                     cutoff = cutoffs[i]
                     fig.add_vline(
@@ -1114,7 +1103,6 @@ class ClassificationPlots(BasePlots):
 
             avg_ap = np.mean(avg_precision_list)
 
-        # Generate title
         curve_text = (
             "Precision-Recall Curves" if n_classes > 2 else "Precision-Recall Curve"
         )
@@ -1124,10 +1112,8 @@ class ClassificationPlots(BasePlots):
             else f"{curve_text} (Average Precision = {avg_ap:.3f})"
         )
 
-        # Apply layout and styling
         self.apply_default_layout(fig, title, width, height, xaxis_title, yaxis_title)
 
-        # Update layout specifics
         fig.update_layout(
             showlegend=True,
             legend=dict(
@@ -1145,7 +1131,6 @@ class ClassificationPlots(BasePlots):
             ),
         )
 
-        # Set axis ranges
         fig.update_xaxes(range=[-0.01, 1.01])
         fig.update_yaxes(range=[-0.01, 1.01])
 
@@ -1153,7 +1138,7 @@ class ClassificationPlots(BasePlots):
 
     def plot_precision_vs_recall_curve(
         self,
-        y_true: np.ndarray | pd.Series | list,
+        y_true: np.ndarray | pd.Series | list[object],
         probabilities: np.ndarray,
         id2label: dict[int, str],
         plot_title: str = "",
@@ -1173,7 +1158,8 @@ class ClassificationPlots(BasePlots):
 
         Args:
             y_true (np.ndarray | pd.Series | list): True labels.
-            probabilities (np.ndarray): Predicted probabilities. For binary: (n_samples,) or (n_samples, 2).
+            probabilities (np.ndarray): Predicted probabilities. For binary:
+                (n_samples,) or (n_samples, 2).
                 For multiclass: (n_samples, n_classes).
             id2label (dict[int, str]): Mapping from class indices to labels.
             plot_title (str, optional): Custom plot title. Defaults to "".
@@ -1183,7 +1169,8 @@ class ClassificationPlots(BasePlots):
             yaxis_title (str, optional): Y-axis title. Defaults to "Score".
             font_size (int, optional): Font size for text elements. Defaults to 22.
             line_width (int, optional): Width of curve lines. Defaults to 5.
-            cutoffs (float | np.ndarray | None, optional): Threshold values to mark on curves. Defaults to None.
+            cutoffs (float | np.ndarray | None, optional): Threshold values to mark on curves.
+            Defaults to None.
             cutoff_marker_size (int, optional): Size of cutoff markers. Defaults to 15.
             cutoff_marker_color (str, optional): Color for cutoff markers. Defaults to "red".
             marker_interval (float, optional): Interval for threshold markers. Defaults to 0.1.
@@ -1197,18 +1184,19 @@ class ClassificationPlots(BasePlots):
 
         if n_classes != len(id2label):
             raise ValueError(
-                f"Number of classes in probabilities ({n_classes}) does not match length of id2label ({len(id2label)})"
+                "Number of classes in probabilities must match length of id2label."
             )
 
         if cutoffs is not None:
-            if isinstance(cutoffs, float) or isinstance(cutoffs, int):
+            if isinstance(cutoffs, (float, int)):
                 cutoffs = np.full(n_classes, float(cutoffs))
             elif isinstance(cutoffs, np.ndarray):
                 if cutoffs.shape == ():
                     cutoffs = np.full(n_classes, float(cutoffs))
                 elif cutoffs.shape[0] != n_classes:
                     raise ValueError(
-                        f"cutoffs shape {cutoffs.shape} does not match number of classes {n_classes}"
+                        "cutoffs shape "
+                        f"{cutoffs.shape} does not match number of classes {n_classes}"
                     )
             else:
                 raise TypeError("cutoffs must be float, int, or np.ndarray")
@@ -1457,10 +1445,12 @@ class ClassificationPlots(BasePlots):
             y_true (np.ndarray): True labels.
             probabilities (np.ndarray): Predicted probabilities (n_samples, n_classes).
             id2label (dict[int, str]): Mapping from class indices to labels.
-            thresholds (np.ndarray, optional): Threshold values to evaluate. Defaults to np.linspace(0, 1, 101).
+            thresholds (np.ndarray, optional): Threshold values to evaluate.
+            Defaults to np.linspace(0, 1, 101).
 
         Returns:
-            dict[str, tuple[np.ndarray, np.ndarray]]: Dictionary mapping class names to (thresholds, f1_scores) tuples.
+            dict[str, tuple[np.ndarray, np.ndarray]]: Dictionary mapping class names to (thresholds,
+            f1_scores) tuples.
         """
         n_classes = probabilities.shape[1]
         ids = list(id2label.keys())
@@ -1507,10 +1497,10 @@ class ClassificationPlots(BasePlots):
 
     def plot_f1_score_vs_threshold(
         self,
-        y_true_1: np.ndarray | pd.Series | list,
+        y_true_1: np.ndarray | pd.Series | list[object],
         probabilities_1: np.ndarray,
         id2label: dict[int, str],
-        y_true_2: np.ndarray | pd.Series | list | None = None,
+        y_true_2: np.ndarray | pd.Series | list[object] | None = None,
         probabilities_2: np.ndarray | None = None,
         subset_1_name: str = "Subset 1",
         subset_2_name: str = "Subset 2",
@@ -1529,13 +1519,18 @@ class ClassificationPlots(BasePlots):
 
         Args:
             y_true_1 (np.ndarray | pd.Series | list): True labels for first subset.
-            probabilities_1 (np.ndarray): First set of predicted probabilities (n_samples, n_classes).
+            probabilities_1 (np.ndarray): First set of predicted probabilities
+                (n_samples, n_classes).
             id2label (dict[int, str]): Mapping from class indices to labels.
-            y_true_2 (np.ndarray | pd.Series | list | None, optional): True labels for second subset. Defaults to None.
-            probabilities_2 (np.ndarray | None, optional): Second set of predicted probabilities. Defaults to None.
+            y_true_2 (np.ndarray | pd.Series | list | None, optional): True labels for second
+            subset. 
+            Defaults to None.
+            probabilities_2 (np.ndarray | None, optional): Second set of predicted probabilities. 
+            Defaults to None.
             subset_1_name (str, optional): Name for first subset. Defaults to "Subset 1".
             subset_2_name (str, optional): Name for second subset. Defaults to "Subset 2".
-            thresholds (np.ndarray, optional): Threshold values to evaluate. Defaults to np.linspace(0, 1, 101).
+            thresholds (np.ndarray, optional): Threshold values to evaluate.
+            Defaults to np.linspace(0, 1, 101).
             plot_title (str, optional): Custom plot title. Defaults to "".
             width (int, optional): Plot width in pixels. Defaults to 1200.
             height (int, optional): Plot height in pixels. Defaults to 800.
@@ -1543,7 +1538,8 @@ class ClassificationPlots(BasePlots):
             yaxis_title (str, optional): Y-axis title. Defaults to "F1 Score".
             font_size (int, optional): Font size for text elements. Defaults to 22.
             line_width (int, optional): Width of curve lines. Defaults to 3.
-            optimal_threshold_marker (bool, optional): Whether to mark optimal thresholds. Defaults to True.
+            optimal_threshold_marker (bool, optional): Whether to mark optimal thresholds.
+            Defaults to True.
             marker_size (int, optional): Size of optimal threshold markers. Defaults to 12.
         """
         y_true_1 = np.array(y_true_1)
@@ -1573,7 +1569,7 @@ class ClassificationPlots(BasePlots):
 
         if n_classes != len(id2label):
             raise ValueError(
-                f"Number of classes in probabilities ({n_classes}) does not match length of id2label ({len(id2label)})"
+                "Number of classes in probabilities must match length of id2label."
             )
 
         labels = list(id2label.values())
@@ -1687,12 +1683,6 @@ class ClassificationPlots(BasePlots):
 
 
 if __name__ == "__main__":
-    import numpy as np
-    from sklearn.datasets import make_classification
-    from sklearn.ensemble import RandomForestClassifier
-    from sklearn.model_selection import train_test_split
-
-    # Generate sample data
     X, y = make_classification(
         n_samples=1000,
         n_features=10,
@@ -1705,18 +1695,14 @@ if __name__ == "__main__":
         X, y, test_size=0.3, random_state=42
     )
 
-    # Train a classifier
     clf = RandomForestClassifier(random_state=42)
     clf.fit(X_train, y_train)
     probabilities = clf.predict_proba(X_test)
 
-    # Create label mapping
     id2label = {0: "Class_0", 1: "Class_1", 2: "Class_2"}
 
-    # Initialize ClassificationPlots
     plotter = ClassificationPlots()
 
-    # Create confusion matrix
     plotter.plot_confusion_matrix(
         y_true=y_test,
         probabilities=probabilities,
@@ -1724,8 +1710,7 @@ if __name__ == "__main__":
         plot_title="Sample Confusion Matrix",
     )
 
-    # Create subplot confusion matrices
-    cutoffs = np.array([0.5, 0.5, 0.5])  # Example cutoffs for each class
+    cutoffs = np.array([0.5, 0.5, 0.5])
     plotter.subplot_multilabel_conf_matrix(
         y_true=y_test,
         probabilities=probabilities,
@@ -1734,7 +1719,6 @@ if __name__ == "__main__":
         plot_title="Sample Subplot Confusion Matrices",
     )
 
-    # Create probability distributions per class
     plotter.plot_probabilities_per_class(
         y_true=y_test,
         probabilities=probabilities,
@@ -1743,7 +1727,6 @@ if __name__ == "__main__":
         plot_title="Sample Probability Distributions per Class",
     )
 
-    # Create ROC curve
     plotter.plot_roc_auc(
         y_true=y_test,
         probabilities=probabilities,
@@ -1751,7 +1734,6 @@ if __name__ == "__main__":
         plot_title="Sample ROC Curves",
     )
 
-    # Create Precision-Recall curve
     plotter.plot_precision_recall(
         y_true=y_test,
         probabilities=probabilities,
@@ -1759,7 +1741,6 @@ if __name__ == "__main__":
         plot_title="Sample Precision-Recall Curves",
     )
 
-    # Create Precision vs Recall curve
     plotter.plot_precision_vs_recall_curve(
         y_true=y_test,
         probabilities=probabilities,
