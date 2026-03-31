@@ -1,6 +1,11 @@
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+from sklearn.datasets import make_regression
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+
 from ..base_plots import BasePlots
 
 
@@ -24,8 +29,8 @@ class RegressionPlots(BasePlots):
 
     def _validate_regression_inputs(
         self,
-        y_true: np.ndarray | pd.Series | list,
-        y_pred: np.ndarray | pd.Series | list,
+        y_true: np.ndarray | pd.Series | list[object],
+        y_pred: np.ndarray | pd.Series | list[object],
     ) -> tuple[np.ndarray, np.ndarray]:
         """Validates and converts regression inputs to NumPy arrays.
 
@@ -68,7 +73,8 @@ class RegressionPlots(BasePlots):
         """
         if metric_name.upper() not in self.metrics_dict:
             raise ValueError(
-                f"Unsupported metric: {metric_name}. Available metrics: {list(self.metrics_dict.keys())}"
+                f"Unsupported metric: {metric_name}. Available metrics: "
+                f"{list(self.metrics_dict.keys())}"
             )
 
         return self.metrics_dict[metric_name.upper()](y_true, y_pred)
@@ -128,7 +134,8 @@ class RegressionPlots(BasePlots):
 
         Args:
             fig (go.Figure): The plotly figure to add the line to.
-            line_type (str, optional): Type of line ("horizontal", "vertical", "diagonal"). Defaults to "horizontal".
+            line_type (str, optional): Type of line ("horizontal", "vertical", "diagonal"). 
+            Defaults to "horizontal".
             value (float, optional): Value for horizontal/vertical lines. Defaults to 0.
             color (str | None, optional): Line color. Defaults to None.
             width (int, optional): Line width. Defaults to 2.
@@ -171,8 +178,8 @@ class RegressionPlots(BasePlots):
 
     def homoscedacity_plot(
         self,
-        y_true: np.ndarray | pd.Series | list,
-        y_pred: np.ndarray | pd.Series | list,
+        y_true: np.ndarray | pd.Series | list[object],
+        y_pred: np.ndarray | pd.Series | list[object],
         plot_title: str = "",
         width: int = 1000,
         height: int = 1000,
@@ -256,8 +263,8 @@ class RegressionPlots(BasePlots):
 
     def true_vs_fitted_plot(
         self,
-        y_true: np.ndarray | pd.Series | list,
-        y_pred: np.ndarray | pd.Series | list,
+        y_true: np.ndarray | pd.Series | list[object],
+        y_pred: np.ndarray | pd.Series | list[object],
         plot_title: str = "",
         width: int = 1000,
         height: int = 1000,
@@ -291,13 +298,15 @@ class RegressionPlots(BasePlots):
             scatter_color (str | None, optional): Color for scatter points. Defaults to None.
             scatter_size (int, optional): Size of scatter points. Defaults to 8.
             scatter_opacity (float, optional): Opacity of scatter points. Defaults to 0.6.
-            show_diagonal (bool, optional): Whether to show perfect prediction line. Defaults to True.
+            show_diagonal (bool, optional): Whether to show perfect
+            prediction line. Defaults to True.
             diagonal_color (str | None, optional): Color for diagonal line. Defaults to None.
             diagonal_width (int, optional): Width of diagonal line. Defaults to 3.
             show_trendline (bool, optional): Whether to show trendline. Defaults to False.
             trendline_color (str | None, optional): Color for trendline. Defaults to None.
             trendline_width (int, optional): Width of trendline. Defaults to 4.
-            axis_buffer_percent (float, optional): Buffer percentage for axis ranges. Defaults to 2.0.
+            axis_buffer_percent (float, optional): Buffer percentage for
+            axis ranges. Defaults to 2.0.
         """
         y_true, y_pred = self._validate_regression_inputs(y_true, y_pred)
 
@@ -375,8 +384,8 @@ class RegressionPlots(BasePlots):
 
     def residual_distribution_plot(
         self,
-        y_true: np.ndarray | pd.Series | list,
-        y_pred: np.ndarray | pd.Series | list,
+        y_true: np.ndarray | pd.Series | list[object],
+        y_pred: np.ndarray | pd.Series | list[object],
         plot_title: str = "",
         width: int = 1200,
         height: int = 800,
@@ -487,10 +496,6 @@ class RegressionPlots(BasePlots):
 
 
 if __name__ == "__main__":
-    from sklearn.datasets import make_regression
-    from sklearn.model_selection import train_test_split
-    from sklearn.linear_model import LinearRegression
-
     np.random.seed(42)
     X, y = make_regression(n_samples=200, n_features=3, noise=10, random_state=42)
     X_train, X_test, y_train, y_test = train_test_split(
