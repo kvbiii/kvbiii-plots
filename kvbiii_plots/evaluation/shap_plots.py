@@ -1,13 +1,20 @@
-import numpy as np
-import pandas as pd
-import shap
-import plotly.graph_objects as go
-import plotly.express as px
+
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib import cm, colors as mcolors
+from matplotlib.axes import Axes
+from matplotlib import cm
+from matplotlib import colors as mcolors
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import shap
+from sklearn.datasets import make_classification
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+
 from ..base_plots import BasePlots
 
 
@@ -18,6 +25,39 @@ class SHAPPlots(BasePlots):
     for visualizing SHAP values including feature importance, beeswarm plots,
     categorical analysis, and force plots for model interpretability.
     """
+
+    def _shorten_feature_names(
+        self, feature_names: np.ndarray | list[str], max_length: int = 15
+    ) -> list[str]:
+        """Shortens feature names with collision handling.
+
+        Args:
+            feature_names (np.ndarray | list[str]): Original feature names.
+            max_length (int, optional): Maximum length for shortened names. Defaults to 15.
+
+        Returns:
+            list[str]: List of shortened feature names.
+        """
+        shortened_names = []
+        seen_names = {}
+
+        for name in feature_names:
+            name_str = str(name)
+            short_name = (
+                name_str
+                if len(name_str) <= max_length
+                else f"{name_str[:max_length-2]}.."
+            )
+
+            if short_name in seen_names:
+                seen_names[short_name] += 1
+                short_name = f"{short_name[:-2]}_{seen_names[short_name]}"
+            else:
+                seen_names[short_name] = 0
+
+            shortened_names.append(short_name)
+
+        return shortened_names
 
     def _compute_shap_importance(
         self, shap_values: shap.Explanation, top_n: int = 20, class_id: int = 0
@@ -30,7 +70,8 @@ class SHAPPlots(BasePlots):
             class_id (int, optional): Class index for classification tasks. Defaults to 0.
 
         Returns:
-            tuple[np.ndarray, np.ndarray, np.ndarray]: Top SHAP values, feature names, and importance scores.
+            tuple[np.ndarray, np.ndarray, np.ndarray]: Top SHAP values,
+            feature names, and importance scores.
         """
         values = shap_values.values
         feature_names = shap_values.feature_names or [
@@ -58,7 +99,8 @@ class SHAPPlots(BasePlots):
         Args:
             n_features (int): Number of features to color.
             color_scale (str, optional): Plotly color scale name. Defaults to "rainbow".
-            use_qualitative (bool | None, optional): Whether to use qualitative colors. Defaults to None.
+            use_qualitative (bool | None, optional): Whether to use qualitative colors.
+            Defaults to None.
 
         Returns:
             list[str]: List of color values.
@@ -132,7 +174,7 @@ class SHAPPlots(BasePlots):
 
     def _create_custom_colorbar(
         self,
-        ax,
+        ax: Axes,
         colormap: str = "coolwarm",
         label: str = "Feature value",
         high_label: str = "High",
@@ -144,7 +186,7 @@ class SHAPPlots(BasePlots):
         """Creates a styled colorbar for SHAP plots.
 
         Args:
-            ax: Matplotlib axes object.
+            ax (Axes): Matplotlib axes object.
             colormap (str, optional): Matplotlib colormap name. Defaults to "coolwarm".
             label (str, optional): Colorbar label. Defaults to "Feature value".
             high_label (str, optional): Label for high values. Defaults to "High".
@@ -207,11 +249,13 @@ class SHAPPlots(BasePlots):
         font_size: int = 26,
         bar_line_color: str = "black",
         bar_line_width: int = 1,
+        max_feature_name_length: int = 15,
     ) -> None:
         """Creates a bar plot showing SHAP feature importance.
 
         Args:
-            shap_values (shap.Explanation): SHAP explanation object containing values and feature names.
+            shap_values (shap.Explanation): SHAP explanation object
+            containing values and feature names.
             top_n (int, optional): Maximum number of features to display. Defaults to 20.
             class_id (int, optional): Class index for classification tasks. Defaults to 0.
             plot_title (str, optional): Title for the plot. Defaults to "".
@@ -219,16 +263,24 @@ class SHAPPlots(BasePlots):
             height (int, optional): Height of the plot in pixels. Defaults to 800.
             xaxis_title (str, optional): Title for the x-axis. Defaults to "Features".
             yaxis_title (str, optional): Title for the y-axis. Defaults to "Mean(|SHAP value|)".
-            color_scale (str, optional): Plotly color scale name for continuous coloring. Defaults to "rainbow".
-            use_qualitative_colors (bool | None, optional): Whether to use qualitative colors. Defaults to None.
+            color_scale (str, optional): Plotly color scale name for continuous coloring.
+            Defaults to "rainbow".
+            use_qualitative_colors (bool | None, optional): Whether to use
+            qualitative colors. Defaults to None.
             show_values (bool, optional): Whether to display values on bars. Defaults to True.
             value_precision (int, optional): Decimal precision for displayed values. Defaults to 3.
             font_size (int, optional): Font size for text elements. Defaults to 26.
             bar_line_color (str, optional): Color of bar outlines. Defaults to "black".
             bar_line_width (int, optional): Width of bar outlines. Defaults to 1.
+            max_feature_name_length (int, optional): Maximum length for feature names.
+            Defaults to 15.
         """
         _, top_features, top_shap_mean_values = self._compute_shap_importance(
             shap_values, top_n, class_id=class_id
+        )
+
+        shortened_features = self._shorten_feature_names(
+            top_features, max_feature_name_length
         )
 
         colors = self._get_dynamic_colors(
@@ -241,7 +293,7 @@ class SHAPPlots(BasePlots):
         fig = go.Figure()
         fig.add_trace(
             go.Bar(
-                x=top_features,
+                x=shortened_features,
                 y=top_shap_mean_values,
                 marker=dict(
                     line=dict(color=bar_line_color, width=bar_line_width), color=colors
@@ -283,14 +335,17 @@ class SHAPPlots(BasePlots):
         font_name: str = "Times New Roman",
         font_color: str = "Black",
         show_colorbar: bool = True,
+        max_feature_name_length: int = 15,
     ) -> None:
         """Plots a customized SHAP beeswarm plot for top features with styled colorbar and labels.
 
         Args:
-            shap_values (shap.Explanation): SHAP explanation object containing values and feature names.
+            shap_values (shap.Explanation): SHAP explanation object
+            containing values and feature names.
             top_n (int, optional): Number of top features to display. Defaults to 15.
             class_id (int, optional): Class index for classification tasks. Defaults to 0.
-            plot_size (tuple[float, float], optional): Figure size as (width, height). Defaults to (20, 15).
+            plot_size (tuple[float, float], optional): Figure size as (width, height).
+            Defaults to (20, 15).
             xlabel (str, optional): X-axis label. Defaults to "SHAP value".
             ylabel (str, optional): Y-axis label. Defaults to "".
             plot_title (str, optional): Title for the plot. Defaults to "".
@@ -302,10 +357,17 @@ class SHAPPlots(BasePlots):
             font_name (str, optional): Font family name. Defaults to "Times New Roman".
             font_color (str, optional): Font color. Defaults to "Black".
             show_colorbar (bool, optional): Whether to show the colorbar. Defaults to True.
+            max_feature_name_length (int, optional): Maximum length for feature names.
+            Defaults to 15.
         """
-        top_shap_values, _, _ = self._compute_shap_importance(
+        top_shap_values, top_features, _ = self._compute_shap_importance(
             shap_values, top_n, class_id=class_id
         )
+
+        shortened_features = self._shorten_feature_names(
+            top_features, max_feature_name_length
+        )
+        top_shap_values.feature_names = shortened_features
 
         shap.plots.beeswarm(
             top_shap_values,
@@ -365,6 +427,7 @@ class SHAPPlots(BasePlots):
         box_line_color: str = "black",
         box_line_width: int = 1,
         exclude_empty: bool = True,
+        max_category_name_length: int = 15,
     ) -> None:
         """Plots a box plot for SHAP values of a categorical feature.
 
@@ -376,14 +439,18 @@ class SHAPPlots(BasePlots):
             height (int, optional): Height of the plot in pixels. Defaults to 1200.
             xaxis_title (str, optional): Title for the x-axis. Defaults to "".
             yaxis_title (str, optional): Title for the y-axis. Defaults to "SHAP value".
-            color_scale (list[str] | None, optional): Custom color scale for categories. Defaults to None.
+            color_scale (list[str] | None, optional): Custom color scale for categories.
+            Defaults to None.
             font_size (int, optional): Font size for text elements. Defaults to 26.
             sort_categories (bool, optional): Whether to sort categories. Defaults to True.
-            sort_by (str, optional): Sort method - "frequency" or "shap_median". Defaults to "frequency".
+            sort_by (str, optional): Sort method - "frequency" or "shap_median".
+            Defaults to "frequency".
             show_legend (bool, optional): Whether to show legend. Defaults to False.
             box_line_color (str, optional): Color of box plot outlines. Defaults to "black".
             box_line_width (int, optional): Width of box plot outlines. Defaults to 1.
             exclude_empty (bool, optional): Whether to exclude empty categories. Defaults to True.
+            max_category_name_length (int, optional): Maximum length for category names.
+            Defaults to 15.
         """
         if color_scale is None:
             color_scale = px.colors.sequential.Rainbow
@@ -406,9 +473,12 @@ class SHAPPlots(BasePlots):
                 sort_indices = np.argsort(medians)[::-1]
                 labels = labels[sort_indices]
 
+        shortened_labels = self._shorten_feature_names(labels, max_category_name_length)
+
         norm = plt.Normalize(0, len(labels))
         colors = [
-            color_scale[int(norm(i) * len(color_scale) - 1)] for i in range(len(labels))
+            color_scale[int(norm(index) * len(color_scale) - 1)]
+            for index, _ in enumerate(labels)
         ]
 
         if not xaxis_title:
@@ -418,7 +488,9 @@ class SHAPPlots(BasePlots):
 
         fig = go.Figure()
 
-        for color_idx, category in enumerate(labels):
+        for color_idx, (category, short_name) in enumerate(
+            zip(labels, shortened_labels)
+        ):
             indices = np.where(scatter.data == category)[0]
             grouped_data = scatter.values[indices]
             grouped_data = grouped_data[~np.isnan(grouped_data)]
@@ -429,7 +501,7 @@ class SHAPPlots(BasePlots):
             fig.add_trace(
                 go.Box(
                     y=grouped_data,
-                    name=str(category),
+                    name=short_name,
                     marker=dict(
                         color=colors[color_idx],
                         line=dict(color=box_line_color, width=box_line_width),
@@ -485,7 +557,8 @@ class SHAPPlots(BasePlots):
             show_colorbar (bool, optional): Whether to show colorbar. Defaults to True.
             colorbar_thickness (int, optional): Thickness of colorbar. Defaults to 30.
             font_size (int, optional): Font size for text elements. Defaults to 26.
-            axis_margin_percent (float, optional): Percentage margin for axis ranges. Defaults to 1.0.
+            axis_margin_percent (float, optional): Percentage margin for axis ranges.
+            Defaults to 1.0.
             add_trendline (bool, optional): Whether to add a trendline. Defaults to False.
             trendline_color (str, optional): Color of trendline. Defaults to "red".
             trendline_width (int, optional): Width of trendline. Defaults to 2.
@@ -568,19 +641,24 @@ class SHAPPlots(BasePlots):
         """Visualizes SHAP force plot for a given sample observation.
 
         Args:
-            observation_shap_values (shap.Explanation): SHAP Explanation object for a single observation.
-            contribution_threshold (float, optional): Threshold for feature contributions display. Defaults to 0.07.
-            figsize (tuple[float, float], optional): Figure size as (width, height). Defaults to (25, 5).
+            observation_shap_values (shap.Explanation): SHAP Explanation
+            object for a single observation.
+            contribution_threshold (float, optional): Threshold for feature contributions display. 
+            Defaults to 0.07.
+            figsize (tuple[float, float], optional): Figure size as (width, height).
+            Defaults to (25, 5).
             font_size (int, optional): Font size for axis labels and ticks. Defaults to 20.
-            font_name (str, optional): Font family name for text elements. Defaults to "Times New Roman".
+            font_name (str, optional): Font family name for text elements.
+            Defaults to "Times New Roman".
             font_color (str, optional): Color for text elements. Defaults to "Black".
             link (str, optional): Link function for SHAP force plot. Defaults to "identity".
-            ordering_keys (list[str] | None, optional): Custom ordering for features. Defaults to None.
+            ordering_keys (list[str] | None, optional): Custom ordering for features.
+            Defaults to None.
             text_rotation (float, optional): Rotation angle for text labels. Defaults to 0.
         """
         plt.close("all")
 
-        def safe_round(arr, decimals=4):
+        def safe_round(arr: np.ndarray, decimals: int = 4) -> np.ndarray:
             arr = np.array(arr)
             if np.issubdtype(arr.dtype, np.number):
                 return np.round(arr, decimals)
@@ -612,12 +690,6 @@ class SHAPPlots(BasePlots):
 
 
 if __name__ == "__main__":
-    import numpy as np
-    from sklearn.datasets import make_classification
-    from sklearn.model_selection import train_test_split
-    from sklearn.ensemble import RandomForestClassifier
-    import shap
-
     np.random.seed(42)
     X, y = make_classification(
         n_samples=1000,
