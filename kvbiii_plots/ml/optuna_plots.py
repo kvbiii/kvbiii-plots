@@ -1,7 +1,12 @@
+
 import numpy as np
 import optuna
-import plotly.graph_objects as go
 import plotly.express as px
+import plotly.graph_objects as go
+from sklearn.datasets import make_regression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import cross_val_score
+
 from ..base_plots import BasePlots
 
 
@@ -43,11 +48,15 @@ class OptunaPlots(BasePlots):
         """
         best_scores = []
         if direction == "maximize":
-            for i in range(len(values)):
-                best_scores.append(values[: i + 1].max())
+            running_best = -np.inf
+            for value in values:
+                running_best = max(running_best, value)
+                best_scores.append(running_best)
         else:
-            for i in range(len(values)):
-                best_scores.append(values[: i + 1].min())
+            running_best = np.inf
+            for value in values:
+                running_best = min(running_best, value)
+                best_scores.append(running_best)
         return np.array(best_scores)
 
     def plot_optuna_optimization_history(
@@ -73,8 +82,10 @@ class OptunaPlots(BasePlots):
 
         Args:
             study (optuna.study.Study): The Optuna study object.
-            plot_title (str, optional): Title for the plot. Defaults to "Optuna Optimization History".
-            direction (str, optional): Optimization direction ("minimize" or "maximize"). Defaults to "minimize".
+            plot_title (str, optional): Title for the plot. Defaults to
+            "Optuna Optimization History".
+            direction (str, optional): Optimization direction ("minimize"
+            or "maximize"). Defaults to "minimize".
             width (int, optional): Width of the plot in pixels. Defaults to 1200.
             height (int, optional): Height of the plot in pixels. Defaults to 800.
             xaxis_title (str, optional): Title for the x-axis. Defaults to "Trial Number".
@@ -91,7 +102,6 @@ class OptunaPlots(BasePlots):
         """
         trial_numbers, values = self._extract_trial_data(study)
 
-        # Handle empty study case
         if len(trial_numbers) == 0:
             fig = go.Figure()
             fig.update_layout(
@@ -166,19 +176,22 @@ class OptunaPlots(BasePlots):
 
         Args:
             study (optuna.study.Study): The Optuna study object.
-            plot_title (str, optional): Title for the plot. Defaults to "Optuna Parameter Importance".
+            plot_title (str, optional): Title for the plot.
+            Defaults to "Optuna Parameter Importance".
             width (int, optional): Width of the plot in pixels. Defaults to 1200.
             height (int, optional): Height of the plot in pixels. Defaults to 800.
             xaxis_title (str, optional): Title for the x-axis. Defaults to "Hyperparameter".
             yaxis_title (str, optional): Title for the y-axis. Defaults to "Importance".
             color_scale (str, optional): Plotly color scale name. Defaults to "rainbow".
-            use_qualitative_colors (bool | None, optional): Whether to use qualitative colors. Defaults to None.
+            use_qualitative_colors (bool | None, optional): Whether to use
+            qualitative colors. Defaults to None.
             show_values (bool, optional): Whether to display values on bars. Defaults to True.
             value_precision (int, optional): Decimal precision for displayed values. Defaults to 3.
             bar_line_color (str, optional): Color of bar outlines. Defaults to "black".
             bar_line_width (int, optional): Width of bar outlines. Defaults to 1.
             font_size (int, optional): Font size for text elements. Defaults to 20.
-            sort_descending (bool, optional): Whether to sort parameters by importance descending. Defaults to True.
+            sort_descending (bool, optional): Whether to sort parameters by
+            importance descending. Defaults to True.
         """
         try:
             importances = optuna.importance.get_param_importances(study)
@@ -247,10 +260,6 @@ class OptunaPlots(BasePlots):
 
 
 if __name__ == "__main__":
-    import numpy as np
-    from sklearn.ensemble import RandomForestRegressor
-    from sklearn.datasets import make_regression
-    from sklearn.model_selection import cross_val_score
 
     def objective(trial: optuna.Trial) -> float:
         """
