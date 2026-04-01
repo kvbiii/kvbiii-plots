@@ -7,3 +7,5 @@ pydantic_settings>=2.13.1
 scikit_learn>=1.8.0
 scipy>=1.17.1
 shap>=0.51.0
+kaleido>=1.2.0
+nbformat>=4.2.0
