@@ -1,16 +1,23 @@
+
+from typing import Any
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import dendrogram
 from scipy.stats import chi2
-from sklearn.neighbors import NearestNeighbors
+from sklearn.cluster import KMeans
 from sklearn.covariance import EmpiricalCovariance
+from sklearn.datasets import make_blobs, make_classification
+from sklearn.decomposition import PCA
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.ensemble import IsolationForest
-from sklearn.neighbors import LocalOutlierFactor
 from sklearn.metrics import roc_auc_score
-from ..base_plots import BasePlots
+from sklearn.model_selection import KFold
+from sklearn.neighbors import LocalOutlierFactor, NearestNeighbors
 
+from ..base_plots import BasePlots
 
 
 class OtherPlots(BasePlots):
@@ -20,54 +27,107 @@ class OtherPlots(BasePlots):
 
     def feature_importance_plot(
         self,
-        importances: dict | pd.DataFrame,
-        top_n: int = None,
+        importances: dict[str, float] | pd.DataFrame,
+        top_n: int | None = None,
         plot_title: str = "Feature Importances",
-        width: int = 800,
+        width: int = 1200,
         height: int = 800,
-        color: str = "#1f77b4",
+        color_scale: str = "Viridis",
+        show_values: bool = True,
+        max_feature_name_length: int = 50,
     ) -> None:
         """
-        Plots feature importances as a horizontal bar chart.
+        Plots feature importances as a horizontal bar chart with gradient colors.
 
         Args:
-            importances (dict | pd.DataFrame): Feature importances as dict (feature: importance) or DataFrame with columns [feature, importance].
-            top_n (int, optional): Show only top N features. Defaults to None (show all).
-            plot_title (str, optional): Title of the plot. Defaults to "Feature Importances".
-            width (int, optional): Figure width. Defaults to 800.
+            importances (dict | pd.DataFrame): Feature importances as dict or DataFrame.
+            top_n (int | None, optional): Show only top N features. Defaults to None.
+            plot_title (str, optional): Plot title. Defaults to "Feature Importances".
+            width (int, optional): Figure width. Defaults to 1200.
             height (int, optional): Figure height. Defaults to 800.
-            color (str, optional): Bar color. Defaults to Plotly blue.
+            color_scale (str, optional): Plotly color scale. Defaults to "Viridis".
+            show_values (bool, optional): Show values on bars. Defaults to True.
+            max_feature_name_length (int, optional): Max feature name length. Defaults to 50.
         """
         if isinstance(importances, dict):
-            df = pd.DataFrame(list(importances.items()), columns=["Feature", "Importance"])
+            df = pd.DataFrame(
+                list(importances.items()), columns=["Feature", "Importance"]
+            )
         elif isinstance(importances, pd.DataFrame):
             if set(["feature", "importance"]).issubset(importances.columns):
-                df = importances.rename(columns={"feature": "Feature", "importance": "Importance"})
+                df = importances.rename(
+                    columns={"feature": "Feature", "importance": "Importance"}
+                )
             elif set(["Feature", "Importance"]).issubset(importances.columns):
                 df = importances.copy()
             else:
-                raise ValueError("DataFrame must have columns ['feature', 'importance'] or ['Feature', 'Importance'].")
+                raise ValueError(
+                    "DataFrame must have columns ['feature', 'importance'] or "
+                    "['Feature', 'Importance']."
+                )
         else:
             raise TypeError("importances must be a dict or a pandas DataFrame.")
 
-        # Sort by importance descending
         df = df.sort_values("Importance", ascending=False)
         if top_n is not None:
             df = df.head(top_n)
 
-        # Reverse for horizontal bar chart (most important at top)
         df = df.iloc[::-1]
 
+        max_name_len = max(len(name) for name in df["Feature"])
+        dynamic_length = min(max_feature_name_length, max(30, max_name_len))
+
+        truncated_features = [
+            (name[:dynamic_length] + "...") if len(name) > dynamic_length else name
+            for name in df["Feature"]
+        ]
+
+        importance_values = df["Importance"].values
+        normalized_values = (importance_values - importance_values.min()) / (
+            importance_values.max() - importance_values.min() + 1e-10
+        )
+
         fig = go.Figure()
+
         fig.add_trace(
             go.Bar(
                 x=df["Importance"],
-                y=df["Feature"],
+                y=truncated_features,
                 orientation="h",
-                marker=dict(color=color, line=dict(color="black", width=1)),
+                marker=dict(
+                    color=normalized_values,
+                    colorscale=color_scale,
+                    line=dict(color="rgba(50,50,50,0.8)", width=2),
+                    colorbar=dict(
+                        title=dict(
+                            text="Normalized<br>Importance",
+                            font=dict(size=12, family="Times New Roman"),
+                        ),
+                        thickness=20,
+                        len=0.75,
+                        x=1.02,
+                        tickfont=dict(size=10),
+                        outlinecolor="rgba(0,0,0,0.3)",
+                        outlinewidth=1,
+                    ),
+                ),
+                text=(
+                    [f"{val:.2f}" for val in df["Importance"]] if show_values else None
+                ),
+                textposition="outside",
+                textfont=dict(size=11, color="black", family="Times New Roman"),
+                hovertemplate=(
+                    "<b style='font-size:13px'>%{customdata}</b><br>"
+                    "<b>Importance:</b> %{x:.2f}<br>"
+                    "<b>Normalized:</b> %{marker.color:.2f}<br>"
+                    "<extra></extra>"
+                ),
+                customdata=df["Feature"].tolist(),
                 showlegend=False,
             )
         )
+
+        font_size = max(7, min(13, int(500 / len(df))))
 
         self.apply_default_layout(
             fig=fig,
@@ -77,14 +137,57 @@ class OtherPlots(BasePlots):
             xaxis_title="Importance",
             yaxis_title="Feature",
         )
-        fig.update_layout(yaxis=dict(tickmode="linear"))
+
+        fig.update_layout(
+            yaxis=dict(
+                tickmode="linear",
+                tickfont=dict(
+                    size=font_size,
+                    family="Times New Roman, monospace",
+                    color="rgba(0,0,0,0.85)",
+                ),
+                automargin=True,
+                showline=True,
+                linewidth=2,
+                linecolor="rgba(0,0,0,0.3)",
+                gridcolor="rgba(200,200,200,0.3)",
+                gridwidth=1,
+            ),
+            xaxis=dict(
+                showgrid=True,
+                gridwidth=1.5,
+                gridcolor="rgba(150,150,150,0.25)",
+                zeroline=True,
+                zerolinewidth=2,
+                zerolinecolor="rgba(0,0,0,0.4)",
+                showline=True,
+                linewidth=2,
+                linecolor="rgba(0,0,0,0.3)",
+                tickfont=dict(size=11, family="Times New Roman"),
+            ),
+            plot_bgcolor="white",
+            paper_bgcolor="white",
+            hoverlabel=dict(
+                bgcolor="white",
+                font_size=13,
+                font_family="Times New Roman",
+                bordercolor="rgba(0,0,0,0.3)",
+                align="left",
+            ),
+            title=dict(
+                font=dict(size=18, family="Times New Roman", color="rgba(0,0,0,0.9)"),
+                x=0.5,
+                xanchor="center",
+            ),
+            margin=dict(l=20, r=120, t=80, b=60),
+        )
         fig.show("png", width=width, height=height)
 
     def cross_validation_split_plot(
         self,
         x_data: pd.DataFrame | np.ndarray,
         y_data: pd.Series | np.ndarray,
-        cv_splitter,
+        cv_splitter: Any,
         plot_title: str = "Cross Validation Split",
         width: int = 1200,
         height: int = 800,
@@ -105,10 +208,9 @@ class OtherPlots(BasePlots):
         fig = go.Figure()
         n_samples = len(x_data)
 
-        # Determine marker style based on sample size
         if n_samples > 100:
             marker_symbol = "line-ns"
-            marker_size = min(100 / 10, 10)  # Assuming reasonable number of splits
+            marker_size = min(100 / 10, 10)
             marker_width = min(50 / 10, 2)
         else:
             marker_symbol = "hexagon"
@@ -170,7 +272,7 @@ class OtherPlots(BasePlots):
         x_groups: pd.Series | np.ndarray,
         y_values: pd.Series | np.ndarray,
         feature_name: str = "Feature",
-        plot_title: str = None,
+        plot_title: str | None = None,
         width: int = 800,
         height: int = 800,
     ) -> None:
@@ -214,8 +316,8 @@ class OtherPlots(BasePlots):
 
     def feature_ranking_scatter_plot(
         self,
-        spearman_ranks: dict,
-        hoeffding_ranks: dict,
+        spearman_ranks: dict[str, float],
+        hoeffding_ranks: dict[str, float],
         quantile: float = 0.75,
         plot_title: str = "Feature Ranking Comparison",
         width: int = 800,
@@ -224,28 +326,30 @@ class OtherPlots(BasePlots):
         """Creates a scatter plot comparing different feature ranking methods.
 
         Args:
-            spearman_ranks (dict): Dictionary with feature names as keys and Spearman ranks as values.
-            hoeffding_ranks (dict): Dictionary with feature names as keys and Hoeffding ranks as values.
-            quantile (float, optional): Quantile threshold for highlighting features. Defaults to 0.75.
+            spearman_ranks (dict): Dictionary with feature names as keys and
+                Spearman ranks as values.
+            hoeffding_ranks (dict): Dictionary with feature names as keys and
+                Hoeffding ranks as values.
+            quantile (float, optional): Quantile threshold for highlighting features.
+            Defaults to 0.75.
             plot_title (str, optional): Title of the plot. Defaults to "Feature Ranking Comparison".
             width (int, optional): Figure width. Defaults to 800.
             height (int, optional): Figure height. Defaults to 800.
         """
-        x, y = [], []
-        for feature in hoeffding_ranks.keys():
-            if feature in spearman_ranks:
-                x.append(hoeffding_ranks[feature])
-                y.append(spearman_ranks[feature])
+        spearman_features = set(spearman_ranks)
+        common_features = [
+            feature for feature in hoeffding_ranks if feature in spearman_features
+        ]
 
-        x, y = np.array(x), np.array(y)
+        x = np.array([hoeffding_ranks[feature] for feature in common_features])
+        y = np.array([spearman_ranks[feature] for feature in common_features])
         x_threshold = np.quantile(x, q=quantile)
         y_threshold = np.quantile(y, q=quantile)
 
         low_ranks_features = [
             feature
-            for feature in hoeffding_ranks.keys()
-            if feature in spearman_ranks
-            and hoeffding_ranks[feature] >= x_threshold
+            for feature in common_features
+            if hoeffding_ranks[feature] >= x_threshold
             and spearman_ranks[feature] >= y_threshold
         ]
 
@@ -260,11 +364,9 @@ class OtherPlots(BasePlots):
             )
         )
 
-        # Add threshold lines
         fig.add_vline(x=x_threshold, line_dash="dash", line_color="red", line_width=2)
         fig.add_hline(y=y_threshold, line_dash="dash", line_color="red", line_width=2)
 
-        # Add annotations for highlighted features
         for feature in low_ranks_features:
             fig.add_annotation(
                 x=hoeffding_ranks[feature],
@@ -296,8 +398,10 @@ class OtherPlots(BasePlots):
 
         Args:
             history (pd.DataFrame): History DataFrame produced by run().
-            optimal_n_features (int | None, optional): Optional vertical guide for the selected count.
-            plot_title (str, optional): Title of the plot. Defaults to "Metric value vs Number of Features Removed".
+            optimal_n_features (int | None, optional): Optional vertical guide for the selected
+            count.
+            plot_title (str, optional): Title of the plot.
+            Defaults to "Metric value vs Number of Features Removed".
             width (int, optional): Figure width. Defaults to 1600.
             height (int, optional): Figure height. Defaults to 800.
 
@@ -410,7 +514,7 @@ class OtherPlots(BasePlots):
 
     def pca_explained_variance_plot(
         self,
-        fitted_pca,
+        fitted_pca: Any,
         plot_title: str = "PCA Explained Variance",
         width: int = 1200,
         height: int = 800,
@@ -423,7 +527,8 @@ class OtherPlots(BasePlots):
             plot_title (str, optional): Title of the plot. Defaults to "PCA Explained Variance".
             width (int, optional): Figure width. Auto-calculated if None.
             height (int, optional): Figure height. Auto-calculated if None.
-            variance_threshold (float, optional): Threshold line for cumulative variance. Defaults to 0.8.
+            variance_threshold (float, optional): Threshold line for cumulative variance.
+            Defaults to 0.8.
         """
         n_components = len(fitted_pca.explained_variance_ratio_)
         labels = list(range(1, n_components + 1))
@@ -470,7 +575,7 @@ class OtherPlots(BasePlots):
 
     def pca_eigenvectors_plot(
         self,
-        fitted_pca,
+        fitted_pca: Any,
         feature1: pd.Series | np.ndarray,
         feature2: pd.Series | np.ndarray,
         plot_title: str = "PCA Eigenvectors",
@@ -487,7 +592,8 @@ class OtherPlots(BasePlots):
             plot_title (str, optional): Title of the plot. Defaults to "PCA Eigenvectors".
             width (int, optional): Figure width. Defaults to 800.
             height (int, optional): Figure height. Defaults to 800.
-            vector_scale (float, optional): Scale factor for eigenvector visualization. Defaults to 3.0.
+            vector_scale (float, optional): Scale factor for eigenvector visualization.
+            Defaults to 3.0.
         """
         feature1 = self.check_data(feature1)
         feature2 = self.check_data(feature2)
@@ -540,7 +646,7 @@ class OtherPlots(BasePlots):
 
     def scree_plot(
         self,
-        fitted_fa,
+        fitted_fa: Any,
         plot_title: str = "Scree Plot",
         width: int = 800,
         height: int = 800,
@@ -555,10 +661,10 @@ class OtherPlots(BasePlots):
             height (int, optional): Figure height. Defaults to 800.
             eigenvalue_threshold (float, optional): Threshold line for eigenvalues. Defaults to 1.0.
         """
-        # Calculate eigenvalues from the covariance matrix
+
         cov_matrix = fitted_fa.get_covariance()
         eigenvalues = np.linalg.eigvalsh(cov_matrix)
-        eigenvalues = np.sort(eigenvalues)[::-1]  # Sort descending
+        eigenvalues = np.sort(eigenvalues)[::-1]
 
         fig = go.Figure()
         component_numbers = np.arange(1, len(eigenvalues) + 1)
@@ -594,12 +700,12 @@ class OtherPlots(BasePlots):
 
     def pca_inverse_transform_plot(
         self,
-        fitted_pca,
+        fitted_pca: Any,
         feature1: pd.Series | np.ndarray,
         feature2: pd.Series | np.ndarray,
         feature1_reconstructed: pd.Series | np.ndarray,
         feature2_reconstructed: pd.Series | np.ndarray,
-        plot_title: str = None,
+        plot_title: str | None = None,
         width: int = 800,
         height: int = 800,
     ) -> None:
@@ -662,14 +768,14 @@ class OtherPlots(BasePlots):
         self,
         x_data: pd.DataFrame,
         y_data: pd.Series,
-        categorical_features: list,
-        reduction_algorithm,
-        predictive_algorithm,
-        cv_splitter,
+        categorical_features: list[str],
+        reduction_algorithm: Any,
+        predictive_algorithm: Any,
+        cv_splitter: Any,
         random_state: int = 42,
         plot_title: str = "Cross Validation Components Analysis",
-        width: int = None,
-        height: int = None,
+        width: int | None = None,
+        height: int | None = None,
     ) -> None:
         """Analyzes optimal number of components using cross-validation.
 
@@ -681,7 +787,8 @@ class OtherPlots(BasePlots):
             predictive_algorithm: Predictive model with fit/predict_proba methods.
             cv_splitter: Cross-validation splitter.
             random_state (int, optional): Random state for reproducibility. Defaults to 42.
-            plot_title (str, optional): Title of the plot. Defaults to "Cross Validation Components Analysis".
+            plot_title (str, optional): Title of the plot.
+            Defaults to "Cross Validation Components Analysis".
             width (int, optional): Figure width. Auto-calculated if None.
             height (int, optional): Figure height. Auto-calculated if None.
         """
@@ -707,7 +814,6 @@ class OtherPlots(BasePlots):
                 x_train, x_valid = x_data.iloc[train_idx, :], x_data.iloc[valid_idx, :]
                 y_train, y_valid = y_data.iloc[train_idx], y_data.iloc[valid_idx]
 
-                # Transform continuous features
                 x_train_continuous = x_train[continuous_features]
                 x_valid_continuous = x_valid[continuous_features]
 
@@ -716,7 +822,6 @@ class OtherPlots(BasePlots):
                 )
                 x_valid_transformed = reduction_algorithm.transform(x_valid_continuous)
 
-                # Combine with categorical features if present
                 if categorical_features:
                     x_train_final = np.concatenate(
                         [x_train_transformed, x_train[categorical_features].values],
@@ -730,7 +835,6 @@ class OtherPlots(BasePlots):
                     x_train_final = x_train_transformed
                     x_valid_final = x_valid_transformed
 
-                # Train and evaluate
                 predictive_algorithm.fit(x_train_final, y_train)
                 y_valid_prob = predictive_algorithm.predict_proba(x_valid_final)[:, 1]
                 valid_scores.append(roc_auc_score(y_valid, y_valid_prob))
@@ -757,22 +861,25 @@ class OtherPlots(BasePlots):
     def dendrogram_plot(
         self,
         linkage_matrix: np.ndarray,
-        labels: list = None,
+        labels: list[str] | None = None,
         plot_title: str = "Hierarchical Clustering Dendrogram",
         truncate_mode: str = "level",
         p: int = 5,
-        hline_level: float = None,
-        figsize: tuple = (12, 8),
+        hline_level: float | None = None,
+        figsize: tuple[int, int] = (12, 8),
     ) -> None:
         """Creates a dendrogram plot for hierarchical clustering.
 
         Args:
             linkage_matrix (np.ndarray): Linkage matrix from hierarchical clustering.
             labels (list, optional): Labels for the data points. Defaults to None.
-            plot_title (str, optional): Title of the plot. Defaults to "Hierarchical Clustering Dendrogram".
-            truncate_mode (str, optional): Truncation mode for large dendrograms. Defaults to "level".
+            plot_title (str, optional): Title of the plot.
+            Defaults to "Hierarchical Clustering Dendrogram".
+            truncate_mode (str, optional): Truncation mode for large dendrograms.
+            Defaults to "level".
             p (int, optional): Truncation parameter. Defaults to 5.
-            hline_level (float, optional): Horizontal line level for cluster cutoff. Defaults to None.
+            hline_level (float, optional): Horizontal line level for cluster cutoff.
+            Defaults to None.
             figsize (tuple, optional): Figure size. Defaults to (12, 8).
         """
         plt.figure(figsize=figsize)
@@ -798,7 +905,7 @@ class OtherPlots(BasePlots):
     def elbow_plot(
         self,
         data: pd.DataFrame | np.ndarray,
-        clustering_algorithm,
+        clustering_algorithm: Any,
         max_clusters: int = 15,
         plot_title: str = "Elbow Method",
         width: int = 800,
@@ -845,7 +952,7 @@ class OtherPlots(BasePlots):
         )
 
         if show_optimal:
-            # Simple elbow detection
+
             optimal_k = None
             total_sse = np.sum(sse_values)
             for i in range(1, len(sse_values) - 1):
@@ -876,7 +983,7 @@ class OtherPlots(BasePlots):
     def silhouette_analysis_plot(
         self,
         data: pd.DataFrame | np.ndarray,
-        clustering_algorithm,
+        clustering_algorithm: Any,
         max_clusters: int = 10,
         plot_title: str = "Silhouette Analysis",
         width: int = 800,
@@ -945,7 +1052,7 @@ class OtherPlots(BasePlots):
     def cluster_visualization_plot(
         self,
         data: pd.DataFrame | np.ndarray,
-        fitted_model,
+        fitted_model: Any,
         plot_title: str = "Cluster Visualization",
         width: int = 800,
         height: int = 800,
@@ -959,13 +1066,13 @@ class OtherPlots(BasePlots):
             plot_title (str, optional): Title of the plot. Defaults to "Cluster Visualization".
             width (int, optional): Figure width. Defaults to 800.
             height (int, optional): Figure height. Defaults to 800.
-            show_centers (bool, optional): Whether to show cluster centers if available. Defaults to True.
+            show_centers (bool, optional): Whether to show cluster centers if available.
+            Defaults to True.
         """
         data = self.check_2d_data(data)
 
         fig = go.Figure()
 
-        # Plot data points colored by cluster
         fig.add_trace(
             go.Scatter(
                 x=data[:, 0],
@@ -982,7 +1089,6 @@ class OtherPlots(BasePlots):
             )
         )
 
-        # Plot cluster centers if available
         if show_centers and hasattr(fitted_model, "cluster_centers_"):
             fig.add_trace(
                 go.Scatter(
@@ -1033,13 +1139,13 @@ class OtherPlots(BasePlots):
         model = NearestNeighbors(n_neighbors=min_points, metric="euclidean")
         model.fit(data)
         distances, _ = model.kneighbors(data)
-        distances = distances[:, 1:]  # Remove self-distance
+        distances = distances[:, 1:]
 
         mean_distances = np.mean(distances, axis=1)
         sorted_distances = np.sort(mean_distances)[::-1]
 
         if normalized:
-            # Normalize distances and indices
+
             sorted_distances = (sorted_distances - np.min(sorted_distances)) / (
                 np.max(sorted_distances) - np.min(sorted_distances)
             )
@@ -1069,7 +1175,6 @@ class OtherPlots(BasePlots):
             )
         )
 
-        # Add diagonal reference line
         if normalized:
             fig.add_trace(
                 go.Scatter(
@@ -1118,13 +1223,13 @@ class OtherPlots(BasePlots):
             x_data (pd.DataFrame | np.ndarray): Input 2D data.
             n_outliers (int, optional): Number of artificial outliers to add. Defaults to 0.
             alpha (float, optional): Significance level for threshold. Defaults to 0.05.
-            plot_title (str, optional): Title of the plot. Defaults to "Mahalanobis Distance Anomaly Detection".
+            plot_title (str, optional): Title of the plot.
+            Defaults to "Mahalanobis Distance Anomaly Detection".
             width (int, optional): Figure width. Defaults to 1000.
             height (int, optional): Figure height. Defaults to 1000.
         """
         x_data = self.check_2d_data(x_data)
 
-        # Add artificial outliers if requested
         if n_outliers > 0:
             outliers = np.random.uniform(
                 low=np.min(x_data) - 3 * np.std(x_data),
@@ -1135,26 +1240,21 @@ class OtherPlots(BasePlots):
         else:
             x_with_outliers = x_data
 
-        # Fit empirical covariance
         empirical_cov = EmpiricalCovariance().fit(x_with_outliers)
 
-        # Create meshgrid for contour plot
         x_min, x_max = np.min(x_with_outliers), np.max(x_with_outliers)
         xx, yy = np.meshgrid(
             np.linspace(x_min, x_max, 100), np.linspace(x_min, x_max, 100)
         )
         mesh_points = np.c_[xx.ravel(), yy.ravel()]
 
-        # Calculate Mahalanobis distances
         mahal_distances = empirical_cov.mahalanobis(mesh_points) ** 0.5
         mahal_distances = mahal_distances.reshape(xx.shape)
 
-        # Calculate threshold
         threshold = np.sqrt(chi2.ppf(1 - alpha, df=x_data.shape[1]))
 
         fig = go.Figure()
 
-        # Plot inliers and outliers
         if n_outliers > 0:
             fig.add_trace(
                 go.Scatter(
@@ -1185,7 +1285,6 @@ class OtherPlots(BasePlots):
                 )
             )
 
-        # Add Mahalanobis distance contours
         fig.add_trace(
             go.Contour(
                 x=xx[0],
@@ -1200,7 +1299,6 @@ class OtherPlots(BasePlots):
             )
         )
 
-        # Add threshold contour
         fig.add_trace(
             go.Contour(
                 x=xx[0],
@@ -1241,14 +1339,14 @@ class OtherPlots(BasePlots):
             x_data (pd.DataFrame | np.ndarray): Input 2D data.
             n_outliers (int, optional): Number of artificial outliers to add. Defaults to 0.
             contamination (float, optional): Expected proportion of outliers. Defaults to 0.05.
-            plot_title (str, optional): Title of the plot. Defaults to "Isolation Forest Anomaly Detection".
+            plot_title (str, optional): Title of the plot.
+            Defaults to "Isolation Forest Anomaly Detection".
             width (int, optional): Figure width. Defaults to 1000.
             height (int, optional): Figure height. Defaults to 1000.
             random_state (int, optional): Random state for reproducibility. Defaults to 42.
         """
         x_data = self.check_2d_data(x_data)
 
-        # Add artificial outliers if requested
         if n_outliers > 0:
             outliers = np.random.uniform(
                 low=np.min(x_data) - 3 * np.std(x_data),
@@ -1259,26 +1357,22 @@ class OtherPlots(BasePlots):
         else:
             x_with_outliers = x_data
 
-        # Fit Isolation Forest
         isolation_forest = IsolationForest(
             random_state=random_state, contamination=contamination
         )
         isolation_forest.fit(x_with_outliers)
 
-        # Create meshgrid for decision boundary
         x_min, x_max = np.min(x_with_outliers), np.max(x_with_outliers)
         xx, yy = np.meshgrid(
             np.linspace(x_min, x_max, 100), np.linspace(x_min, x_max, 100)
         )
         mesh_points = np.c_[xx.ravel(), yy.ravel()]
 
-        # Get anomaly scores and predictions
         anomaly_scores = isolation_forest.decision_function(mesh_points)
         predictions = isolation_forest.predict(mesh_points)
 
         fig = go.Figure()
 
-        # Plot inliers and outliers
         if n_outliers > 0:
             fig.add_trace(
                 go.Scatter(
@@ -1309,7 +1403,6 @@ class OtherPlots(BasePlots):
                 )
             )
 
-        # Add anomaly score contours
         fig.add_trace(
             go.Contour(
                 x=xx[0],
@@ -1323,7 +1416,6 @@ class OtherPlots(BasePlots):
             )
         )
 
-        # Add decision boundary
         fig.add_trace(
             go.Contour(
                 x=xx[0],
@@ -1364,13 +1456,13 @@ class OtherPlots(BasePlots):
             n_outliers (int, optional): Number of artificial outliers to add. Defaults to 0.
             contamination (float, optional): Expected proportion of outliers. Defaults to 0.05.
             n_neighbors (int, optional): Number of neighbors for LOF calculation. Defaults to 20.
-            plot_title (str, optional): Title of the plot. Defaults to "Local Outlier Factor Anomaly Detection".
+            plot_title (str, optional): Title of the plot.
+            Defaults to "Local Outlier Factor Anomaly Detection".
             width (int, optional): Figure width. Defaults to 1000.
             height (int, optional): Figure height. Defaults to 1000.
         """
         x_data = self.check_2d_data(x_data)
 
-        # Add artificial outliers if requested
         if n_outliers > 0:
             outliers = np.random.uniform(
                 low=np.min(x_data) - 3 * np.std(x_data),
@@ -1381,17 +1473,14 @@ class OtherPlots(BasePlots):
         else:
             x_with_outliers = x_data
 
-        # Fit LOF
         lof = LocalOutlierFactor(n_neighbors=n_neighbors, contamination=contamination)
         lof.fit(x_with_outliers)
         scores = lof.negative_outlier_factor_
 
-        # Scale scores for visualization
         radius = (scores.max() - scores) / (scores.max() - scores.min())
 
         fig = go.Figure()
 
-        # Plot LOF scores as circles with varying sizes
         fig.add_trace(
             go.Scatter(
                 x=x_with_outliers[:, 0],
@@ -1407,7 +1496,6 @@ class OtherPlots(BasePlots):
             )
         )
 
-        # Overlay actual data points
         if n_outliers > 0:
             fig.add_trace(
                 go.Scatter(
@@ -1451,7 +1539,7 @@ class OtherPlots(BasePlots):
     def difference_curve(
         self,
         data: pd.DataFrame | np.ndarray,
-        algorithm_instance,
+        algorithm_instance: Any,
         max_clusters: int = 15,
         width: int = 1200,
         height: int = 800,
@@ -1462,7 +1550,7 @@ class OtherPlots(BasePlots):
         Args:
             data (pd.DataFrame | np.ndarray): Input data for clustering.
             algorithm_instance: Clustering algorithm instance with n_clusters parameter.
-            max_clusters (int, optional): Maximum number of clusters to test. Defaults to 15
+            max_clusters (int, optional): Maximum number of clusters to test. Defaults to 15.
             width (int, optional): Figure width. Defaults to 1200.
             height (int, optional): Figure height. Defaults to 800.
         """
@@ -1519,7 +1607,10 @@ class OtherPlots(BasePlots):
             yaxis_title="Normalized distortion Score",
             legend=dict(x=0.75, y=0.9),
             showlegend=True,
-            title=f"<b>Difference curve<b><br>Optimal SSE: {np.round(optimal_sse, 4)} for k={optimal_k}",
+            title=(
+                f"<b>Difference curve</b><br>Optimal SSE: "
+                f"{np.round(optimal_sse, 4)} for k={optimal_k}"
+            ),
             title_x=0.5,
             font=dict(family="Times New Roman", size=16, color="Black"),
         )
@@ -1528,7 +1619,7 @@ class OtherPlots(BasePlots):
     def normalized_elbow_plot(
         self,
         data: pd.DataFrame | np.ndarray,
-        clustering_algorithm,
+        clustering_algorithm: Any,
         max_clusters: int = 15,
         plot_title: str = "Normalized Elbow Method",
         width: int = 800,
@@ -1545,14 +1636,15 @@ class OtherPlots(BasePlots):
             plot_title (str, optional): Title of the plot. Defaults to "Normalized Elbow Method".
             width (int, optional): Figure width. Defaults to 800.
             height (int, optional): Figure height. Defaults to 800.
-            show_perpendicular (bool, optional): Whether to show perpendicular lines. Defaults to False.
-            show_difference_curve (bool, optional): Whether to show difference curve. Defaults to False.
+            show_perpendicular (bool, optional): Whether to show perpendicular lines.
+            Defaults to False.
+            show_difference_curve (bool, optional): Whether to show difference curve.
+            Defaults to False.
         """
         data = self.check_2d_data(data)
         sse_values = []
         k_range = range(1, max_clusters + 1)
 
-        # Calculate SSE for each k
         for k in k_range:
             clustering_algorithm.set_params(n_clusters=k)
             clustering_algorithm.fit(data)
@@ -1565,7 +1657,6 @@ class OtherPlots(BasePlots):
 
             sse_values.append(sse)
 
-        # Normalize values
         sse_normalized = (sse_values - np.min(sse_values)) / (
             np.max(sse_values) - np.min(sse_values)
         )
@@ -1575,7 +1666,6 @@ class OtherPlots(BasePlots):
 
         fig = go.Figure()
 
-        # Main normalized curve
         fig.add_trace(
             go.Scatter(
                 x=k_normalized,
@@ -1587,7 +1677,6 @@ class OtherPlots(BasePlots):
             )
         )
 
-        # Diagonal reference line
         fig.add_trace(
             go.Scatter(
                 x=[0, 1],
@@ -1598,18 +1687,17 @@ class OtherPlots(BasePlots):
             )
         )
 
-        # Add perpendicular lines if requested
         if show_perpendicular:
-            for i in range(len(k_normalized)):
-                # Calculate perpendicular distance to diagonal line y = 1 - x
-                # Line equation: x + y - 1 = 0
-                x_perp = (k_normalized[i] + sse_normalized[i] - 1) / 2
+            for i, (k_value, sse_value) in enumerate(
+                zip(k_normalized, sse_normalized)
+            ):
+                x_perp = (k_value + sse_value - 1) / 2
                 y_perp = 1 - x_perp
 
                 fig.add_trace(
                     go.Scatter(
-                        x=[k_normalized[i], x_perp],
-                        y=[sse_normalized[i], y_perp],
+                        x=[k_value, x_perp],
+                        y=[sse_value, y_perp],
                         mode="lines",
                         line=dict(color="gray", width=1),
                         showlegend=i == 0,
@@ -1617,7 +1705,6 @@ class OtherPlots(BasePlots):
                     )
                 )
 
-        # Add difference curve if requested
         if show_difference_curve:
             difference_curve = (1 - k_normalized) - sse_normalized
             optimal_idx = np.argmax(difference_curve)
@@ -1633,7 +1720,6 @@ class OtherPlots(BasePlots):
                 )
             )
 
-            # Mark optimal point
             fig.add_vline(
                 x=k_normalized[optimal_idx],
                 line_dash="dash",
@@ -1657,7 +1743,7 @@ class OtherPlots(BasePlots):
     def gap_statistic_plot(
         self,
         data: pd.DataFrame | np.ndarray,
-        clustering_algorithm,
+        clustering_algorithm: Any,
         max_clusters: int = 15,
         n_reference_datasets: int = 30,
         plot_title: str = "Gap Statistic",
@@ -1671,7 +1757,8 @@ class OtherPlots(BasePlots):
             data (pd.DataFrame | np.ndarray): Input data for clustering.
             clustering_algorithm: Clustering algorithm with n_clusters parameter.
             max_clusters (int, optional): Maximum number of clusters to test. Defaults to 15.
-            n_reference_datasets (int, optional): Number of reference datasets to generate. Defaults to 30.
+            n_reference_datasets (int, optional): Number of reference datasets to generate.
+            Defaults to 30.
             plot_title (str, optional): Title of the plot. Defaults to "Gap Statistic".
             width (int, optional): Figure width. Defaults to 800.
             height (int, optional): Figure height. Defaults to 800.
@@ -1685,13 +1772,12 @@ class OtherPlots(BasePlots):
         k_range = range(1, max_clusters + 1)
         optimal_k = None
 
-        # Calculate data range for reference datasets
         data_ranges = np.array(
             [[np.min(data[:, i]), np.max(data[:, i])] for i in range(data.shape[1])]
         )
 
         for k in k_range:
-            # Generate reference datasets and calculate SSE
+
             reference_sses = []
             for _ in range(n_reference_datasets):
                 reference_data = np.random.uniform(
@@ -1713,7 +1799,6 @@ class OtherPlots(BasePlots):
 
                 reference_sses.append(sse)
 
-            # Calculate SSE for actual data
             clustering_algorithm.set_params(n_clusters=k)
             clustering_algorithm.fit(data)
 
@@ -1723,14 +1808,12 @@ class OtherPlots(BasePlots):
                 cluster_center = np.mean(cluster_data, axis=0)
                 data_sse += np.sum((cluster_data - cluster_center) ** 2)
 
-            # Calculate gap statistic
             gap = np.log(np.mean(reference_sses)) - np.log(data_sse)
             gaps.append(gap)
 
             std = np.std(np.log(reference_sses))
             stds.append(std)
 
-            # Check for optimal k using gap statistic criterion
             if k > 1 and optimal_k is None:
                 if gaps[k - 2] >= gaps[k - 1] - stds[k - 1]:
                     optimal_k = k - 1
@@ -1772,9 +1855,9 @@ class OtherPlots(BasePlots):
     def silhouette_detailed_plot(
         self,
         data: pd.DataFrame | np.ndarray,
-        clustering_algorithm,
+        clustering_algorithm: Any,
         n_clusters: int,
-        plot_title: str = None,
+        plot_title: str | None = None,
         width: int = 800,
         height: int = 800,
     ) -> None:
@@ -1799,7 +1882,10 @@ class OtherPlots(BasePlots):
         average_silhouette = np.mean(silhouette_coefficients)
 
         if plot_title is None:
-            plot_title = f"Silhouette Analysis (k={n_clusters})<br>Average Score: {average_silhouette:.3f}"
+            plot_title = (
+                f"Silhouette Analysis (k={n_clusters})<br>"
+                f"Average Score: {average_silhouette:.3f}"
+            )
 
         fig = go.Figure()
 
@@ -1825,7 +1911,6 @@ class OtherPlots(BasePlots):
                 )
             )
 
-            # Add cluster label
             fig.add_annotation(
                 x=0.05,
                 y=(y_lower + y_upper) / 2,
@@ -1834,9 +1919,8 @@ class OtherPlots(BasePlots):
                 font=dict(size=16),
             )
 
-            y_lower = y_upper + 10  # Gap between clusters
+            y_lower = y_upper + 10
 
-        # Add average silhouette line
         fig.add_vline(
             x=average_silhouette,
             line_dash="dash",
@@ -1869,7 +1953,8 @@ class OtherPlots(BasePlots):
         Args:
             x_data (pd.DataFrame | np.ndarray): Input data.
             alpha (float, optional): Significance level for threshold. Defaults to 0.05.
-            plot_title (str, optional): Title of the plot. Defaults to "Mahalanobis Distance Distribution".
+            plot_title (str, optional): Title of the plot.
+            Defaults to "Mahalanobis Distance Distribution".
             width (int, optional): Figure width. Defaults to 800.
             height (int, optional): Figure height. Defaults to 800.
         """
@@ -1913,7 +1998,9 @@ class OtherPlots(BasePlots):
         fig.show("png", width=width, height=height)
 
     def _calculate_silhouette_coefficient(
-        self, data: np.ndarray, clustering_algorithm
+        self,
+        data: np.ndarray,
+        clustering_algorithm: Any,
     ) -> np.ndarray:
         """Calculates silhouette coefficients for clustered data.
 
@@ -1935,13 +2022,11 @@ class OtherPlots(BasePlots):
                 silhouette_coefficients[cluster_indices] = 0
                 continue
 
-            # Calculate a(i) - mean intra-cluster distance
             intra_distances = np.sqrt(
                 np.sum((cluster_data[:, np.newaxis] - cluster_data) ** 2, axis=2)
             )
             a_i = np.sum(intra_distances, axis=1) / (len(cluster_data) - 1)
 
-            # Calculate b(i) - mean nearest-cluster distance
             min_b_i = np.full(len(cluster_data), np.inf)
 
             for other_cluster_id in np.unique(labels):
@@ -1956,7 +2041,6 @@ class OtherPlots(BasePlots):
                     b_i = np.mean(inter_distances, axis=1)
                     min_b_i = np.minimum(min_b_i, b_i)
 
-            # Calculate silhouette coefficient
             max_ab = np.maximum(a_i, min_b_i)
             silhouette_coefficients[cluster_indices] = (min_b_i - a_i) / max_ab
 
@@ -1964,27 +2048,14 @@ class OtherPlots(BasePlots):
 
 
 if __name__ == "__main__":
-    import numpy as np
-    import pandas as pd
-    from sklearn.datasets import make_blobs, make_classification
-    from sklearn.cluster import KMeans
-    from sklearn.decomposition import PCA
-    from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-    from sklearn.model_selection import KFold
-    from kvbiii_plots.ml.other_plots import OtherPlots
-
-    # Initialize the plotting class
     plotter = OtherPlots()
 
-    # Generate sample data
     np.random.seed(42)
 
-    # 1. Generate 2D data for clustering and visualization
     X_clusters, y_clusters = make_blobs(
         n_samples=300, centers=4, n_features=2, random_state=42, cluster_std=1.5
     )
 
-    # 2. Generate classification data
     X_class, y_class = make_classification(
         n_samples=200,
         n_features=4,
@@ -1996,33 +2067,28 @@ if __name__ == "__main__":
 
     print("=== ALGORITHM PLOTS EXAMPLES ===")
 
-    # Example 2: Cross-validation visualization
     print("\n2. Creating cross-validation split plot...")
     cv = KFold(n_splits=5, shuffle=True, random_state=42)
     plotter.cross_validation_split_plot(
         X_class, y_class, cv, plot_title="5-Fold Cross Validation"
     )
 
-    # Example 3: PCA explained variance
     print("\n3. Creating PCA explained variance plot...")
     pca = PCA()
     pca.fit(X_class)
     plotter.pca_explained_variance_plot(pca, plot_title="PCA Analysis")
 
-    # Example 4: LDA separation plot
     print("\n4. Creating LDA separation plot...")
     lda = LinearDiscriminantAnalysis(n_components=2)
     X_lda = lda.fit_transform(X_class, y_class)
     plotter.lda_separation_plot(X_lda, y_class, plot_title="LDA Separation")
 
-    # Example 5: Elbow method for clustering
     print("\n5. Creating elbow plot...")
     kmeans = KMeans(random_state=42)
     plotter.elbow_plot(
         X_clusters, kmeans, max_clusters=10, plot_title="K-Means Elbow Method"
     )
 
-    # Example 6: Normalized elbow with difference curve
     print("\n6. Creating normalized elbow plot with difference curve...")
     plotter.normalized_elbow_plot(
         X_clusters,
@@ -2032,13 +2098,11 @@ if __name__ == "__main__":
         show_difference_curve=True,
     )
 
-    # Example 7: Silhouette analysis
     print("\n7. Creating silhouette analysis plot...")
     plotter.silhouette_analysis_plot(
         X_clusters, kmeans, max_clusters=10, plot_title="Silhouette Analysis"
     )
 
-    # Example 8: Detailed silhouette plot for specific k
     print("\n8. Creating detailed silhouette plot...")
     plotter.silhouette_detailed_plot(
         X_clusters,
@@ -2047,7 +2111,6 @@ if __name__ == "__main__":
         plot_title="Detailed Silhouette Analysis (k=4)",
     )
 
-    # Example 9: Cluster visualization
     print("\n9. Creating cluster visualization...")
     kmeans_fitted = KMeans(n_clusters=4, random_state=42)
     kmeans_fitted.fit(X_clusters)
@@ -2055,13 +2118,11 @@ if __name__ == "__main__":
         X_clusters, kmeans_fitted, plot_title="K-Means Clustering Result"
     )
 
-    # Example 10: K-distance plot for DBSCAN
     print("\n10. Creating k-distance plot...")
     plotter.k_distance_plot(
         X_clusters, min_points=5, plot_title="K-Distance Plot for DBSCAN"
     )
 
-    # Example 11: Mahalanobis anomaly detection
     print("\n11. Creating Mahalanobis anomaly detection plot...")
     plotter.mahalanobis_anomaly_plot(
         X_clusters,
@@ -2070,7 +2131,6 @@ if __name__ == "__main__":
         plot_title="Mahalanobis Distance Anomaly Detection",
     )
 
-    # Example 12: Isolation Forest
     print("\n12. Creating Isolation Forest plot...")
     plotter.isolation_forest_plot(
         X_clusters,
@@ -2079,9 +2139,8 @@ if __name__ == "__main__":
         plot_title="Isolation Forest Anomaly Detection",
     )
 
-    # Example 13: Feature ranking comparison
     print("\n13. Creating feature ranking comparison...")
-    # Create mock ranking data
+
     spearman_ranks = {
         "feature_1": 0.8,
         "feature_2": 0.6,
