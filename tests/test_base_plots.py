@@ -1,7 +1,8 @@
-import pytest
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+import pytest
+
 from kvbiii_plots.base_plots import BasePlots
 
 
@@ -47,7 +48,7 @@ def test_baseplots_check_data_handles_dataframe_input(
     result = base_plots.check_data(sample_dataframe)
 
     assert isinstance(result, np.ndarray), "Result should be numpy array"
-    # Note: DataFrame with mixed types will be converted to object array
+
     assert result.shape[0] > 0, "Result should have some data"
 
 
@@ -142,10 +143,7 @@ def test_baseplots_check_2d_data_raises_error_1d_input(
     """
     base_plots = BasePlots()
 
-    # The method actually accepts Series and reshapes it to 2D
-    result = base_plots.check_2d_data(
-        sample_series.values
-    )  # Convert to numpy array first
+    result = base_plots.check_2d_data(sample_series.values)
 
     assert isinstance(result, np.ndarray), "Result should be numpy array"
     assert result.ndim == 2, "Result should be 2-dimensional"
@@ -325,11 +323,9 @@ def test_baseplots_get_colors() -> None:
     """
     base_plots = BasePlots()
 
-    # Test with small number of colors
     colors = base_plots._get_colors(5)
     assert isinstance(colors, list)
 
-    # Test with large number of colors
     colors = base_plots._get_colors(15)
     assert isinstance(colors, list)
 
@@ -345,7 +341,6 @@ def test_baseplots_apply_default_layout() -> None:
     base_plots = BasePlots()
     fig = go.Figure()
 
-    # Test basic layout application
     base_plots.apply_default_layout(
         fig=fig,
         plot_title="Test Title",
@@ -375,18 +370,16 @@ def test_baseplots_filter_nan_indices(sample_dataframe: pd.DataFrame) -> None:
     """
     base_plots = BasePlots()
 
-    # Create data with NaN values
     test_df = sample_dataframe.copy()
     test_df.loc[0, "A"] = np.nan
     test_df.loc[2, "A"] = np.nan
 
-    # Test filtering
     valid_mask = base_plots.filter_nan_indices(test_df, "A")
 
     assert isinstance(valid_mask, pd.Series)
     assert valid_mask.dtype == bool
-    assert not valid_mask.iloc[0]  # Should be False for NaN
-    assert not valid_mask.iloc[2]  # Should be False for NaN
+    assert not valid_mask.iloc[0]
+    assert not valid_mask.iloc[2]
 
 
 def test_baseplots_add_quantile_annotations() -> None:
@@ -401,12 +394,10 @@ def test_baseplots_add_quantile_annotations() -> None:
     fig = go.Figure()
     test_data = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
-    # Test adding quantile annotations
     base_plots.add_quantile_annotations(
         fig=fig, data=test_data, annotations=True, x_position=0.5
     )
 
-    # Check that annotations were added (the method may or may not add annotations depending on implementation)
     assert isinstance(fig, go.Figure)
 
 
@@ -420,22 +411,19 @@ def test_baseplots_calculate_dynamic_dimensions() -> None:
     """
     base_plots = BasePlots()
 
-    # Test with different parameters
     width, height = base_plots.calculate_dynamic_dimensions(
         n_items=5, min_width=800, min_height=600, scale_factor=30
     )
 
     assert isinstance(width, int)
     assert isinstance(height, int)
-    assert width >= 800  # Should be at least min_width
-    assert height >= 600  # Should be at least min_height
+    assert width >= 800
+    assert height >= 600
 
-    # Test scaling behavior
     width2, height2 = base_plots.calculate_dynamic_dimensions(
         n_items=10, min_width=800, min_height=600, scale_factor=30
     )
 
-    # More items should generally result in larger dimensions
     assert width2 >= width
     assert height2 >= height
 
@@ -450,13 +438,12 @@ def test_baseplots_create_subplot_layout() -> None:
     """
     base_plots = BasePlots()
 
-    # Test creating subplot layout
     fig = base_plots.create_subplot_layout(
         rows=2, cols=2, subplot_types=[["xy", "xy"], ["xy", "xy"]]
     )
 
     assert isinstance(fig, go.Figure)
-    # Plotly subplots create a grid structure
+
     assert hasattr(fig, "layout")
 
 
@@ -471,13 +458,11 @@ def test_baseplots_apply_aggregation_with_nan_values() -> None:
     base_plots = BasePlots()
     test_series_nan = pd.Series([1, 2, np.nan, 4, 5])
 
-    # Test mean with NaN values
     mean_result = base_plots._apply_aggregation(test_series_nan, "mean")
-    assert mean_result == 3.0  # Should ignore NaN
+    assert mean_result == 3.0
 
-    # Test std with NaN values
     std_result = base_plots._apply_aggregation(test_series_nan, "std")
-    assert isinstance(std_result, float)  # Should return a float value
+    assert isinstance(std_result, float)
 
 
 def test_baseplots_apply_aggregation_handles_max_function() -> None:
@@ -560,19 +545,17 @@ def test_baseplots_edge_cases() -> None:
     """
     base_plots = BasePlots()
 
-    # Test with single value
     single_value = pd.Series([42])
     result = base_plots._apply_aggregation(single_value, "mean")
     assert result == 42.0
 
-    # Test empty series (should handle gracefully or raise appropriate error)
     empty_series = pd.Series([], dtype=float)
     try:
         result = base_plots._apply_aggregation(empty_series, "mean")
-        # If it doesn't raise an error, result should be NaN
+
         assert pd.isna(result)
     except (ValueError, TypeError):
-        # It's acceptable for this to raise an error
+
         pass
 
 
@@ -586,7 +569,6 @@ def test_baseplots_create_subplot_layout_functionality() -> None:
     """
     base_plots = BasePlots()
 
-    # Test basic subplot creation
     fig = base_plots.create_subplot_layout(rows=1, cols=2, subplot_types=[["xy", "xy"]])
 
     assert hasattr(fig, "add_trace")
@@ -603,20 +585,17 @@ def test_baseplots_calculate_dynamic_dimensions_edge_cases() -> None:
     """
     base_plots = BasePlots()
 
-    # Test with zero items
     width, height = base_plots.calculate_dynamic_dimensions(0)
-    assert width >= 1600  # Should return minimum width
-    assert height >= 800  # Should return minimum height
+    assert width >= 1600
+    assert height >= 800
 
-    # Test with single item
     width, height = base_plots.calculate_dynamic_dimensions(1)
     assert width >= 1600
     assert height >= 800
 
-    # Test with large number
     width, height = base_plots.calculate_dynamic_dimensions(100)
-    assert width == 3000  # 30 * 100
-    assert height == 3000  # 30 * 100
+    assert width == 3000
+    assert height == 3000
 
 
 def test_baseplots_add_quantile_annotations_with_specific_quantiles() -> None:
@@ -630,14 +609,11 @@ def test_baseplots_add_quantile_annotations_with_specific_quantiles() -> None:
     base_plots = BasePlots()
     test_data = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
-    # Create a basic figure
     fig = go.Figure()
     fig.add_scatter(x=test_data, y=test_data)
 
-    # Test with specific quantiles list
     base_plots.add_quantile_annotations(fig, test_data, annotations=["Q1", "Med", "Q3"])
 
-    # Should not raise an error
     assert True
 
 
@@ -651,7 +627,6 @@ def test_baseplots_filter_nan_indices_functionality() -> None:
     """
     base_plots = BasePlots()
 
-    # Create test DataFrame with NaN values
     test_df = pd.DataFrame(
         {
             "feature_with_nan": [1, 2, np.nan, 4, np.nan],
@@ -660,17 +635,14 @@ def test_baseplots_filter_nan_indices_functionality() -> None:
         }
     )
 
-    # Test with feature containing NaN
     indices = base_plots.filter_nan_indices(test_df, "feature_with_nan")
     expected = pd.Series([True, True, False, True, False], name="feature_with_nan")
     pd.testing.assert_series_equal(indices, expected)
 
-    # Test with feature without NaN
     indices_no_nan = base_plots.filter_nan_indices(test_df, "feature_no_nan")
     expected_no_nan = pd.Series([True, True, True, True, True], name="feature_no_nan")
     pd.testing.assert_series_equal(indices_no_nan, expected_no_nan)
 
-    # Test with feature all NaN
     indices_all_nan = base_plots.filter_nan_indices(test_df, "feature_all_nan")
     expected_all_nan = pd.Series(
         [False, False, False, False, False], name="feature_all_nan"
