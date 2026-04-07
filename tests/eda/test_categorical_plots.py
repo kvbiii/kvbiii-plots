@@ -1,6 +1,7 @@
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
+
 from kvbiii_plots.eda.categorical_plots import CategoricalPlots
 
 
@@ -19,7 +20,6 @@ def test_categoricalplots_barplot_handles_series_input(
     """
     cat_plots = CategoricalPlots()
 
-    # This should not raise an exception
     cat_plots.barplot(
         data=sample_series.value_counts(),
         plot_title="Test Bar Plot",
@@ -41,7 +41,6 @@ def test_categoricalplots_barplot_handles_dict_input() -> None:
     cat_plots = CategoricalPlots()
     test_data = {"A": 10, "B": 20, "C": 15}
 
-    # This should not raise an exception
     cat_plots.barplot(
         data=test_data,
         plot_title="Test Dict Bar Plot",
@@ -63,7 +62,6 @@ def test_categoricalplots_barplot_applies_custom_dimensions() -> None:
     cat_plots = CategoricalPlots()
     test_data = {"Category1": 5, "Category2": 8, "Category3": 12}
 
-    # This should not raise an exception
     cat_plots.barplot(
         data=test_data,
         plot_title="Custom Dimensions Test",
@@ -88,14 +86,9 @@ def test_categoricalplots_barplot_handles_empty_input() -> None:
     empty_series = pd.Series([], dtype=object)
     empty_dict = {}
 
-    # These should not raise exceptions
-    try:
-        cat_plots.barplot(data=empty_series.value_counts())
-        cat_plots.barplot(data=empty_dict)
-        assert True, "Empty input should be handled gracefully"
-    except Exception:
-        # Some empty data cases might be expected to fail
-        assert True, "Method behavior with empty data is defined"
+    cat_plots.barplot(data=empty_series.value_counts())
+    cat_plots.barplot(data=empty_dict)
+    assert True, "Empty input should be handled gracefully"
 
 
 def test_categoricalplots_pie_barplot_handles_dataframe_input(
@@ -113,7 +106,6 @@ def test_categoricalplots_pie_barplot_handles_dataframe_input(
     """
     cat_plots = CategoricalPlots()
 
-    # This should not raise an exception
     cat_plots.pie_barplot(
         data=sample_dataframe,
         feature="D",
@@ -140,7 +132,6 @@ def test_categoricalplots_pie_barplot_applies_custom_hole_size(
     """
     cat_plots = CategoricalPlots()
 
-    # This should not raise an exception
     cat_plots.pie_barplot(
         data=sample_dataframe,
         feature="D",
@@ -184,7 +175,6 @@ def test_categoricalplots_boxplot_by_categorical_handles_valid_input(
     """
     cat_plots = CategoricalPlots()
 
-    # This should not raise an exception
     cat_plots.boxplot_by_categorical(
         data=sample_dataframe,
         categorical="D",
@@ -212,7 +202,6 @@ def test_categoricalplots_boxplot_by_categorical_applies_custom_titles(
     """
     cat_plots = CategoricalPlots()
 
-    # This should not raise an exception
     cat_plots.boxplot_by_categorical(
         data=sample_dataframe,
         categorical="D",
@@ -240,7 +229,6 @@ def test_categoricalplots_pie_boxplot_by_categorical_handles_top_n_parameter(
     """
     cat_plots = CategoricalPlots()
 
-    # This should not raise an exception
     cat_plots.pie_boxplot_by_categorical(
         data=sample_dataframe,
         categorical="D",
@@ -269,7 +257,6 @@ def test_categoricalplots_pie_boxplot_by_categorical_handles_custom_hole_size(
     """
     cat_plots = CategoricalPlots()
 
-    # This should not raise an exception
     cat_plots.pie_boxplot_by_categorical(
         data=sample_dataframe,
         categorical="D",
@@ -281,9 +268,7 @@ def test_categoricalplots_pie_boxplot_by_categorical_handles_custom_hole_size(
     assert True, "Method should execute without errors"
 
 
-def test_categoricalplots_pie_stacked_barplot_by_hue_handles_multivariate_data() -> (
-    None
-):
+def test_categoricalplots_pie_stacked_barplot_by_hue_handles_multivariate_data() -> None:
     """Tests pie_stacked_barplot_by_hue correctly processes multivariate categorical data.
 
     Asserts:
@@ -300,7 +285,6 @@ def test_categoricalplots_pie_stacked_barplot_by_hue_handles_multivariate_data()
         }
     )
 
-    # This should not raise an exception
     cat_plots.pie_stacked_barplot_by_hue(
         data=test_data,
         feature="category",
@@ -313,9 +297,7 @@ def test_categoricalplots_pie_stacked_barplot_by_hue_handles_multivariate_data()
     assert True, "Method should execute without errors"
 
 
-def test_categoricalplots_pie_stacked_barplot_by_hue_applies_custom_parameters() -> (
-    None
-):
+def test_categoricalplots_pie_stacked_barplot_by_hue_applies_custom_parameters() -> None:
     """Tests pie_stacked_barplot_by_hue applies custom visualization parameters.
 
     Asserts:
@@ -332,7 +314,6 @@ def test_categoricalplots_pie_stacked_barplot_by_hue_applies_custom_parameters()
         }
     )
 
-    # This should not raise an exception
     cat_plots.pie_stacked_barplot_by_hue(
         data=test_data,
         feature="main_cat",
@@ -374,17 +355,15 @@ def test_categoricalplots_apply_top_n_categories_basic_functionality() -> None:
     """
     cat_plots = CategoricalPlots()
 
-    # Test data
     labels = np.array(["A", "B", "C", "D", "E"])
     frequency = np.array([50, 40, 30, 20, 10])
 
-    # Test with top_n=3
     result_labels, result_freq, other_labels = cat_plots._apply_top_n_categories(
         labels, frequency, top_n=3
     )
 
     expected_labels = np.array(["A", "B", "C", "Other"])
-    expected_freq = np.array([50, 40, 30, 30])  # 20 + 10 = 30
+    expected_freq = np.array([50, 40, 30, 30])
     expected_other = np.array(["D", "E"])
 
     np.testing.assert_array_equal(result_labels, expected_labels)
@@ -405,7 +384,6 @@ def test_categoricalplots_apply_top_n_categories_no_limit() -> None:
     labels = np.array(["A", "B", "C"])
     frequency = np.array([30, 20, 10])
 
-    # Test with top_n=None
     result_labels, result_freq, other_labels = cat_plots._apply_top_n_categories(
         labels, frequency, top_n=None
     )
@@ -414,7 +392,6 @@ def test_categoricalplots_apply_top_n_categories_no_limit() -> None:
     np.testing.assert_array_equal(result_freq, frequency)
     assert other_labels is None
 
-    # Test with top_n larger than data size
     result_labels, result_freq, other_labels = cat_plots._apply_top_n_categories(
         labels, frequency, top_n=10
     )
@@ -442,7 +419,7 @@ def test_categoricalplots_apply_top_n_categories_custom_other_label() -> None:
     )
 
     expected_labels = np.array(["Category1", "Category2", "Remaining"])
-    expected_freq = np.array([100, 80, 100])  # 60 + 40 = 100
+    expected_freq = np.array([100, 80, 100])
 
     np.testing.assert_array_equal(result_labels, expected_labels)
     np.testing.assert_array_equal(result_freq, expected_freq)
@@ -459,7 +436,6 @@ def test_categoricalplots_apply_top_n_categories_edge_cases() -> None:
     """
     cat_plots = CategoricalPlots()
 
-    # Test with single item
     single_labels = np.array(["OnlyOne"])
     single_freq = np.array([100])
 
@@ -471,7 +447,6 @@ def test_categoricalplots_apply_top_n_categories_edge_cases() -> None:
     np.testing.assert_array_equal(result_freq, single_freq)
     assert other_labels is None
 
-    # Test with top_n=0
     labels = np.array(["A", "B", "C"])
     frequency = np.array([30, 20, 10])
 
@@ -479,9 +454,8 @@ def test_categoricalplots_apply_top_n_categories_edge_cases() -> None:
         labels, frequency, top_n=0
     )
 
-    # Should aggregate all into "Other"
     expected_labels = np.array(["Other"])
-    expected_freq = np.array([60])  # Sum of all
+    expected_freq = np.array([60])
 
     np.testing.assert_array_equal(result_labels, expected_labels)
     np.testing.assert_array_equal(result_freq, expected_freq)
@@ -497,10 +471,8 @@ def test_categoricalplots_barplot_with_top_n_parameter() -> None:
     """
     cat_plots = CategoricalPlots()
 
-    # Create test data with many categories
     test_data = {f"Category_{i}": 100 - i * 5 for i in range(15)}
 
-    # Should not raise an exception with top_n
     cat_plots.barplot(
         data=test_data,
         top_n=5,
@@ -522,7 +494,6 @@ def test_categoricalplots_barplot_parameter_variations() -> None:
     cat_plots = CategoricalPlots()
     test_data = {"A": 10, "B": 20, "C": 15}
 
-    # Test with all parameters
     cat_plots.barplot(
         data=test_data,
         top_n=None,
@@ -534,7 +505,6 @@ def test_categoricalplots_barplot_parameter_variations() -> None:
         other_category="Others",
     )
 
-    # Test with minimal parameters
     cat_plots.barplot(data=test_data)
 
     assert True, "All parameter combinations should work"
