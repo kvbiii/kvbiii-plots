@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -288,35 +287,22 @@ class ClassificationPlots(BasePlots):
         probabilities = np.array(probabilities)
         if probabilities.ndim == 1:
             probabilities = np.stack([1 - probabilities, probabilities], axis=1)
+
         n_classes = probabilities.shape[1]
-
         if n_classes != len(id2label):
-            raise ValueError(
-                "Number of classes in probabilities must match length of id2label."
-            )
+            raise ValueError("Number of classes in probabilities must match length of id2label.")
 
-        if isinstance(cutoffs, (float, int)):
-            cutoffs = np.full(n_classes, float(cutoffs))
-        elif isinstance(cutoffs, np.ndarray):
-            if cutoffs.shape == ():
-                cutoffs = np.full(n_classes, float(cutoffs))
-            elif cutoffs.shape[0] != n_classes:
-                raise ValueError(
-                    f"cutoffs shape {cutoffs.shape} does not match number of classes {n_classes}"
-                )
-        else:
-            raise TypeError("cutoffs must be float, int, or np.ndarray")
+        cutoffs = np.asarray(cutoffs, dtype=float)
+        if cutoffs.ndim == 0:
+            cutoffs = np.full(n_classes, cutoffs.item())
+        elif cutoffs.shape[0] != n_classes:
+            raise ValueError(f"cutoffs shape {cutoffs.shape} does not match n_classes={n_classes}")
 
-        if n_classes == 2 and np.all(cutoffs == cutoffs[0]):
+        y_pred_no_threshold = np.argmax(probabilities, axis=1)
+        y_pred_threshold = np.argmax(probabilities / np.clip(cutoffs, 1e-9, None), axis=1)
 
-            cutoffs = np.array([cutoffs[0]])
-            y_pred_no_threshold = (probabilities[:, 1] >= 0.5).astype(int)
-            y_pred_threshold = (probabilities[:, 1] >= cutoffs[0]).astype(int)
-        else:
-            y_pred_no_threshold = np.argmax(probabilities, axis=1)
-            y_pred_threshold = np.argmax(probabilities >= cutoffs, axis=1)
-        y_pred_no_threshold = [id2label[int(pred)] for pred in y_pred_no_threshold]
-        y_pred_threshold = [id2label[int(pred)] for pred in y_pred_threshold]
+        y_pred_no_threshold = [id2label[int(p)] for p in y_pred_no_threshold]
+        y_pred_threshold    = [id2label[int(p)] for p in y_pred_threshold]
 
         labels = list(id2label.values())
         thresholds_str = self._format_threshold_string(labels, cutoffs)
