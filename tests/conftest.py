@@ -1,7 +1,7 @@
-import pytest
 import numpy as np
 import pandas as pd
 from pydantic_settings import BaseSettings, SettingsConfigDict
+import pytest
 
 
 class TestSettings(BaseSettings):
@@ -24,13 +24,8 @@ def test_settings() -> TestSettings:
     Returns:
         TestSettings: Loaded configuration object
 
-    Raises:
-        pytest.Exception: On invalid/missing configuration
     """
-    try:
-        return TestSettings()
-    except Exception as e:
-        pytest.fail(f"Test configuration failed: {str(e)}")
+    return TestSettings()
 
 
 @pytest.fixture
@@ -207,7 +202,9 @@ def multidimensional_array(test_settings: TestSettings) -> np.ndarray:
 
 
 @pytest.fixture
-def sample_binary_classification_data(test_settings: TestSettings) -> tuple:
+def sample_binary_classification_data(
+    test_settings: TestSettings,
+) -> tuple[np.ndarray, np.ndarray, dict[int, str]]:
     """
     Provides sample binary classification data for testing.
 
@@ -226,7 +223,9 @@ def sample_binary_classification_data(test_settings: TestSettings) -> tuple:
 
 
 @pytest.fixture
-def sample_multiclass_classification_data(test_settings: TestSettings) -> tuple:
+def sample_multiclass_classification_data(
+    test_settings: TestSettings,
+) -> tuple[np.ndarray, np.ndarray, dict[int, str]]:
     """
     Provides sample multiclass classification data for testing.
 
