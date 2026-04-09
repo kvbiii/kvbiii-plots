@@ -1,7 +1,8 @@
-import pytest
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+import pytest
+
 from kvbiii_plots.eda.continuous_plots import ContinuousPlots
 
 
@@ -20,11 +21,9 @@ def test_continuousplots_scatter_plot_handles_2d_array_input(
     """
     cont_plots = ContinuousPlots()
 
-    # Convert DataFrame to 2D array for testing
     data_2d = sample_dataframe[["A", "B"]].values
     hue_values = sample_dataframe["D"].values
 
-    # This should not raise an exception
     cont_plots.scatter_plot(
         data=data_2d,
         hue=hue_values,
@@ -51,11 +50,9 @@ def test_continuousplots_scatter_plot_handles_hue_parameter(
     """
     cont_plots = ContinuousPlots()
 
-    # Convert to proper format for scatter_plot
     data_2d = sample_dataframe[["A", "B"]].values
     hue_values = sample_dataframe["D"].values
 
-    # This should not raise an exception
     cont_plots.scatter_plot(
         data=data_2d,
         hue=hue_values,
@@ -85,7 +82,6 @@ def test_continuousplots_scatter_plot_applies_custom_marker_settings(
     data_2d = sample_dataframe[["A", "B"]].values
     hue_values = sample_dataframe["D"].values
 
-    # This should not raise an exception
     cont_plots.scatter_plot(
         data=data_2d,
         hue=hue_values,
@@ -110,7 +106,6 @@ def test_continuousplots_scatter_plot_handles_list_hue() -> None:
     test_data = np.random.rand(20, 2)
     test_hue = ["A", "B"] * 10
 
-    # This should not raise an exception
     cont_plots.scatter_plot(data=test_data, hue=test_hue, plot_title="List Hue Test")
 
     assert True, "Method should execute without errors"
@@ -146,7 +141,6 @@ def test_continuousplots_histogram_and_box_plot_handles_series_input(
     """
     cont_plots = ContinuousPlots()
 
-    # This should not raise an exception
     cont_plots.histogram_and_box_plot(
         data=sample_series,
         annotations=True,
@@ -174,7 +168,6 @@ def test_continuousplots_histogram_and_box_plot_handles_array_input(
     """
     cont_plots = ContinuousPlots()
 
-    # This should not raise an exception
     cont_plots.histogram_and_box_plot(
         data=sample_numpy_array,
         annotations=False,
@@ -202,7 +195,6 @@ def test_continuousplots_histogram_and_box_plot_applies_custom_bin_size(
     """
     cont_plots = ContinuousPlots()
 
-    # This should not raise an exception
     cont_plots.histogram_and_box_plot(
         data=sample_series,
         bin_size=20,
@@ -228,7 +220,6 @@ def test_continuousplots_histogram_boxplot_linear_regression_handles_dataframe_i
     """
     cont_plots = ContinuousPlots()
 
-    # This should not raise an exception
     cont_plots.histogram_boxplot_linear_regression(
         data=sample_dataframe,
         feature="A",
@@ -256,7 +247,6 @@ def test_continuousplots_histogram_boxplot_linear_regression_applies_custom_bins
     """
     cont_plots = ContinuousPlots()
 
-    # This should not raise an exception
     cont_plots.histogram_boxplot_linear_regression(
         data=sample_dataframe,
         feature="A",
@@ -285,7 +275,6 @@ def test_continuousplots_histogram_boxplot_linear_regression_handles_annotations
     """
     cont_plots = ContinuousPlots()
 
-    # This should not raise an exception
     cont_plots.histogram_boxplot_linear_regression(
         data=sample_dataframe,
         feature="A",
@@ -312,7 +301,6 @@ def test_continuousplots_histogram_boxplot_linear_regression_handles_correlation
     """
     cont_plots = ContinuousPlots()
 
-    # Test with correlation display enabled
     cont_plots.histogram_boxplot_linear_regression(
         data=sample_dataframe,
         feature="A",
@@ -321,7 +309,6 @@ def test_continuousplots_histogram_boxplot_linear_regression_handles_correlation
         plot_title="Correlation Display Test",
     )
 
-    # Test with correlation display disabled
     cont_plots.histogram_boxplot_linear_regression(
         data=sample_dataframe,
         feature="A",
@@ -348,7 +335,6 @@ def test_continuousplots_boxplot_histogram_boxplot_by_hue_handles_multivariate_d
     """
     cont_plots = ContinuousPlots()
 
-    # This should not raise an exception
     cont_plots.boxplot_histogram_boxplot_by_hue(
         data=sample_dataframe,
         feature="A",
@@ -376,7 +362,6 @@ def test_continuousplots_boxplot_histogram_boxplot_by_hue_applies_custom_paramet
     """
     cont_plots = ContinuousPlots()
 
-    # This should not raise an exception
     cont_plots.boxplot_histogram_boxplot_by_hue(
         data=sample_dataframe,
         feature="B",
@@ -405,7 +390,6 @@ def test_continuousplots_boxplot_histogram_boxplot_by_hue_handles_annotations(
     """
     cont_plots = ContinuousPlots()
 
-    # This should not raise an exception
     cont_plots.boxplot_histogram_boxplot_by_hue(
         data=sample_dataframe,
         feature="C",
@@ -433,9 +417,6 @@ def test_continuousplots_raises_error_invalid_input_types() -> None:
         cont_plots.histogram_and_box_plot(data="invalid_input")
 
 
-# Additional tests for missing coverage
-
-
 def test_continuousplots_histogram_and_box_plot_handles_list_input(
     sample_list: list[float],
 ) -> None:
@@ -451,7 +432,6 @@ def test_continuousplots_histogram_and_box_plot_handles_list_input(
     """
     cont_plots = ContinuousPlots()
 
-    # This should not raise an exception
     cont_plots.histogram_and_box_plot(
         data=sample_list,
         annotations=False,
@@ -479,7 +459,6 @@ def test_continuousplots_histogram_and_box_plot_handles_list_annotations(
     """
     cont_plots = ContinuousPlots()
 
-    # This should not raise an exception
     cont_plots.histogram_and_box_plot(
         data=sample_series,
         annotations=["Q1", "Med", "Q3"],
@@ -504,7 +483,6 @@ def test_continuousplots_histogram_and_box_plot_no_annotations(
     """
     cont_plots = ContinuousPlots()
 
-    # This should not raise an exception
     cont_plots.histogram_and_box_plot(
         data=sample_series, annotations=False, plot_title="No Annotations Test"
     )
@@ -527,11 +505,9 @@ def test_continuousplots_histogram_boxplot_linear_regression_with_nan_data(
     """
     cont_plots = ContinuousPlots()
 
-    # Add a second column for regression testing
     df_with_target = dataframe_with_nan.copy()
     df_with_target["target"] = np.random.rand(len(df_with_target))
 
-    # This should not raise an exception
     cont_plots.histogram_boxplot_linear_regression(
         data=df_with_target,
         feature="values",
@@ -556,7 +532,6 @@ def test_continuousplots_histogram_boxplot_linear_regression_custom_annotations(
     """
     cont_plots = ContinuousPlots()
 
-    # This should not raise an exception
     cont_plots.histogram_boxplot_linear_regression(
         data=sample_dataframe,
         feature="A",
@@ -568,9 +543,7 @@ def test_continuousplots_histogram_boxplot_linear_regression_custom_annotations(
     assert True, "Method should execute without errors"
 
 
-def test_continuousplots_boxplot_histogram_boxplot_by_hue_handles_missing_values() -> (
-    None
-):
+def test_continuousplots_boxplot_histogram_boxplot_by_hue_handles_missing_values() -> None:
     """Tests boxplot_histogram_boxplot_by_hue handles missing values correctly.
 
     Asserts:
@@ -580,7 +553,6 @@ def test_continuousplots_boxplot_histogram_boxplot_by_hue_handles_missing_values
     """
     cont_plots = ContinuousPlots()
 
-    # Create data with missing values
     test_data = pd.DataFrame(
         {
             "feature": [1, 2, np.nan, 4, 5, np.nan, 7, 8],
@@ -588,7 +560,6 @@ def test_continuousplots_boxplot_histogram_boxplot_by_hue_handles_missing_values
         }
     )
 
-    # This should not raise an exception
     cont_plots.boxplot_histogram_boxplot_by_hue(
         data=test_data, feature="feature", hue="hue", plot_title="Missing Values Test"
     )
@@ -606,7 +577,6 @@ def test_continuousplots_boxplot_histogram_boxplot_by_hue_many_categories() -> N
     """
     cont_plots = ContinuousPlots()
 
-    # Create data with many categories
     np.random.seed(42)
     test_data = pd.DataFrame(
         {
@@ -615,7 +585,6 @@ def test_continuousplots_boxplot_histogram_boxplot_by_hue_many_categories() -> N
         }
     )
 
-    # This should not raise an exception
     cont_plots.boxplot_histogram_boxplot_by_hue(
         data=test_data, feature="feature", hue="hue", plot_title="Many Categories Test"
     )
@@ -637,7 +606,6 @@ def test_continuousplots_boxplot_histogram_boxplot_by_hue_custom_annotations_lis
     """
     cont_plots = ContinuousPlots()
 
-    # This should not raise an exception
     cont_plots.boxplot_histogram_boxplot_by_hue(
         data=sample_dataframe,
         feature="A",
@@ -647,9 +615,6 @@ def test_continuousplots_boxplot_histogram_boxplot_by_hue_custom_annotations_lis
     )
 
     assert True, "Method should execute without errors"
-
-
-# Tests for inherited BasePlots functionality
 
 
 def test_continuousplots_inherits_base_functionality() -> None:
@@ -662,19 +627,16 @@ def test_continuousplots_inherits_base_functionality() -> None:
     """
     cont_plots = ContinuousPlots()
 
-    # Check inherited attributes
     assert hasattr(cont_plots, "quantiles_dict")
     assert hasattr(cont_plots, "default_template")
     assert hasattr(cont_plots, "default_font")
     assert hasattr(cont_plots, "default_colors")
 
-    # Check inherited methods
     assert hasattr(cont_plots, "check_data")
     assert hasattr(cont_plots, "check_2d_data")
     assert hasattr(cont_plots, "apply_default_layout")
     assert hasattr(cont_plots, "filter_nan_indices")
 
-    # Verify default values
     assert cont_plots.default_template == "simple_white"
     assert "primary" in cont_plots.default_colors
     assert "Q1" in cont_plots.quantiles_dict
@@ -696,15 +658,12 @@ def test_continuousplots_check_data_validation(
     """
     cont_plots = ContinuousPlots()
 
-    # Test with Series
     result_series = cont_plots.check_data(sample_series)
     assert isinstance(result_series, np.ndarray)
 
-    # Test with numpy array
     result_array = cont_plots.check_data(sample_numpy_array)
     assert isinstance(result_array, np.ndarray)
 
-    # Test with list
     test_list = [1, 2, 3, 4, 5]
     result_list = cont_plots.check_data(test_list)
     assert isinstance(result_list, np.ndarray)
@@ -725,13 +684,11 @@ def test_continuousplots_check_2d_data_validation(
     """
     cont_plots = ContinuousPlots()
 
-    # Test with DataFrame
     result = cont_plots.check_2d_data(sample_dataframe[["A", "B"]])
     assert isinstance(result, np.ndarray)
     assert result.ndim == 2
     assert result.shape[1] == 2
 
-    # Test with 2D numpy array
     test_2d = np.random.rand(10, 3)
     result_2d = cont_plots.check_2d_data(test_2d)
     assert isinstance(result_2d, np.ndarray)
@@ -753,14 +710,12 @@ def test_continuousplots_filter_nan_indices_functionality(
     """
     cont_plots = ContinuousPlots()
 
-    # Test filtering NaN indices
     non_nan_indices = cont_plots.filter_nan_indices(dataframe_with_nan, "values")
     assert isinstance(non_nan_indices, (pd.Series, np.ndarray))
 
-    # Check that some values are filtered out
     total_count = len(dataframe_with_nan)
     non_nan_count = non_nan_indices.sum()
-    assert non_nan_count < total_count  # Some values should be NaN
+    assert non_nan_count < total_count
 
 
 def test_continuousplots_error_handling_invalid_data_types() -> None:
@@ -773,15 +728,12 @@ def test_continuousplots_error_handling_invalid_data_types() -> None:
     """
     cont_plots = ContinuousPlots()
 
-    # Test scatter_plot with invalid data
     with pytest.raises((TypeError, ValueError, AttributeError)):
         cont_plots.scatter_plot(data="invalid", hue=["test"])
 
-    # Test check_data with invalid input
     with pytest.raises(TypeError):
         cont_plots.check_data("not_a_valid_type")
 
-    # Test check_2d_data with invalid input
     with pytest.raises(TypeError):
         cont_plots.check_2d_data("not_a_valid_type")
 
@@ -799,14 +751,13 @@ def test_continuousplots_empty_data_handling() -> None:
     empty_array = np.array([])
     empty_df = pd.DataFrame()
 
-    # Test with empty data - these might raise errors which is acceptable
     try:
         cont_plots.check_data(empty_array)
         cont_plots.check_2d_data(empty_df)
-        # If no error, that's also fine
+
         assert True, "Empty data handled gracefully"
     except (ValueError, IndexError):
-        # If errors are raised, that's also acceptable behavior
+
         assert True, "Empty data errors are handled appropriately"
 
 
@@ -826,10 +777,9 @@ def test_continuousplots_scatter_plot_handles_duplicate_hue_values(
     cont_plots = ContinuousPlots()
 
     data_2d = sample_dataframe[["A", "B"]].values
-    # Create hue with many duplicates
+
     hue_values = ["GroupA"] * 20 + ["GroupB"] * 30 + ["GroupA"] * 50
 
-    # This should not raise an exception
     cont_plots.scatter_plot(
         data=data_2d,
         hue=hue_values,
@@ -851,10 +801,8 @@ def test_continuousplots_histogram_and_box_plot_handles_named_series() -> None:
     """
     cont_plots = ContinuousPlots()
 
-    # Create named series
     named_series = pd.Series(np.random.randn(50), name="Temperature")
 
-    # This should not raise an exception
     cont_plots.histogram_and_box_plot(
         data=named_series, plot_title="Named Series Test", annotations=True
     )
@@ -877,10 +825,8 @@ def test_continuousplots_histogram_and_box_plot_handles_dataframe_input(
     """
     cont_plots = ContinuousPlots()
 
-    # Test with single column DataFrame
     single_col_df = sample_dataframe[["A"]]
 
-    # This should not raise an exception
     cont_plots.histogram_and_box_plot(
         data=single_col_df,
         plot_title="DataFrame Input Test",
@@ -904,12 +850,10 @@ def test_continuousplots_scatter_plot_handles_extreme_marker_sizes() -> None:
     test_data = np.random.rand(10, 2)
     test_hue = ["A", "B"] * 5
 
-    # Test with very small marker size
     cont_plots.scatter_plot(
         data=test_data, hue=test_hue, marker_size=1, plot_title="Small Markers Test"
     )
 
-    # Test with very large marker size
     cont_plots.scatter_plot(
         data=test_data, hue=test_hue, marker_size=25, plot_title="Large Markers Test"
     )
@@ -929,13 +873,11 @@ def test_continuousplots_histogram_boxplot_linear_regression_handles_perfect_cor
     """
     cont_plots = ContinuousPlots()
 
-    # Create perfectly correlated data
     feature_data = np.linspace(1, 100, 50)
-    target_data = feature_data * 2 + 10  # Perfect linear relationship
+    target_data = feature_data * 2 + 10
 
     perfect_corr_df = pd.DataFrame({"feature": feature_data, "target": target_data})
 
-    # This should not raise an exception
     cont_plots.histogram_boxplot_linear_regression(
         data=perfect_corr_df,
         feature="feature",
@@ -960,12 +902,11 @@ def test_continuousplots_histogram_boxplot_linear_regression_handles_no_correlat
     cont_plots = ContinuousPlots()
 
     np.random.seed(42)
-    # Create uncorrelated data
+
     uncorr_df = pd.DataFrame(
         {"feature": np.random.randn(100), "target": np.random.randn(100)}
     )
 
-    # This should not raise an exception
     cont_plots.histogram_boxplot_linear_regression(
         data=uncorr_df,
         feature="feature",
@@ -989,12 +930,10 @@ def test_continuousplots_boxplot_histogram_boxplot_by_hue_handles_single_categor
     """
     cont_plots = ContinuousPlots()
 
-    # Create data with single hue category
     single_hue_df = pd.DataFrame(
         {"feature": np.random.randn(30), "hue": ["OnlyCategory"] * 30}
     )
 
-    # This should not raise an exception
     cont_plots.boxplot_histogram_boxplot_by_hue(
         data=single_hue_df,
         feature="feature",
@@ -1015,12 +954,10 @@ def test_continuousplots_boxplot_histogram_boxplot_by_hue_handles_numeric_hue() 
     """
     cont_plots = ContinuousPlots()
 
-    # Create data with numeric hue
     numeric_hue_df = pd.DataFrame(
         {"feature": np.random.randn(60), "hue": [1, 2, 3] * 20}
     )
 
-    # This should not raise an exception
     cont_plots.boxplot_histogram_boxplot_by_hue(
         data=numeric_hue_df, feature="feature", hue="hue", plot_title="Numeric Hue Test"
     )
@@ -1038,10 +975,8 @@ def test_continuousplots_apply_default_layout_integration() -> None:
     """
     cont_plots = ContinuousPlots()
 
-    # Create a simple figure to test layout application
     fig = go.Figure()
 
-    # This should not raise an exception
     cont_plots.apply_default_layout(
         fig=fig,
         plot_title="Test Layout",
@@ -1051,7 +986,6 @@ def test_continuousplots_apply_default_layout_integration() -> None:
         yaxis_title="Test Y",
     )
 
-    # Verify layout was applied
     assert fig.layout.width == 1200
     assert fig.layout.height == 800
     assert fig.layout.title.text == "<b>Test Layout</b>"
@@ -1069,12 +1003,10 @@ def test_continuousplots_create_subplot_layout_functionality() -> None:
     """
     cont_plots = ContinuousPlots()
 
-    # Test creating subplot layout
     fig = cont_plots.create_subplot_layout(
         rows=1, cols=3, subplot_types=[["box", "histogram", "scatter"]]
     )
 
-    # Verify figure was created
     assert fig is not None
     assert hasattr(fig, "add_trace")
     assert hasattr(fig, "update_layout")
