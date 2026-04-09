@@ -1,30 +1,23 @@
-"""
-Test module for kvbiii_plots.eda package.
-
-This module tests the imports and structure of the eda subpackage,
-ensuring all plotting classes are properly exposed through the package interface.
-"""
-
-from kvbiii_plots.eda import (
-    ContinuousPlots,
-    CategoricalPlots,
-    TimeSeriesPlots,
-    MultivariatePlots,
-)
 from kvbiii_plots.base_plots import BasePlots
+from kvbiii_plots.eda import (
+    CategoricalPlots,
+    ContinuousPlots,
+    MultivariatePlots,
+    TimeSeriesPlots,
+)
 import kvbiii_plots.eda as eda_module
 
 
-def test_eda_imports():
+def test_eda_imports() -> None:
     """Test that all expected classes can be imported from eda package."""
-    # Verify classes exist
+
     assert ContinuousPlots is not None
     assert CategoricalPlots is not None
     assert TimeSeriesPlots is not None
     assert MultivariatePlots is not None
 
 
-def test_eda_all_exports():
+def test_eda_all_exports() -> None:
     """Test that __all__ contains expected exports."""
     expected_exports = [
         "ContinuousPlots",
@@ -36,7 +29,7 @@ def test_eda_all_exports():
     assert set(eda_module.__all__) == set(expected_exports)
 
 
-def test_eda_classes_inherit_from_baseplots():
+def test_eda_classes_inherit_from_baseplots() -> None:
     """Test that all eda classes properly inherit from BasePlots."""
     assert issubclass(ContinuousPlots, BasePlots)
     assert issubclass(CategoricalPlots, BasePlots)
@@ -44,7 +37,7 @@ def test_eda_classes_inherit_from_baseplots():
     assert issubclass(MultivariatePlots, BasePlots)
 
 
-def test_eda_package_docstring():
+def test_eda_package_docstring() -> None:
     """Test that eda package has proper documentation."""
     assert eda_module.__doc__ is not None
     assert (
@@ -54,7 +47,7 @@ def test_eda_package_docstring():
     assert "plotting" in eda_module.__doc__.lower()
 
 
-def test_eda_classes_have_docstrings():
+def test_eda_classes_have_docstrings() -> None:
     """Test that all eda classes have proper docstrings."""
     classes = [
         ContinuousPlots,
@@ -67,24 +60,23 @@ def test_eda_classes_have_docstrings():
         assert len(cls.__doc__.strip()) > 0
 
 
-def test_eda_classes_instantiation():
+def test_eda_classes_instantiation() -> None:
     """Test that all eda classes can be instantiated without errors."""
-    # Test instantiation
+
     continuous_plots = ContinuousPlots()
     categorical_plots = CategoricalPlots()
     time_series_plots = TimeSeriesPlots()
     multivariate_plots = MultivariatePlots()
 
-    # Verify they have inherited attributes from BasePlots
     assert hasattr(continuous_plots, "default_template")
     assert hasattr(categorical_plots, "default_template")
     assert hasattr(time_series_plots, "default_template")
     assert hasattr(multivariate_plots, "default_template")
 
 
-def test_eda_classes_have_expected_methods():
+def test_eda_classes_have_expected_methods() -> None:
     """Test that eda classes have their expected public methods."""
-    # Continuous plots expected methods
+
     continuous_methods = [
         "scatter_plot",
         "histogram_and_box_plot",
@@ -97,7 +89,6 @@ def test_eda_classes_have_expected_methods():
         assert hasattr(continuous_plots, method)
         assert callable(getattr(continuous_plots, method))
 
-    # Categorical plots expected methods
     categorical_methods = [
         "barplot",
         "pie_barplot",
@@ -111,7 +102,6 @@ def test_eda_classes_have_expected_methods():
         assert hasattr(categorical_plots, method)
         assert callable(getattr(categorical_plots, method))
 
-    # Time series plots expected methods
     time_series_methods = [
         "plot_time_series_mean",
         "plot_time_series_multiple_metrics",
@@ -124,7 +114,6 @@ def test_eda_classes_have_expected_methods():
         assert hasattr(time_series_plots, method)
         assert callable(getattr(time_series_plots, method))
 
-    # Multivariate plots expected methods
     multivariate_methods = [
         "correlation_plot",
         "scatter_matrix",
