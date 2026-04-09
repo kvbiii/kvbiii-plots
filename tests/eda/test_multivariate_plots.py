@@ -1,6 +1,7 @@
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
+
 from kvbiii_plots.eda.multivariate_plots import MultivariatePlots
 
 
@@ -22,10 +23,9 @@ class TestMultivariatePlotsCorrelationPlot:
         """
         mv_plots = MultivariatePlots()
 
-        # This should not raise an exception - specify only numeric features
         mv_plots.correlation_plot(
             data=sample_dataframe,
-            features_names=["A", "B", "C"],  # Only numeric columns
+            features_names=["A", "B", "C"],
             plot_title="Test Correlation Plot",
             width=800,
             height=800,
@@ -48,12 +48,10 @@ class TestMultivariatePlotsCorrelationPlot:
         """
         mv_plots = MultivariatePlots()
 
-        # Create 2D array for correlation
         data_2d = np.column_stack(
             [sample_numpy_array, sample_numpy_array * 2, sample_numpy_array * 0.5]
         )
 
-        # This should not raise an exception
         mv_plots.correlation_plot(
             data=data_2d,
             plot_title="Numpy Array Correlation Test",
@@ -78,7 +76,6 @@ class TestMultivariatePlotsCorrelationPlot:
         """
         mv_plots = MultivariatePlots()
 
-        # This should not raise an exception
         mv_plots.correlation_plot(
             data=sample_dataframe,
             features_names=["A", "B", "C"],
@@ -104,7 +101,6 @@ class TestMultivariatePlotsCorrelationPlot:
         """
         mv_plots = MultivariatePlots()
 
-        # Test different correlation methods
         methods = ["pearson", "kendall", "spearman"]
 
         for method in methods:
@@ -134,7 +130,6 @@ class TestMultivariatePlotsCorrelationPlot:
         """
         mv_plots = MultivariatePlots()
 
-        # Test show_upper=True
         mv_plots.correlation_plot(
             data=sample_dataframe,
             features_names=["A", "B", "C"],
@@ -144,7 +139,6 @@ class TestMultivariatePlotsCorrelationPlot:
             height=700,
         )
 
-        # Test show_upper=False (default)
         mv_plots.correlation_plot(
             data=sample_dataframe,
             features_names=["A", "B", "C"],
@@ -169,7 +163,6 @@ class TestMultivariatePlotsCorrelationPlot:
         """
         mv_plots = MultivariatePlots()
 
-        # Test valid colorscales
         colorscales = ["RdBu", "Viridis", "Plasma"]
 
         for colorscale in colorscales:
@@ -182,7 +175,6 @@ class TestMultivariatePlotsCorrelationPlot:
                 height=500,
             )
 
-        # Test invalid colorscale (should use default)
         mv_plots.correlation_plot(
             data=sample_dataframe,
             features_names=["A", "B"],
@@ -207,8 +199,7 @@ class TestMultivariatePlotsCorrelationPlot:
         """
         mv_plots = MultivariatePlots()
 
-        # Test that method works when we explicitly select only numeric columns
-        numeric_features = ["A", "B", "C"]  # Only numeric columns from sample_dataframe
+        numeric_features = ["A", "B", "C"]
         mv_plots.correlation_plot(
             data=sample_dataframe,
             features_names=numeric_features,
@@ -220,7 +211,7 @@ class TestMultivariatePlotsCorrelationPlot:
         ), "Method should handle mixed data types when numeric features are specified"
 
     def test_correlation_plot_handles_automatic_feature_selection(
-        self, test_settings
+        self, test_settings: object
     ) -> None:
         """Tests correlation_plot with automatic feature selection on numeric-only DataFrame.
 
@@ -234,7 +225,6 @@ class TestMultivariatePlotsCorrelationPlot:
         """
         mv_plots = MultivariatePlots()
 
-        # Create a fully numeric DataFrame
         np.random.seed(test_settings.SEED)
         numeric_df = pd.DataFrame(
             {
@@ -244,10 +234,9 @@ class TestMultivariatePlotsCorrelationPlot:
             }
         )
 
-        # This should work with automatic feature selection
         mv_plots.correlation_plot(
             data=numeric_df,
-            features_names=None,  # Should automatically use all columns
+            features_names=None,
             plot_title="Automatic Feature Selection Test",
         )
 
@@ -268,10 +257,9 @@ class TestMultivariatePlotsCorrelationPlot:
         """
         mv_plots = MultivariatePlots()
 
-        # This should not raise an exception - specify only numeric features
         mv_plots.correlation_plot(
             data=sample_dataframe,
-            features_names=["A", "B", "C"],  # Only numeric columns
+            features_names=["A", "B", "C"],
             plot_title="Custom Parameters Correlation",
             width=1000,
             height=1000,
@@ -298,7 +286,6 @@ class TestMultivariatePlotsScatterMatrix:
         """
         mv_plots = MultivariatePlots()
 
-        # This should not raise an exception
         mv_plots.scatter_matrix(
             data=sample_dataframe,
             features=["A", "B", "C"],
@@ -324,7 +311,6 @@ class TestMultivariatePlotsScatterMatrix:
         """
         mv_plots = MultivariatePlots()
 
-        # This should not raise an exception
         mv_plots.scatter_matrix(
             data=sample_dataframe,
             features=None,
@@ -335,7 +321,10 @@ class TestMultivariatePlotsScatterMatrix:
 
         assert True, "Method should handle automatic feature selection"
 
-    def test_scatter_matrix_handles_feature_limit(self, test_settings) -> None:
+    def test_scatter_matrix_handles_feature_limit(
+        self,
+        test_settings: object,
+    ) -> None:
         """Tests scatter_matrix correctly limits features to maximum of 6.
 
         Args:
@@ -348,11 +337,9 @@ class TestMultivariatePlotsScatterMatrix:
         """
         mv_plots = MultivariatePlots()
 
-        # Create DataFrame with more than 6 numeric features
         np.random.seed(test_settings.SEED)
         large_df = pd.DataFrame({f"feature_{i}": np.random.rand(50) for i in range(10)})
 
-        # This should not raise an exception and should limit to 6 features
         mv_plots.scatter_matrix(
             data=large_df,
             features=None,
@@ -378,7 +365,6 @@ class TestMultivariatePlotsScatterMatrix:
         """
         mv_plots = MultivariatePlots()
 
-        # This should not raise an exception
         mv_plots.scatter_matrix(
             data=sample_dataframe,
             features=["A", "B", "C"],
@@ -404,7 +390,6 @@ class TestMultivariatePlotsScatterMatrix:
         """
         mv_plots = MultivariatePlots()
 
-        # Test different marker sizes
         marker_sizes = [3, 8, 15]
 
         for size in marker_sizes:
@@ -438,7 +423,6 @@ class TestMultivariatePlotsParallelCoordinates:
         """
         mv_plots = MultivariatePlots()
 
-        # This should not raise an exception
         mv_plots.parallel_coordinates(
             data=sample_dataframe,
             features=["A", "B", "C"],
@@ -464,7 +448,6 @@ class TestMultivariatePlotsParallelCoordinates:
         """
         mv_plots = MultivariatePlots()
 
-        # This should not raise an exception (using numeric column 'C' as hue)
         mv_plots.parallel_coordinates(
             data=sample_dataframe,
             features=["A", "B"],
@@ -477,7 +460,8 @@ class TestMultivariatePlotsParallelCoordinates:
     def test_parallel_coordinates_handles_hue_parameter_categorical(
         self, sample_dataframe: pd.DataFrame
     ) -> None:
-        """Tests parallel_coordinates correctly applies hue parameter for categorical color grouping.
+        """Tests parallel_coordinates correctly applies hue parameter for
+        categorical color grouping.
 
         Args:
             sample_dataframe (pd.DataFrame): Fixture containing test DataFrame data
@@ -489,7 +473,6 @@ class TestMultivariatePlotsParallelCoordinates:
         """
         mv_plots = MultivariatePlots()
 
-        # This should not raise an exception (using categorical column 'D' as hue)
         mv_plots.parallel_coordinates(
             data=sample_dataframe,
             features=["A", "B", "C"],
@@ -514,7 +497,6 @@ class TestMultivariatePlotsParallelCoordinates:
         """
         mv_plots = MultivariatePlots()
 
-        # Test normalize=True (default)
         mv_plots.parallel_coordinates(
             data=sample_dataframe,
             features=["A", "B", "C"],
@@ -522,7 +504,6 @@ class TestMultivariatePlotsParallelCoordinates:
             plot_title="Normalized Parallel Coordinates",
         )
 
-        # Test normalize=False
         mv_plots.parallel_coordinates(
             data=sample_dataframe,
             features=["A", "B", "C"],
@@ -547,7 +528,6 @@ class TestMultivariatePlotsParallelCoordinates:
         """
         mv_plots = MultivariatePlots()
 
-        # This should not raise an exception
         mv_plots.parallel_coordinates(
             data=sample_dataframe,
             features=None,
@@ -558,7 +538,10 @@ class TestMultivariatePlotsParallelCoordinates:
 
         assert True, "Method should execute without errors"
 
-    def test_parallel_coordinates_handles_missing_values(self, test_settings) -> None:
+    def test_parallel_coordinates_handles_missing_values(
+        self,
+        test_settings: object,
+    ) -> None:
         """Tests parallel_coordinates handles DataFrames with missing values.
 
         Args:
@@ -571,7 +554,6 @@ class TestMultivariatePlotsParallelCoordinates:
         """
         mv_plots = MultivariatePlots()
 
-        # Create DataFrame with missing values
         np.random.seed(test_settings.SEED)
         df_with_na = pd.DataFrame(
             {
@@ -582,7 +564,6 @@ class TestMultivariatePlotsParallelCoordinates:
             }
         )
 
-        # This should not raise an exception
         mv_plots.parallel_coordinates(
             data=df_with_na, features=["A", "B", "C"], plot_title="Missing Values Test"
         )
