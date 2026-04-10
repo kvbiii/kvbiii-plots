@@ -1,11 +1,12 @@
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
+
 from kvbiii_plots.eda.time_series_plots import TimeSeriesPlots
 
 
 @pytest.fixture
-def time_series_dataframe(test_settings) -> pd.DataFrame:
+def time_series_dataframe(test_settings: object) -> pd.DataFrame:
     """Provides a sample time series DataFrame for testing purposes.
 
     Args:
@@ -41,9 +42,8 @@ def test_timeseriesplots_prepare_time_series_data_handles_single_target(
     """
     ts_plots = TimeSeriesPlots()
 
-    # This should not raise an exception
     result = ts_plots._prepare_time_series_data(
-        data=time_series_dataframe.reset_index(), feature="date", target="value1"
+        data=time_series_dataframe.reset_index(), date_feature="date", feature="value1"
     )
 
     assert isinstance(result, pd.DataFrame), "Result should be DataFrame"
@@ -65,11 +65,10 @@ def test_timeseriesplots_prepare_time_series_data_handles_multiple_targets(
     """
     ts_plots = TimeSeriesPlots()
 
-    # This should not raise an exception
     result = ts_plots._prepare_time_series_data(
         data=time_series_dataframe.reset_index(),
-        feature="date",
-        target=["value1", "value2"],
+        date_feature="date",
+        feature=["value1", "value2"],
     )
 
     assert isinstance(result, pd.DataFrame), "Result should be DataFrame"
@@ -92,11 +91,10 @@ def test_timeseriesplots_plot_time_series_mean_handles_monthly_aggregation(
     """
     ts_plots = TimeSeriesPlots()
 
-    # This should not raise an exception
     ts_plots.plot_time_series_mean(
         data=time_series_dataframe.reset_index(),
-        feature="date",
-        target="value1",
+        date_feature="date",
+        feature="value1",
         agg_freq="ME",
         plot_title="Monthly Mean Test",
         width=1600,
@@ -121,11 +119,10 @@ def test_timeseriesplots_plot_time_series_mean_applies_custom_parameters(
     """
     ts_plots = TimeSeriesPlots()
 
-    # This should not raise an exception
     ts_plots.plot_time_series_mean(
         data=time_series_dataframe.reset_index(),
-        feature="date",
-        target="value1",
+        date_feature="date",
+        feature="value1",
         line_color="red",
         line_width=3,
         show_markers=True,
@@ -151,11 +148,10 @@ def test_timeseriesplots_plot_time_series_multiple_metrics_handles_multiple_targ
     """
     ts_plots = TimeSeriesPlots()
 
-    # This should not raise an exception
     ts_plots.plot_time_series_multiple_metrics(
         data=time_series_dataframe.reset_index(),
-        feature="date",
-        targets=["value1", "value2"],
+        date_feature="date",
+        features=["value1", "value2"],
         agg_freq="ME",
         agg_func="mean",
         plot_title="Multiple Metrics Test",
@@ -181,11 +177,10 @@ def test_timeseriesplots_plot_time_series_multiple_metrics_applies_aggregation_f
     """
     ts_plots = TimeSeriesPlots()
 
-    # This should not raise an exception
     ts_plots.plot_time_series_multiple_metrics(
         data=time_series_dataframe.reset_index(),
-        feature="date",
-        targets=["value1", "value2"],
+        date_feature="date",
+        features=["value1", "value2"],
         agg_func="sum",
         show_markers=True,
         plot_title="Sum Aggregation Test",
@@ -209,11 +204,10 @@ def test_timeseriesplots_plot_time_series_with_trend_handles_moving_average(
     """
     ts_plots = TimeSeriesPlots()
 
-    # This should not raise an exception
     ts_plots.plot_time_series_with_trend(
         data=time_series_dataframe.reset_index(),
-        feature="date",
-        target="value1",
+        date_feature="date",
+        feature="value1",
         window_size=30,
         plot_title="Trend Analysis Test",
         width=1600,
@@ -238,11 +232,10 @@ def test_timeseriesplots_plot_time_series_with_trend_applies_custom_colors(
     """
     ts_plots = TimeSeriesPlots()
 
-    # This should not raise an exception
     ts_plots.plot_time_series_with_trend(
         data=time_series_dataframe.reset_index(),
-        feature="date",
-        target="value1",
+        date_feature="date",
+        feature="value1",
         original_color="blue",
         trend_color="red",
         original_opacity=0.5,
@@ -268,11 +261,10 @@ def test_timeseriesplots_plot_seasonal_decomposition_handles_seasonal_analysis(
     """
     ts_plots = TimeSeriesPlots()
 
-    # This should not raise an exception
     ts_plots.plot_seasonal_decomposition(
         data=time_series_dataframe.reset_index(),
-        feature="date",
-        target="value1",
+        date_feature="date",
+        feature="value1",
         freq=365,
         plot_title="Seasonal Decomposition Test",
         width=1600,
@@ -297,11 +289,10 @@ def test_timeseriesplots_plot_seasonal_decomposition_applies_custom_parameters(
     """
     ts_plots = TimeSeriesPlots()
 
-    # This should not raise an exception
     ts_plots.plot_seasonal_decomposition(
         data=time_series_dataframe.reset_index(),
-        feature="date",
-        target="value1",
+        date_feature="date",
+        feature="value1",
         original_color="black",
         trend_color="blue",
         seasonal_color="green",
@@ -329,12 +320,11 @@ def test_timeseriesplots_plot_seasonal_decomposition_handles_different_frequenci
     """
     ts_plots = TimeSeriesPlots()
 
-    # This should not raise an exception
     ts_plots.plot_seasonal_decomposition(
         data=time_series_dataframe.reset_index(),
-        feature="date",
-        target="value1",
-        freq=30,  # Monthly seasonality
+        date_feature="date",
+        feature="value1",
+        freq=30,
         plot_title="Monthly Seasonality Test",
         vertical_spacing=0.1,
     )
@@ -356,12 +346,16 @@ def test_timeseriesplots_raises_error_missing_columns() -> None:
 
     with pytest.raises(KeyError):
         ts_plots.plot_time_series_mean(
-            data=test_df, feature="NonExistentColumn", target="value"
+            data=test_df,
+            date_feature="NonExistentColumn",
+            feature="value",
         )
 
     with pytest.raises(KeyError):
         ts_plots.plot_time_series_with_trend(
-            data=test_df, feature="date", target="NonExistentTarget"
+            data=test_df,
+            date_feature="date",
+            feature="NonExistentTarget",
         )
 
 
@@ -376,10 +370,101 @@ def test_timeseriesplots_raises_error_invalid_input_types() -> None:
 
     with pytest.raises((TypeError, AttributeError)):
         ts_plots.plot_time_series_mean(
-            data="invalid_input", feature="invalid", target="invalid"
+            data="invalid_input",
+            date_feature="invalid",
+            feature="invalid",
         )
 
     with pytest.raises((TypeError, AttributeError)):
         ts_plots.plot_seasonal_decomposition(
-            data=123, feature="invalid", target="invalid"
+            data=123,
+            date_feature="invalid",
+            feature="invalid",
         )
+
+
+def test_timeseriesplots_plot_time_series_boxplot_executes(
+    time_series_dataframe: pd.DataFrame,
+) -> None:
+    """Tests plot_time_series_boxplot executes without errors."""
+    ts_plots = TimeSeriesPlots()
+
+    ts_plots.plot_time_series_boxplot(
+        data=time_series_dataframe.reset_index(),
+        date_feature="date",
+        feature="value1",
+        agg_freq="ME",
+        top_n_periods=10,
+    )
+
+    assert True, "Method should execute without errors"
+
+
+def test_timeseriesplots_plot_feature_distribution_by_category_over_time_executes(
+    time_series_dataframe: pd.DataFrame,
+) -> None:
+    """Tests category-over-time distribution plotting executes without errors."""
+    ts_plots = TimeSeriesPlots()
+
+    ts_plots.plot_feature_distribution_by_category_over_time(
+        data=time_series_dataframe.reset_index(),
+        date_feature="date",
+        feature="value1",
+        category_feature="category",
+        agg_freq="ME",
+        top_n_categories=2,
+    )
+
+    assert True, "Method should execute without errors"
+
+
+def test_timeseriesplots_plot_feature_distribution_by_numeric_feature_over_time_executes(
+    time_series_dataframe: pd.DataFrame,
+) -> None:
+    """Tests numeric-feature-over-time distribution plotting executes without errors."""
+    ts_plots = TimeSeriesPlots()
+
+    ts_plots.plot_feature_distribution_by_numeric_feature_over_time(
+        data=time_series_dataframe.reset_index(),
+        date_feature="date",
+        feature="value1",
+        numeric_feature="value2",
+        agg_freq="ME",
+        n_bins=3,
+    )
+
+    assert True, "Method should execute without errors"
+
+
+def test_timeseriesplots_plot_auto_and_partial_correlation_executes(
+    time_series_dataframe: pd.DataFrame,
+) -> None:
+    """Tests autocorrelation and partial autocorrelation plotting executes."""
+    ts_plots = TimeSeriesPlots()
+
+    ts_plots.plot_auto_and_partial_correlation(
+        data=time_series_dataframe.reset_index(),
+        date_feature="date",
+        feature="value1",
+        max_lag=20,
+    )
+
+    assert True, "Method should execute without errors"
+
+
+def test_timeseriesplots_plot_cross_correlation_heatmap_executes(
+    time_series_dataframe: pd.DataFrame,
+) -> None:
+    """Tests cross-correlation heatmap plotting executes without errors."""
+    ts_plots = TimeSeriesPlots()
+
+    ts_plots.plot_cross_correlation_heatmap(
+        data=time_series_dataframe.reset_index(),
+        date_feature="date",
+        feature="value1",
+        comparison_features=["value2"],
+        agg_freq="ME",
+        max_lag=12,
+    )
+
+    assert True, "Method should execute without errors"
