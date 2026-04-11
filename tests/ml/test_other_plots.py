@@ -30,7 +30,8 @@ class TestMLOtherPlots:
         Test that cross-validation split plot runs without errors.
 
         Args:
-            simple_xy (tuple[np.ndarray, np.ndarray]): A tuple containing feature matrix X and target vector y.
+            simple_xy (tuple[np.ndarray, np.ndarray]): A tuple containing
+                feature matrix X and target vector y.
         """
         x_data, y_data = simple_xy
         cv = KFold(n_splits=3, shuffle=True, random_state=42)
@@ -47,7 +48,7 @@ class TestMLOtherPlots:
 
         assert True
 
-    def test_anova_comparison_plot_runs(self):
+    def test_anova_comparison_plot_runs(self) -> None:
         """Test that ANOVA comparison plot runs without errors."""
         rng = np.random.default_rng(42)
         x_groups = np.array(["A", "B", "A", "C", "B"] * 5)
@@ -65,9 +66,9 @@ class TestMLOtherPlots:
 
         assert True
 
-    def test_feature_ranking_scatter_plot_runs(self):
+    def test_feature_ranking_scatter_plot_runs(self) -> None:
         """Test that feature ranking scatter plot runs without errors."""
-        # Create small, consistent rankings dicts
+
         features = [f"f{i}" for i in range(1, 8)]
         spearman = {f: i for i, f in enumerate(features, start=1)}
         hoeffding = {f: i for i, f in enumerate(reversed(features), start=1)}
