@@ -1,11 +1,12 @@
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
+
 from kvbiii_plots.evaluation.regression_plots import RegressionPlots
 
 
 @pytest.fixture
-def regression_data(test_settings) -> tuple[np.ndarray, np.ndarray]:
+def regression_data(test_settings: object) -> tuple[np.ndarray, np.ndarray]:
     """
     Provides sample regression data for testing purposes.
 
@@ -17,12 +18,12 @@ def regression_data(test_settings) -> tuple[np.ndarray, np.ndarray]:
     """
     np.random.seed(test_settings.SEED)
     y_true = np.random.rand(100) * 100
-    y_pred = y_true + np.random.normal(0, 5, 100)  # Add some noise
+    y_pred = y_true + np.random.normal(0, 5, 100)
     return y_true, y_pred
 
 
 @pytest.fixture
-def regression_data_series(test_settings) -> tuple[pd.Series, pd.Series]:
+def regression_data_series(test_settings: object) -> tuple[pd.Series, pd.Series]:
     """
     Provides sample regression data as pandas Series for testing purposes.
 
@@ -39,7 +40,7 @@ def regression_data_series(test_settings) -> tuple[pd.Series, pd.Series]:
 
 
 @pytest.fixture
-def regression_data_list(test_settings) -> tuple[list, list]:
+def regression_data_list(test_settings: object) -> tuple[list[float], list[float]]:
     """
     Provides sample regression data as lists for testing purposes.
 
@@ -167,7 +168,7 @@ def test_regressionplots_validate_regression_inputs_handles_pandas_series(
 
 
 def test_regressionplots_validate_regression_inputs_handles_lists(
-    regression_data_list: tuple[list, list],
+    regression_data_list: tuple[list[float], list[float]],
 ) -> None:
     """Tests _validate_regression_inputs with lists.
 
@@ -381,7 +382,6 @@ def test_regressionplots_homoscedacity_plot_handles_numpy_arrays(
     reg_plots = RegressionPlots()
     y_true, y_pred = regression_data
 
-    # This should not raise an exception
     reg_plots.homoscedacity_plot(
         y_true=y_true,
         y_pred=y_pred,
@@ -410,7 +410,6 @@ def test_regressionplots_homoscedacity_plot_applies_custom_parameters(
     reg_plots = RegressionPlots()
     y_true, y_pred = regression_data
 
-    # This should not raise an exception
     reg_plots.homoscedacity_plot(
         y_true=y_true,
         y_pred=y_pred,
@@ -446,7 +445,6 @@ def test_regressionplots_homoscedacity_plot_handles_series_input(
     reg_plots = RegressionPlots()
     y_true, y_pred = regression_data_series
 
-    # This should not raise an exception
     reg_plots.homoscedacity_plot(
         y_true=y_true,
         y_pred=y_pred,
@@ -476,7 +474,6 @@ def test_regressionplots_homoscedacity_plot_handles_custom_metric_value(
 
     custom_metric_value = 42.5
 
-    # This should not raise an exception
     reg_plots.homoscedacity_plot(
         y_true=y_true,
         y_pred=y_pred,
@@ -505,7 +502,6 @@ def test_regressionplots_true_vs_fitted_plot_handles_numpy_arrays(
     reg_plots = RegressionPlots()
     y_true, y_pred = regression_data
 
-    # This should not raise an exception
     reg_plots.true_vs_fitted_plot(
         y_true=y_true,
         y_pred=y_pred,
@@ -534,7 +530,6 @@ def test_regressionplots_true_vs_fitted_plot_applies_custom_parameters(
     reg_plots = RegressionPlots()
     y_true, y_pred = regression_data
 
-    # This should not raise an exception
     reg_plots.true_vs_fitted_plot(
         y_true=y_true,
         y_pred=y_pred,
@@ -574,7 +569,6 @@ def test_regressionplots_true_vs_fitted_plot_handles_diagonal_and_trendline_opti
     reg_plots = RegressionPlots()
     y_true, y_pred = regression_data
 
-    # Test with diagonal only
     reg_plots.true_vs_fitted_plot(
         y_true=y_true,
         y_pred=y_pred,
@@ -584,7 +578,6 @@ def test_regressionplots_true_vs_fitted_plot_handles_diagonal_and_trendline_opti
         height=400,
     )
 
-    # Test with trendline only
     reg_plots.true_vs_fitted_plot(
         y_true=y_true,
         y_pred=y_pred,
@@ -594,7 +587,6 @@ def test_regressionplots_true_vs_fitted_plot_handles_diagonal_and_trendline_opti
         height=400,
     )
 
-    # Test with both enabled
     reg_plots.true_vs_fitted_plot(
         y_true=y_true,
         y_pred=y_pred,
@@ -623,7 +615,6 @@ def test_regressionplots_true_vs_fitted_plot_handles_perfect_predictions(
     reg_plots = RegressionPlots()
     y_true, y_pred = perfect_predictions
 
-    # This should not raise an exception
     reg_plots.true_vs_fitted_plot(
         y_true=y_true,
         y_pred=y_pred,
@@ -651,7 +642,6 @@ def test_regressionplots_residual_distribution_plot_handles_histogram_type(
     reg_plots = RegressionPlots()
     y_true, y_pred = regression_data
 
-    # This should not raise an exception
     reg_plots.residual_distribution_plot(
         y_true=y_true,
         y_pred=y_pred,
@@ -681,7 +671,6 @@ def test_regressionplots_residual_distribution_plot_handles_box_type(
     reg_plots = RegressionPlots()
     y_true, y_pred = regression_data
 
-    # This should not raise an exception
     reg_plots.residual_distribution_plot(
         y_true=y_true,
         y_pred=y_pred,
@@ -711,7 +700,6 @@ def test_regressionplots_residual_distribution_plot_applies_custom_parameters(
     reg_plots = RegressionPlots()
     y_true, y_pred = regression_data
 
-    # This should not raise an exception
     reg_plots.residual_distribution_plot(
         y_true=y_true,
         y_pred=y_pred,
@@ -746,7 +734,6 @@ def test_regressionplots_residual_distribution_plot_handles_normal_curve_option(
     reg_plots = RegressionPlots()
     y_true, y_pred = regression_data
 
-    # Test with normal curve enabled
     reg_plots.residual_distribution_plot(
         y_true=y_true,
         y_pred=y_pred,
@@ -757,7 +744,6 @@ def test_regressionplots_residual_distribution_plot_handles_normal_curve_option(
         height=400,
     )
 
-    # Test with normal curve disabled
     reg_plots.residual_distribution_plot(
         y_true=y_true,
         y_pred=y_pred,
@@ -809,7 +795,6 @@ def test_regressionplots_residual_distribution_plot_handles_automatic_axis_title
     reg_plots = RegressionPlots()
     y_true, y_pred = regression_data
 
-    # Test automatic titles for histogram
     reg_plots.residual_distribution_plot(
         y_true=y_true,
         y_pred=y_pred,
@@ -818,7 +803,6 @@ def test_regressionplots_residual_distribution_plot_handles_automatic_axis_title
         height=400,
     )
 
-    # Test automatic titles for box plot
     reg_plots.residual_distribution_plot(
         y_true=y_true,
         y_pred=y_pred,
@@ -827,7 +811,6 @@ def test_regressionplots_residual_distribution_plot_handles_automatic_axis_title
         height=400,
     )
 
-    # Test custom titles
     reg_plots.residual_distribution_plot(
         y_true=y_true,
         y_pred=y_pred,
@@ -892,7 +875,7 @@ def test_regressionplots_methods_handle_empty_input_arrays(
 
 
 def test_regressionplots_methods_handle_list_input(
-    regression_data_list: tuple[list, list],
+    regression_data_list: tuple[list[float], list[float]],
 ) -> None:
     """Tests all regression plot methods handle list input correctly.
 
@@ -907,7 +890,6 @@ def test_regressionplots_methods_handle_list_input(
     reg_plots = RegressionPlots()
     y_true, y_pred = regression_data_list
 
-    # This should not raise exceptions
     reg_plots.homoscedacity_plot(y_true=y_true, y_pred=y_pred, width=400, height=300)
 
     reg_plots.true_vs_fitted_plot(y_true=y_true, y_pred=y_pred, width=400, height=300)
