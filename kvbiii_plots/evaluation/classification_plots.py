@@ -1193,7 +1193,6 @@ class ClassificationPlots(BasePlots):
             else:
                 raise TypeError("cutoffs must be float, int, or np.ndarray")
 
-        ids = list(id2label.keys())
         labels = list(id2label.values())
 
         if y_true.dtype != np.str_ and y_true.dtype != np.object_:
