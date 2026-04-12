@@ -104,6 +104,7 @@ jobs:
           pipdeptree --warn silence --freeze \
             | cut -d'=' -f1 \
             | sed 's/-/_/g' \
+            | sed 's/^[ \t]*//;s/├── //;s/└── //' \
             | tr '[:upper:]' '[:lower:]' \
             | sort -u > installed_packages.txt
           echo "Installed packages:"
