@@ -6,38 +6,51 @@ import kvbiii_plots.evaluation as evaluation_module
 def test_evaluation_imports() -> None:
     """Test that all expected classes can be imported from evaluation package."""
 
-    assert ClassificationPlots is not None
-    assert RegressionPlots is not None
-    assert SHAPPlots is not None
+    if not (ClassificationPlots is not None):
+        raise AssertionError("Assertion failed.")
+    if not (RegressionPlots is not None):
+        raise AssertionError("Assertion failed.")
+    if not (SHAPPlots is not None):
+        raise AssertionError("Assertion failed.")
 
 
 def test_evaluation_all_exports() -> None:
     """Test that __all__ contains expected exports."""
     expected_exports = ["ClassificationPlots", "RegressionPlots", "SHAPPlots"]
-    assert hasattr(evaluation_module, "__all__")
-    assert set(evaluation_module.__all__) == set(expected_exports)
+    if not (hasattr(evaluation_module, "__all__")):
+        raise AssertionError("Assertion failed.")
+    if not (set(evaluation_module.__all__) == set(expected_exports)):
+        raise AssertionError("Assertion failed.")
 
 
 def test_evaluation_classes_inherit_from_baseplots() -> None:
     """Test that all evaluation classes properly inherit from BasePlots."""
-    assert issubclass(ClassificationPlots, BasePlots)
-    assert issubclass(RegressionPlots, BasePlots)
-    assert issubclass(SHAPPlots, BasePlots)
+    if not (issubclass(ClassificationPlots, BasePlots)):
+        raise AssertionError("Assertion failed.")
+    if not (issubclass(RegressionPlots, BasePlots)):
+        raise AssertionError("Assertion failed.")
+    if not (issubclass(SHAPPlots, BasePlots)):
+        raise AssertionError("Assertion failed.")
 
 
 def test_evaluation_package_docstring() -> None:
     """Test that evaluation package has proper documentation."""
-    assert evaluation_module.__doc__ is not None
-    assert "evaluation" in evaluation_module.__doc__.lower()
-    assert "plotting" in evaluation_module.__doc__.lower()
+    if not (evaluation_module.__doc__ is not None):
+        raise AssertionError("Assertion failed.")
+    if not ("evaluation" in evaluation_module.__doc__.lower()):
+        raise AssertionError("Assertion failed.")
+    if not ("plotting" in evaluation_module.__doc__.lower()):
+        raise AssertionError("Assertion failed.")
 
 
 def test_evaluation_classes_have_docstrings() -> None:
     """Test that all evaluation classes have proper docstrings."""
     classes = [ClassificationPlots, RegressionPlots, SHAPPlots]
     for cls in classes:
-        assert cls.__doc__ is not None
-        assert len(cls.__doc__.strip()) > 0
+        if not (cls.__doc__ is not None):
+            raise AssertionError("Assertion failed.")
+        if not (len(cls.__doc__.strip()) > 0):
+            raise AssertionError("Assertion failed.")
 
 
 def test_evaluation_classes_instantiation() -> None:
@@ -47,9 +60,12 @@ def test_evaluation_classes_instantiation() -> None:
     regression_plots = RegressionPlots()
     shap_plots = SHAPPlots()
 
-    assert hasattr(classification_plots, "default_template")
-    assert hasattr(regression_plots, "default_template")
-    assert hasattr(shap_plots, "default_template")
+    if not (hasattr(classification_plots, "default_template")):
+        raise AssertionError("Assertion failed.")
+    if not (hasattr(regression_plots, "default_template")):
+        raise AssertionError("Assertion failed.")
+    if not (hasattr(shap_plots, "default_template")):
+        raise AssertionError("Assertion failed.")
 
 
 def test_evaluation_classes_have_expected_methods() -> None:
@@ -64,8 +80,10 @@ def test_evaluation_classes_have_expected_methods() -> None:
 
     classification_plots = ClassificationPlots()
     for method in classification_methods:
-        assert hasattr(classification_plots, method)
-        assert callable(getattr(classification_plots, method))
+        if not (hasattr(classification_plots, method)):
+            raise AssertionError("Assertion failed.")
+        if not (callable(getattr(classification_plots, method))):
+            raise AssertionError("Assertion failed.")
 
     regression_methods = [
         "homoscedacity_plot",
@@ -75,8 +93,10 @@ def test_evaluation_classes_have_expected_methods() -> None:
 
     regression_plots = RegressionPlots()
     for method in regression_methods:
-        assert hasattr(regression_plots, method)
-        assert callable(getattr(regression_plots, method))
+        if not (hasattr(regression_plots, method)):
+            raise AssertionError("Assertion failed.")
+        if not (callable(getattr(regression_plots, method))):
+            raise AssertionError("Assertion failed.")
 
     shap_methods = [
         "plot_shap_bar",
@@ -88,5 +108,7 @@ def test_evaluation_classes_have_expected_methods() -> None:
 
     shap_plots = SHAPPlots()
     for method in shap_methods:
-        assert hasattr(shap_plots, method)
-        assert callable(getattr(shap_plots, method))
+        if not (hasattr(shap_plots, method)):
+            raise AssertionError("Assertion failed.")
+        if not (callable(getattr(shap_plots, method))):
+            raise AssertionError("Assertion failed.")

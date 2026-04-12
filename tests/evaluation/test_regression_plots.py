@@ -105,14 +105,22 @@ def test_regressionplots_initialization() -> None:
     """
     reg_plots = RegressionPlots()
 
-    assert hasattr(reg_plots, "default_regression_colors")
-    assert "scatter" in reg_plots.default_regression_colors
-    assert "line" in reg_plots.default_regression_colors
-    assert "trendline" in reg_plots.default_regression_colors
-    assert "residual_line" in reg_plots.default_regression_colors
-    assert hasattr(reg_plots, "metrics_dict")
-    assert "RMSE" in reg_plots.metrics_dict
-    assert "R2" in reg_plots.metrics_dict
+    if not (hasattr(reg_plots, "default_regression_colors")):
+        raise AssertionError("Assertion failed.")
+    if not ("scatter" in reg_plots.default_regression_colors):
+        raise AssertionError("Assertion failed.")
+    if not ("line" in reg_plots.default_regression_colors):
+        raise AssertionError("Assertion failed.")
+    if not ("trendline" in reg_plots.default_regression_colors):
+        raise AssertionError("Assertion failed.")
+    if not ("residual_line" in reg_plots.default_regression_colors):
+        raise AssertionError("Assertion failed.")
+    if not (hasattr(reg_plots, "metrics_dict")):
+        raise AssertionError("Assertion failed.")
+    if not ("RMSE" in reg_plots.metrics_dict):
+        raise AssertionError("Assertion failed.")
+    if not ("R2" in reg_plots.metrics_dict):
+        raise AssertionError("Assertion failed.")
 
 
 def test_regressionplots_validate_regression_inputs_handles_numpy_arrays(
@@ -135,10 +143,14 @@ def test_regressionplots_validate_regression_inputs_handles_numpy_arrays(
         y_true, y_pred
     )
 
-    assert isinstance(validated_true, np.ndarray)
-    assert isinstance(validated_pred, np.ndarray)
-    assert len(validated_true) == len(validated_pred)
-    assert len(validated_true) == len(y_true)
+    if not (isinstance(validated_true, np.ndarray)):
+        raise AssertionError("Assertion failed.")
+    if not (isinstance(validated_pred, np.ndarray)):
+        raise AssertionError("Assertion failed.")
+    if not (len(validated_true) == len(validated_pred)):
+        raise AssertionError("Assertion failed.")
+    if not (len(validated_true) == len(y_true)):
+        raise AssertionError("Assertion failed.")
 
 
 def test_regressionplots_validate_regression_inputs_handles_pandas_series(
@@ -161,10 +173,14 @@ def test_regressionplots_validate_regression_inputs_handles_pandas_series(
         y_true, y_pred
     )
 
-    assert isinstance(validated_true, np.ndarray)
-    assert isinstance(validated_pred, np.ndarray)
-    assert len(validated_true) == len(y_true)
-    assert len(validated_pred) == len(y_pred)
+    if not (isinstance(validated_true, np.ndarray)):
+        raise AssertionError("Assertion failed.")
+    if not (isinstance(validated_pred, np.ndarray)):
+        raise AssertionError("Assertion failed.")
+    if not (len(validated_true) == len(y_true)):
+        raise AssertionError("Assertion failed.")
+    if not (len(validated_pred) == len(y_pred)):
+        raise AssertionError("Assertion failed.")
 
 
 def test_regressionplots_validate_regression_inputs_handles_lists(
@@ -187,10 +203,14 @@ def test_regressionplots_validate_regression_inputs_handles_lists(
         y_true, y_pred
     )
 
-    assert isinstance(validated_true, np.ndarray)
-    assert isinstance(validated_pred, np.ndarray)
-    assert len(validated_true) == len(y_true)
-    assert len(validated_pred) == len(y_pred)
+    if not (isinstance(validated_true, np.ndarray)):
+        raise AssertionError("Assertion failed.")
+    if not (isinstance(validated_pred, np.ndarray)):
+        raise AssertionError("Assertion failed.")
+    if not (len(validated_true) == len(y_true)):
+        raise AssertionError("Assertion failed.")
+    if not (len(validated_pred) == len(y_pred)):
+        raise AssertionError("Assertion failed.")
 
 
 def test_regressionplots_validate_regression_inputs_raises_error_mismatched_lengths(
@@ -252,11 +272,16 @@ def test_regressionplots_calculate_metric_value_handles_supported_metrics(
     r2_value = reg_plots._calculate_metric_value(y_true, y_pred, "R2")
     mae_value = reg_plots._calculate_metric_value(y_true, y_pred, "MAE")
 
-    assert isinstance(rmse_value, (int, float))
-    assert isinstance(r2_value, (int, float))
-    assert isinstance(mae_value, (int, float))
-    assert rmse_value >= 0
-    assert mae_value >= 0
+    if not (isinstance(rmse_value, (int, float))):
+        raise AssertionError("Assertion failed.")
+    if not (isinstance(r2_value, (int, float))):
+        raise AssertionError("Assertion failed.")
+    if not (isinstance(mae_value, (int, float))):
+        raise AssertionError("Assertion failed.")
+    if not (rmse_value >= 0):
+        raise AssertionError("Assertion failed.")
+    if not (mae_value >= 0):
+        raise AssertionError("Assertion failed.")
 
 
 def test_regressionplots_calculate_metric_value_raises_error_unsupported_metric(
@@ -298,7 +323,8 @@ def test_regressionplots_calculate_metric_value_handles_case_insensitive_metrics
     rmse_lower = reg_plots._calculate_metric_value(y_true, y_pred, "rmse")
     rmse_mixed = reg_plots._calculate_metric_value(y_true, y_pred, "Rmse")
 
-    assert rmse_upper == rmse_lower == rmse_mixed
+    if not (rmse_upper == rmse_lower == rmse_mixed):
+        raise AssertionError("Assertion failed.")
 
 
 def test_regressionplots_create_scatter_trace_returns_valid_trace(
@@ -319,12 +345,18 @@ def test_regressionplots_create_scatter_trace_returns_valid_trace(
 
     trace = reg_plots._create_scatter_trace(y_pred, y_true)
 
-    assert hasattr(trace, "x")
-    assert hasattr(trace, "y")
-    assert hasattr(trace, "mode")
-    assert trace.mode == "markers"
-    assert len(trace.x) == len(y_pred)
-    assert len(trace.y) == len(y_true)
+    if not (hasattr(trace, "x")):
+        raise AssertionError("Assertion failed.")
+    if not (hasattr(trace, "y")):
+        raise AssertionError("Assertion failed.")
+    if not (hasattr(trace, "mode")):
+        raise AssertionError("Assertion failed.")
+    if not (trace.mode == "markers"):
+        raise AssertionError("Assertion failed.")
+    if not (len(trace.x) == len(y_pred)):
+        raise AssertionError("Assertion failed.")
+    if not (len(trace.y) == len(y_true)):
+        raise AssertionError("Assertion failed.")
 
 
 def test_regressionplots_create_scatter_trace_applies_custom_parameters(
@@ -359,11 +391,16 @@ def test_regressionplots_create_scatter_trace_applies_custom_parameters(
         show_legend=True,
     )
 
-    assert trace.marker.color == custom_color
-    assert trace.marker.size == custom_size
-    assert trace.marker.opacity == custom_opacity
-    assert trace.name == custom_name
-    assert trace.showlegend == True
+    if not (trace.marker.color == custom_color):
+        raise AssertionError("Assertion failed.")
+    if not (trace.marker.size == custom_size):
+        raise AssertionError("Assertion failed.")
+    if not (trace.marker.opacity == custom_opacity):
+        raise AssertionError("Assertion failed.")
+    if not (trace.name == custom_name):
+        raise AssertionError("Assertion failed.")
+    if not (trace.showlegend == True):
+        raise AssertionError("Assertion failed.")
 
 
 def test_regressionplots_homoscedacity_plot_handles_numpy_arrays(
@@ -390,7 +427,8 @@ def test_regressionplots_homoscedacity_plot_handles_numpy_arrays(
         height=600,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_regressionplots_homoscedacity_plot_applies_custom_parameters(
@@ -426,7 +464,8 @@ def test_regressionplots_homoscedacity_plot_applies_custom_parameters(
         trendline_color="purple",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_regressionplots_homoscedacity_plot_handles_series_input(
@@ -453,7 +492,8 @@ def test_regressionplots_homoscedacity_plot_handles_series_input(
         height=600,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_regressionplots_homoscedacity_plot_handles_custom_metric_value(
@@ -483,7 +523,8 @@ def test_regressionplots_homoscedacity_plot_handles_custom_metric_value(
         height=600,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_regressionplots_true_vs_fitted_plot_handles_numpy_arrays(
@@ -510,7 +551,8 @@ def test_regressionplots_true_vs_fitted_plot_handles_numpy_arrays(
         height=600,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_regressionplots_true_vs_fitted_plot_applies_custom_parameters(
@@ -549,7 +591,8 @@ def test_regressionplots_true_vs_fitted_plot_applies_custom_parameters(
         axis_buffer_percent=5.0,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_regressionplots_true_vs_fitted_plot_handles_diagonal_and_trendline_options(
@@ -596,7 +639,10 @@ def test_regressionplots_true_vs_fitted_plot_handles_diagonal_and_trendline_opti
         height=400,
     )
 
-    assert True, "Method should execute without errors for all combinations"
+    if not (True):
+        raise AssertionError(
+            "Method should execute without errors for all combinations"
+        )
 
 
 def test_regressionplots_true_vs_fitted_plot_handles_perfect_predictions(
@@ -623,7 +669,10 @@ def test_regressionplots_true_vs_fitted_plot_handles_perfect_predictions(
         height=400,
     )
 
-    assert True, "Method should execute without errors for perfect predictions"
+    if not (True):
+        raise AssertionError(
+            "Method should execute without errors for perfect predictions"
+        )
 
 
 def test_regressionplots_residual_distribution_plot_handles_histogram_type(
@@ -652,7 +701,8 @@ def test_regressionplots_residual_distribution_plot_handles_histogram_type(
         height=600,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_regressionplots_residual_distribution_plot_handles_box_type(
@@ -680,7 +730,8 @@ def test_regressionplots_residual_distribution_plot_handles_box_type(
         height=600,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_regressionplots_residual_distribution_plot_applies_custom_parameters(
@@ -715,7 +766,8 @@ def test_regressionplots_residual_distribution_plot_applies_custom_parameters(
         normal_curve_color="orange",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_regressionplots_residual_distribution_plot_handles_normal_curve_option(
@@ -753,7 +805,8 @@ def test_regressionplots_residual_distribution_plot_handles_normal_curve_option(
         height=400,
     )
 
-    assert True, "Method should execute without errors for both options"
+    if not (True):
+        raise AssertionError("Method should execute without errors for both options")
 
 
 def test_regressionplots_residual_distribution_plot_raises_error_invalid_plot_type(
@@ -821,7 +874,10 @@ def test_regressionplots_residual_distribution_plot_handles_automatic_axis_title
         height=400,
     )
 
-    assert True, "Method should execute without errors for all title options"
+    if not (True):
+        raise AssertionError(
+            "Method should execute without errors for all title options"
+        )
 
 
 def test_regressionplots_methods_handle_mismatched_input_lengths(
@@ -898,4 +954,5 @@ def test_regressionplots_methods_handle_list_input(
         y_true=y_true, y_pred=y_pred, plot_type="histogram", width=400, height=300
     )
 
-    assert True, "All methods should execute without errors for list input"
+    if not (True):
+        raise AssertionError("All methods should execute without errors for list input")

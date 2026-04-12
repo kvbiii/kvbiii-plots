@@ -17,18 +17,27 @@ def test_baseplots_init_creates_default_configurations() -> None:
     """
     base_plots = BasePlots()
 
-    assert base_plots.quantiles_dict == {
-        "Min": 0,
-        "Q1": 0.25,
-        "Med": 0.5,
-        "Q3": 0.75,
-        "Max": 1,
-    }
-    assert base_plots.default_template == "simple_white"
-    assert base_plots.default_font["family"] == "Times New Roman"
-    assert base_plots.default_font["size"] == 26
-    assert "primary" in base_plots.default_colors
-    assert "secondary" in base_plots.default_colors
+    if not (
+        base_plots.quantiles_dict
+        == {
+            "Min": 0,
+            "Q1": 0.25,
+            "Med": 0.5,
+            "Q3": 0.75,
+            "Max": 1,
+        }
+    ):
+        raise AssertionError("Assertion failed.")
+    if not (base_plots.default_template == "simple_white"):
+        raise AssertionError("Assertion failed.")
+    if not (base_plots.default_font["family"] == "Times New Roman"):
+        raise AssertionError("Assertion failed.")
+    if not (base_plots.default_font["size"] == 26):
+        raise AssertionError("Assertion failed.")
+    if not ("primary" in base_plots.default_colors):
+        raise AssertionError("Assertion failed.")
+    if not ("secondary" in base_plots.default_colors):
+        raise AssertionError("Assertion failed.")
 
 
 def test_baseplots_check_data_handles_dataframe_input(
@@ -47,9 +56,11 @@ def test_baseplots_check_data_handles_dataframe_input(
     base_plots = BasePlots()
     result = base_plots.check_data(sample_dataframe)
 
-    assert isinstance(result, np.ndarray), "Result should be numpy array"
+    if not (isinstance(result, np.ndarray)):
+        raise AssertionError("Result should be numpy array")
 
-    assert result.shape[0] > 0, "Result should have some data"
+    if not (result.shape[0] > 0):
+        raise AssertionError("Result should have some data")
 
 
 def test_baseplots_check_data_handles_series_input(sample_series: pd.Series) -> None:
@@ -66,8 +77,10 @@ def test_baseplots_check_data_handles_series_input(sample_series: pd.Series) -> 
     base_plots = BasePlots()
     result = base_plots.check_data(sample_series)
 
-    assert isinstance(result, np.ndarray), "Result should be numpy array"
-    assert len(result) == len(sample_series), "Length should be preserved"
+    if not (isinstance(result, np.ndarray)):
+        raise AssertionError("Result should be numpy array")
+    if not (len(result) == len(sample_series)):
+        raise AssertionError("Length should be preserved")
 
 
 def test_baseplots_check_data_handles_list_input(sample_list: list[float]) -> None:
@@ -84,8 +97,10 @@ def test_baseplots_check_data_handles_list_input(sample_list: list[float]) -> No
     base_plots = BasePlots()
     result = base_plots.check_data(sample_list)
 
-    assert isinstance(result, np.ndarray), "Result should be numpy array"
-    assert len(result) == len(sample_list), "Length should be preserved"
+    if not (isinstance(result, np.ndarray)):
+        raise AssertionError("Result should be numpy array")
+    if not (len(result) == len(sample_list)):
+        raise AssertionError("Length should be preserved")
 
 
 def test_baseplots_check_data_raises_error_invalid_input() -> None:
@@ -121,11 +136,12 @@ def test_baseplots_check_2d_data_handles_dataframe_input(
     base_plots = BasePlots()
     result = base_plots.check_2d_data(sample_dataframe)
 
-    assert isinstance(result, np.ndarray), "Result should be numpy array"
-    assert result.ndim == 2, "Result should be 2-dimensional"
-    assert (
-        result.shape[1] == sample_dataframe.shape[1]
-    ), "Column count should be preserved"
+    if not (isinstance(result, np.ndarray)):
+        raise AssertionError("Result should be numpy array")
+    if not (result.ndim == 2):
+        raise AssertionError("Result should be 2-dimensional")
+    if not (result.shape[1] == sample_dataframe.shape[1]):
+        raise AssertionError("Column count should be preserved")
 
 
 def test_baseplots_check_2d_data_raises_error_1d_input(
@@ -145,8 +161,10 @@ def test_baseplots_check_2d_data_raises_error_1d_input(
 
     result = base_plots.check_2d_data(sample_series.values)
 
-    assert isinstance(result, np.ndarray), "Result should be numpy array"
-    assert result.ndim == 2, "Result should be 2-dimensional"
+    if not (isinstance(result, np.ndarray)):
+        raise AssertionError("Result should be numpy array")
+    if not (result.ndim == 2):
+        raise AssertionError("Result should be 2-dimensional")
 
 
 def test_baseplots_get_colors_returns_correct_types() -> None:
@@ -160,8 +178,10 @@ def test_baseplots_get_colors_returns_correct_types() -> None:
     base_plots = BasePlots()
     colors = base_plots._get_colors(5)
 
-    assert isinstance(colors, list), "Colors should be a list"
-    assert len(colors) > 0, "Color list should contain colors"
+    if not (isinstance(colors, list)):
+        raise AssertionError("Colors should be a list")
+    if not (len(colors) > 0):
+        raise AssertionError("Color list should contain colors")
 
 
 def test_baseplots_apply_default_layout_modifies_figure() -> None:
@@ -184,11 +204,12 @@ def test_baseplots_apply_default_layout_modifies_figure() -> None:
         yaxis_title="Y Axis",
     )
 
-    assert (
-        fig.layout.title.text == "<b>Test Title</b>"
-    ), "Title should be formatted with bold tags"
-    assert fig.layout.width == 800, "Width should be set correctly"
-    assert fig.layout.height == 600, "Height should be set correctly"
+    if not (fig.layout.title.text == "<b>Test Title</b>"):
+        raise AssertionError("Title should be formatted with bold tags")
+    if not (fig.layout.width == 800):
+        raise AssertionError("Width should be set correctly")
+    if not (fig.layout.height == 600):
+        raise AssertionError("Height should be set correctly")
 
 
 def test_baseplots_filter_nan_indices_removes_nan_rows(
@@ -207,11 +228,12 @@ def test_baseplots_filter_nan_indices_removes_nan_rows(
     base_plots = BasePlots()
     result_indices = base_plots.filter_nan_indices(dataframe_with_nan, "values")
 
-    assert isinstance(result_indices, pd.Series), "Result should be pandas Series"
-    assert result_indices.dtype == bool, "Result should be boolean Series"
-    assert result_indices.sum() < len(
-        dataframe_with_nan
-    ), "Some values should be filtered as NaN"
+    if not (isinstance(result_indices, pd.Series)):
+        raise AssertionError("Result should be pandas Series")
+    if not (result_indices.dtype == bool):
+        raise AssertionError("Result should be boolean Series")
+    if not (result_indices.sum() < len(dataframe_with_nan)):
+        raise AssertionError("Some values should be filtered as NaN")
 
 
 def test_baseplots_add_quantile_annotations_adds_annotations_to_figure(
@@ -232,7 +254,8 @@ def test_baseplots_add_quantile_annotations_adds_annotations_to_figure(
 
     base_plots.add_quantile_annotations(fig, sample_numpy_array, annotations=True)
 
-    assert len(fig.layout.annotations) > 0, "Annotations should be added to figure"
+    if not (len(fig.layout.annotations) > 0):
+        raise AssertionError("Annotations should be added to figure")
 
 
 def test_baseplots_calculate_dynamic_dimensions_returns_appropriate_size() -> None:
@@ -246,10 +269,14 @@ def test_baseplots_calculate_dynamic_dimensions_returns_appropriate_size() -> No
     base_plots = BasePlots()
     width, height = base_plots.calculate_dynamic_dimensions(10)
 
-    assert isinstance(width, int), "Width should be integer"
-    assert isinstance(height, int), "Height should be integer"
-    assert width >= 1600, "Width should meet minimum requirement"
-    assert height >= 800, "Height should meet minimum requirement"
+    if not (isinstance(width, int)):
+        raise AssertionError("Width should be integer")
+    if not (isinstance(height, int)):
+        raise AssertionError("Height should be integer")
+    if not (width >= 1600):
+        raise AssertionError("Width should meet minimum requirement")
+    if not (height >= 800):
+        raise AssertionError("Height should meet minimum requirement")
 
 
 def test_baseplots_create_subplot_layout_creates_valid_figure() -> None:
@@ -263,8 +290,10 @@ def test_baseplots_create_subplot_layout_creates_valid_figure() -> None:
     base_plots = BasePlots()
     fig = base_plots.create_subplot_layout(1, 2, [["xy", "xy"]])
 
-    assert isinstance(fig, go.Figure), "Result should be plotly Figure"
-    assert hasattr(fig, "add_trace"), "Figure should support trace addition"
+    if not (isinstance(fig, go.Figure)):
+        raise AssertionError("Result should be plotly Figure")
+    if not (hasattr(fig, "add_trace")):
+        raise AssertionError("Figure should support trace addition")
 
 
 def test_baseplots_apply_aggregation_handles_mean_function() -> None:
@@ -279,8 +308,10 @@ def test_baseplots_apply_aggregation_handles_mean_function() -> None:
     test_series = pd.Series([1, 2, 3, 4, 5])
     result = base_plots._apply_aggregation(test_series, "mean")
 
-    assert isinstance(result, float), "Result should be float"
-    assert result == 3.0, "Mean should be calculated correctly"
+    if not (isinstance(result, float)):
+        raise AssertionError("Result should be float")
+    if not (result == 3.0):
+        raise AssertionError("Mean should be calculated correctly")
 
 
 def test_baseplots_apply_aggregation_handles_sum_function() -> None:
@@ -295,8 +326,10 @@ def test_baseplots_apply_aggregation_handles_sum_function() -> None:
     test_series = pd.Series([1, 2, 3, 4, 5])
     result = base_plots._apply_aggregation(test_series, "sum")
 
-    assert isinstance(result, (int, float, np.number)), "Result should be numeric"
-    assert result == 15, "Sum should be calculated correctly"
+    if not (isinstance(result, (int, float, np.number))):
+        raise AssertionError("Result should be numeric")
+    if not (result == 15):
+        raise AssertionError("Sum should be calculated correctly")
 
 
 def test_baseplots_apply_aggregation_raises_error_invalid_function() -> None:
@@ -324,10 +357,12 @@ def test_baseplots_get_colors() -> None:
     base_plots = BasePlots()
 
     colors = base_plots._get_colors(5)
-    assert isinstance(colors, list)
+    if not (isinstance(colors, list)):
+        raise AssertionError("Assertion failed.")
 
     colors = base_plots._get_colors(15)
-    assert isinstance(colors, list)
+    if not (isinstance(colors, list)):
+        raise AssertionError("Assertion failed.")
 
 
 def test_baseplots_apply_default_layout() -> None:
@@ -350,11 +385,16 @@ def test_baseplots_apply_default_layout() -> None:
         yaxis_title="Y Axis",
     )
 
-    assert fig.layout.title.text == "<b>Test Title</b>"
-    assert fig.layout.width == 800
-    assert fig.layout.height == 600
-    assert fig.layout.xaxis.title.text == "X Axis"
-    assert fig.layout.yaxis.title.text == "Y Axis"
+    if not (fig.layout.title.text == "<b>Test Title</b>"):
+        raise AssertionError("Assertion failed.")
+    if not (fig.layout.width == 800):
+        raise AssertionError("Assertion failed.")
+    if not (fig.layout.height == 600):
+        raise AssertionError("Assertion failed.")
+    if not (fig.layout.xaxis.title.text == "X Axis"):
+        raise AssertionError("Assertion failed.")
+    if not (fig.layout.yaxis.title.text == "Y Axis"):
+        raise AssertionError("Assertion failed.")
 
 
 def test_baseplots_filter_nan_indices(sample_dataframe: pd.DataFrame) -> None:
@@ -376,10 +416,14 @@ def test_baseplots_filter_nan_indices(sample_dataframe: pd.DataFrame) -> None:
 
     valid_mask = base_plots.filter_nan_indices(test_df, "A")
 
-    assert isinstance(valid_mask, pd.Series)
-    assert valid_mask.dtype == bool
-    assert not valid_mask.iloc[0]
-    assert not valid_mask.iloc[2]
+    if not (isinstance(valid_mask, pd.Series)):
+        raise AssertionError("Assertion failed.")
+    if not (valid_mask.dtype == bool):
+        raise AssertionError("Assertion failed.")
+    if not (not valid_mask.iloc[0]):
+        raise AssertionError("Assertion failed.")
+    if not (not valid_mask.iloc[2]):
+        raise AssertionError("Assertion failed.")
 
 
 def test_baseplots_add_quantile_annotations() -> None:
@@ -398,7 +442,8 @@ def test_baseplots_add_quantile_annotations() -> None:
         fig=fig, data=test_data, annotations=True, x_position=0.5
     )
 
-    assert isinstance(fig, go.Figure)
+    if not (isinstance(fig, go.Figure)):
+        raise AssertionError("Assertion failed.")
 
 
 def test_baseplots_calculate_dynamic_dimensions() -> None:
@@ -415,17 +460,23 @@ def test_baseplots_calculate_dynamic_dimensions() -> None:
         n_items=5, min_width=800, min_height=600, scale_factor=30
     )
 
-    assert isinstance(width, int)
-    assert isinstance(height, int)
-    assert width >= 800
-    assert height >= 600
+    if not (isinstance(width, int)):
+        raise AssertionError("Assertion failed.")
+    if not (isinstance(height, int)):
+        raise AssertionError("Assertion failed.")
+    if not (width >= 800):
+        raise AssertionError("Assertion failed.")
+    if not (height >= 600):
+        raise AssertionError("Assertion failed.")
 
     width2, height2 = base_plots.calculate_dynamic_dimensions(
         n_items=10, min_width=800, min_height=600, scale_factor=30
     )
 
-    assert width2 >= width
-    assert height2 >= height
+    if not (width2 >= width):
+        raise AssertionError("Assertion failed.")
+    if not (height2 >= height):
+        raise AssertionError("Assertion failed.")
 
 
 def test_baseplots_create_subplot_layout() -> None:
@@ -442,9 +493,11 @@ def test_baseplots_create_subplot_layout() -> None:
         rows=2, cols=2, subplot_types=[["xy", "xy"], ["xy", "xy"]]
     )
 
-    assert isinstance(fig, go.Figure)
+    if not (isinstance(fig, go.Figure)):
+        raise AssertionError("Assertion failed.")
 
-    assert hasattr(fig, "layout")
+    if not (hasattr(fig, "layout")):
+        raise AssertionError("Assertion failed.")
 
 
 def test_baseplots_apply_aggregation_with_nan_values() -> None:
@@ -459,10 +512,12 @@ def test_baseplots_apply_aggregation_with_nan_values() -> None:
     test_series_nan = pd.Series([1, 2, np.nan, 4, 5])
 
     mean_result = base_plots._apply_aggregation(test_series_nan, "mean")
-    assert mean_result == 3.0
+    if not (mean_result == 3.0):
+        raise AssertionError("Assertion failed.")
 
     std_result = base_plots._apply_aggregation(test_series_nan, "std")
-    assert isinstance(std_result, float)
+    if not (isinstance(std_result, float)):
+        raise AssertionError("Assertion failed.")
 
 
 def test_baseplots_apply_aggregation_handles_max_function() -> None:
@@ -477,8 +532,10 @@ def test_baseplots_apply_aggregation_handles_max_function() -> None:
     test_series = pd.Series([1, 5, 3, 9, 2])
 
     result = base_plots._apply_aggregation(test_series, "max")
-    assert result == 9.0
-    assert isinstance(result, (int, float))
+    if not (result == 9.0):
+        raise AssertionError("Assertion failed.")
+    if not (isinstance(result, (int, float))):
+        raise AssertionError("Assertion failed.")
 
 
 def test_baseplots_apply_aggregation_handles_min_function() -> None:
@@ -493,8 +550,10 @@ def test_baseplots_apply_aggregation_handles_min_function() -> None:
     test_series = pd.Series([1, 5, 3, 9, 2])
 
     result = base_plots._apply_aggregation(test_series, "min")
-    assert result == 1.0
-    assert isinstance(result, (int, float))
+    if not (result == 1.0):
+        raise AssertionError("Assertion failed.")
+    if not (isinstance(result, (int, float))):
+        raise AssertionError("Assertion failed.")
 
 
 def test_baseplots_apply_aggregation_handles_std_function() -> None:
@@ -510,8 +569,10 @@ def test_baseplots_apply_aggregation_handles_std_function() -> None:
 
     result = base_plots._apply_aggregation(test_series, "std")
     expected_std = test_series.std()
-    assert abs(result - expected_std) < 1e-10
-    assert isinstance(result, float)
+    if not (abs(result - expected_std) < 1e-10):
+        raise AssertionError("Assertion failed.")
+    if not (isinstance(result, float)):
+        raise AssertionError("Assertion failed.")
 
 
 def test_baseplots_apply_aggregation_handles_median_function() -> None:
@@ -529,10 +590,14 @@ def test_baseplots_apply_aggregation_handles_median_function() -> None:
     result_odd = base_plots._apply_aggregation(test_series_odd, "median")
     result_even = base_plots._apply_aggregation(test_series_even, "median")
 
-    assert result_odd == 3.0
-    assert result_even == 2.5
-    assert isinstance(result_odd, float)
-    assert isinstance(result_even, float)
+    if not (result_odd == 3.0):
+        raise AssertionError("Assertion failed.")
+    if not (result_even == 2.5):
+        raise AssertionError("Assertion failed.")
+    if not (isinstance(result_odd, float)):
+        raise AssertionError("Assertion failed.")
+    if not (isinstance(result_even, float)):
+        raise AssertionError("Assertion failed.")
 
 
 def test_baseplots_edge_cases() -> None:
@@ -547,13 +612,15 @@ def test_baseplots_edge_cases() -> None:
 
     single_value = pd.Series([42])
     result = base_plots._apply_aggregation(single_value, "mean")
-    assert result == 42.0
+    if not (result == 42.0):
+        raise AssertionError("Assertion failed.")
 
     empty_series = pd.Series([], dtype=float)
     try:
         result = base_plots._apply_aggregation(empty_series, "mean")
 
-        assert pd.isna(result)
+        if not (pd.isna(result)):
+            raise AssertionError("Assertion failed.")
     except (ValueError, TypeError):
 
         pass
@@ -571,8 +638,10 @@ def test_baseplots_create_subplot_layout_functionality() -> None:
 
     fig = base_plots.create_subplot_layout(rows=1, cols=2, subplot_types=[["xy", "xy"]])
 
-    assert hasattr(fig, "add_trace")
-    assert hasattr(fig, "update_layout")
+    if not (hasattr(fig, "add_trace")):
+        raise AssertionError("Assertion failed.")
+    if not (hasattr(fig, "update_layout")):
+        raise AssertionError("Assertion failed.")
 
 
 def test_baseplots_calculate_dynamic_dimensions_edge_cases() -> None:
@@ -586,16 +655,22 @@ def test_baseplots_calculate_dynamic_dimensions_edge_cases() -> None:
     base_plots = BasePlots()
 
     width, height = base_plots.calculate_dynamic_dimensions(0)
-    assert width >= 1600
-    assert height >= 800
+    if not (width >= 1600):
+        raise AssertionError("Assertion failed.")
+    if not (height >= 800):
+        raise AssertionError("Assertion failed.")
 
     width, height = base_plots.calculate_dynamic_dimensions(1)
-    assert width >= 1600
-    assert height >= 800
+    if not (width >= 1600):
+        raise AssertionError("Assertion failed.")
+    if not (height >= 800):
+        raise AssertionError("Assertion failed.")
 
     width, height = base_plots.calculate_dynamic_dimensions(100)
-    assert width == 3000
-    assert height == 3000
+    if not (width == 3000):
+        raise AssertionError("Assertion failed.")
+    if not (height == 3000):
+        raise AssertionError("Assertion failed.")
 
 
 def test_baseplots_add_quantile_annotations_with_specific_quantiles() -> None:
@@ -614,7 +689,8 @@ def test_baseplots_add_quantile_annotations_with_specific_quantiles() -> None:
 
     base_plots.add_quantile_annotations(fig, test_data, annotations=["Q1", "Med", "Q3"])
 
-    assert True
+    if not (True):
+        raise AssertionError("Assertion failed.")
 
 
 def test_baseplots_filter_nan_indices_functionality() -> None:

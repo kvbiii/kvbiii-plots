@@ -22,7 +22,8 @@ def test_kvbiii_plots_init_module_imports_successfully() -> None:
         - Import returns a valid module object
     """
     try:
-        assert kvbiii_plots is not None, "Module import returned None"
+        if not (kvbiii_plots is not None):
+            raise AssertionError("Module import returned None")
     except ImportError as e:
         pytest.fail(f"Failed to import kvbiii_plots module: {str(e)}")
 
@@ -35,11 +36,14 @@ def test_kvbiii_plots_init_package_structure_exists() -> None:
         - Package has __file__ attribute indicating proper installation
         - Package path exists and is accessible
     """
-    assert hasattr(kvbiii_plots, "__name__"), "Package missing __name__ attribute"
-    assert (
-        kvbiii_plots.__name__ == "kvbiii_plots"
-    ), f"Expected package name 'kvbiii_plots', got '{kvbiii_plots.__name__}'"
-    assert hasattr(kvbiii_plots, "__file__"), "Package missing __file__ attribute"
+    if not (hasattr(kvbiii_plots, "__name__")):
+        raise AssertionError("Package missing __name__ attribute")
+    if not (kvbiii_plots.__name__ == "kvbiii_plots"):
+        raise AssertionError(
+            f"Expected package name 'kvbiii_plots', got '{kvbiii_plots.__name__}'"
+        )
+    if not (hasattr(kvbiii_plots, "__file__")):
+        raise AssertionError("Package missing __file__ attribute")
 
 
 def test_kvbiii_plots_init_module_reload_handles_correctly() -> None:
@@ -51,8 +55,10 @@ def test_kvbiii_plots_init_module_reload_handles_correctly() -> None:
         - No exceptions raised during reload process
     """
     reloaded_module = importlib.reload(kvbiii_plots)
-    assert reloaded_module is not None, "Module reload returned None"
-    assert reloaded_module.__name__ == "kvbiii_plots", "Reloaded module name incorrect"
+    if not (reloaded_module is not None):
+        raise AssertionError("Module reload returned None")
+    if not (reloaded_module.__name__ == "kvbiii_plots"):
+        raise AssertionError("Reloaded module name incorrect")
 
 
 def test_kvbiii_plots_init_submodule_eda_accessible() -> None:
@@ -63,11 +69,16 @@ def test_kvbiii_plots_init_submodule_eda_accessible() -> None:
         - Submodule contains expected plotting classes
     """
     try:
-        assert eda is not None, "eda submodule import returned None"
-        assert hasattr(eda, "ContinuousPlots"), "eda missing ContinuousPlots class"
-        assert hasattr(eda, "CategoricalPlots"), "eda missing CategoricalPlots class"
-        assert hasattr(eda, "TimeSeriesPlots"), "eda missing TimeSeriesPlots class"
-        assert hasattr(eda, "MultivariatePlots"), "eda missing MultivariatePlots class"
+        if not (eda is not None):
+            raise AssertionError("eda submodule import returned None")
+        if not (hasattr(eda, "ContinuousPlots")):
+            raise AssertionError("eda missing ContinuousPlots class")
+        if not (hasattr(eda, "CategoricalPlots")):
+            raise AssertionError("eda missing CategoricalPlots class")
+        if not (hasattr(eda, "TimeSeriesPlots")):
+            raise AssertionError("eda missing TimeSeriesPlots class")
+        if not (hasattr(eda, "MultivariatePlots")):
+            raise AssertionError("eda missing MultivariatePlots class")
 
     except ImportError as e:
         pytest.fail(f"Failed to import eda submodule: {str(e)}")
@@ -84,15 +95,15 @@ def test_kvbiii_plots_init_direct_class_import_works() -> None:
     continuous_plots = ContinuousPlots()
     categorical_plots = CategoricalPlots()
 
-    assert continuous_plots is not None, "ContinuousPlots instantiation failed"
-    assert categorical_plots is not None, "CategoricalPlots instantiation failed"
+    if not (continuous_plots is not None):
+        raise AssertionError("ContinuousPlots instantiation failed")
+    if not (categorical_plots is not None):
+        raise AssertionError("CategoricalPlots instantiation failed")
 
-    assert hasattr(
-        continuous_plots, "check_data"
-    ), "ContinuousPlots missing check_data method"
-    assert hasattr(
-        categorical_plots, "check_data"
-    ), "CategoricalPlots missing check_data method"
+    if not (hasattr(continuous_plots, "check_data")):
+        raise AssertionError("ContinuousPlots missing check_data method")
+    if not (hasattr(categorical_plots, "check_data")):
+        raise AssertionError("CategoricalPlots missing check_data method")
 
 
 def test_kvbiii_plots_init_baseplot_import_works() -> None:
@@ -104,14 +115,14 @@ def test_kvbiii_plots_init_baseplot_import_works() -> None:
         - Instance has core plotting functionality
     """
     base_plots = BasePlots()
-    assert base_plots is not None, "BasePlots instantiation failed"
-    assert hasattr(base_plots, "check_data"), "BasePlots missing check_data method"
-    assert hasattr(
-        base_plots, "apply_default_layout"
-    ), "BasePlots missing apply_default_layout method"
-    assert hasattr(
-        base_plots, "check_2d_data"
-    ), "BasePlots missing check_2d_data method"
+    if not (base_plots is not None):
+        raise AssertionError("BasePlots instantiation failed")
+    if not (hasattr(base_plots, "check_data")):
+        raise AssertionError("BasePlots missing check_data method")
+    if not (hasattr(base_plots, "apply_default_layout")):
+        raise AssertionError("BasePlots missing apply_default_layout method")
+    if not (hasattr(base_plots, "check_2d_data")):
+        raise AssertionError("BasePlots missing check_2d_data method")
 
 
 def test_kvbiii_plots_init_evaluation_module_accessibility() -> None:
@@ -122,16 +133,14 @@ def test_kvbiii_plots_init_evaluation_module_accessibility() -> None:
         - Class is properly instantiable and inherits from BasePlots
     """
     regression_plots = RegressionPlots()
-    assert regression_plots is not None, "RegressionPlots instantiation failed"
-    assert hasattr(
-        regression_plots, "check_data"
-    ), "RegressionPlots missing inherited check_data method"
-    assert hasattr(
-        regression_plots, "homoscedacity_plot"
-    ), "RegressionPlots missing homoscedacity_plot method"
-    assert hasattr(
-        regression_plots, "true_vs_fitted_plot"
-    ), "RegressionPlots missing true_vs_fitted_plot method"
+    if not (regression_plots is not None):
+        raise AssertionError("RegressionPlots instantiation failed")
+    if not (hasattr(regression_plots, "check_data")):
+        raise AssertionError("RegressionPlots missing inherited check_data method")
+    if not (hasattr(regression_plots, "homoscedacity_plot")):
+        raise AssertionError("RegressionPlots missing homoscedacity_plot method")
+    if not (hasattr(regression_plots, "true_vs_fitted_plot")):
+        raise AssertionError("RegressionPlots missing true_vs_fitted_plot method")
 
 
 def test_kvbiii_plots_init_all_eda_classes_instantiable() -> None:
@@ -150,13 +159,14 @@ def test_kvbiii_plots_init_all_eda_classes_instantiable() -> None:
     ]
 
     for instance in classes:
-        assert instance is not None, f"{type(instance).__name__} instantiation failed"
-        assert hasattr(
-            instance, "check_data"
-        ), f"{type(instance).__name__} missing check_data method"
-        assert hasattr(
-            instance, "apply_default_layout"
-        ), f"{type(instance).__name__} missing apply_default_layout method"
+        if not (instance is not None):
+            raise AssertionError(f"{type(instance).__name__} instantiation failed")
+        if not (hasattr(instance, "check_data")):
+            raise AssertionError(f"{type(instance).__name__} missing check_data method")
+        if not (hasattr(instance, "apply_default_layout")):
+            raise AssertionError(
+                f"{type(instance).__name__} missing apply_default_layout method"
+            )
 
 
 def test_kvbiii_plots_init_package_version_and_metadata() -> None:
@@ -169,14 +179,19 @@ def test_kvbiii_plots_init_package_version_and_metadata() -> None:
     """
     if hasattr(kvbiii_plots, "__all__"):
         all_items = kvbiii_plots.__all__
-        assert isinstance(all_items, list), "__all__ should be a list"
-        assert len(all_items) > 0, "__all__ should not be empty"
+        if not (isinstance(all_items, list)):
+            raise AssertionError("__all__ should be a list")
+        if not (len(all_items) > 0):
+            raise AssertionError("__all__ should not be empty")
 
         for item in all_items:
-            assert hasattr(kvbiii_plots, item), f"Package missing declared item: {item}"
+            if not (hasattr(kvbiii_plots, item)):
+                raise AssertionError(f"Package missing declared item: {item}")
 
-    assert hasattr(kvbiii_plots, "BasePlots"), "Package missing BasePlots in public API"
-    assert hasattr(kvbiii_plots, "eda"), "Package missing eda submodule in public API"
+    if not (hasattr(kvbiii_plots, "BasePlots")):
+        raise AssertionError("Package missing BasePlots in public API")
+    if not (hasattr(kvbiii_plots, "eda")):
+        raise AssertionError("Package missing eda submodule in public API")
 
 
 def test_kvbiii_plots_init_examples_directory_structure() -> None:
@@ -190,10 +205,10 @@ def test_kvbiii_plots_init_examples_directory_structure() -> None:
     package_path = os.path.dirname(kvbiii_plots.__file__)
     examples_path = os.path.join(package_path, "eda", "examples")
 
-    assert os.path.exists(
-        examples_path
-    ), "Examples directory not found in eda subpackage"
-    assert os.path.isdir(examples_path), "Examples path exists but is not a directory"
+    if not (os.path.exists(examples_path)):
+        raise AssertionError("Examples directory not found in eda subpackage")
+    if not (os.path.isdir(examples_path)):
+        raise AssertionError("Examples path exists but is not a directory")
 
     expected_examples = [
         "categorical_plots_examples.ipynb",
@@ -204,12 +219,13 @@ def test_kvbiii_plots_init_examples_directory_structure() -> None:
 
     for example_file in expected_examples:
         example_full_path = os.path.join(examples_path, example_file)
-        assert os.path.exists(
-            example_full_path
-        ), f"Missing example file: {example_file}"
-        assert os.path.isfile(
-            example_full_path
-        ), f"Example path exists but is not a file: {example_file}"
+        if not (os.path.exists(example_full_path)):
+            raise AssertionError(f"Missing example file: {example_file}")
+        if not (os.path.isfile(example_full_path)):
+            raise AssertionError(
+                f"Example path exists but is not a file: {example_file}"
+            )
 
     examples_list = os.listdir(examples_path)
-    assert len(examples_list) > 0, "Examples directory is empty"
+    if not (len(examples_list) > 0):
+        raise AssertionError("Examples directory is empty")

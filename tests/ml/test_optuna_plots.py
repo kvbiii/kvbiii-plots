@@ -97,12 +97,17 @@ class TestOptunaPlots:
     def test_optuna_plots_initialization(self) -> None:
         """Test OptunaPlots class initialization."""
         optuna_plots = OptunaPlots()
-        assert optuna_plots is not None
-        assert hasattr(optuna_plots, "plot_optuna_optimization_history")
-        assert hasattr(optuna_plots, "plot_optuna_param_importance")
+        if not (optuna_plots is not None):
+            raise AssertionError("Assertion failed.")
+        if not (hasattr(optuna_plots, "plot_optuna_optimization_history")):
+            raise AssertionError("Assertion failed.")
+        if not (hasattr(optuna_plots, "plot_optuna_param_importance")):
+            raise AssertionError("Assertion failed.")
 
-        assert hasattr(optuna_plots, "_extract_trial_data")
-        assert hasattr(optuna_plots, "_compute_best_scores")
+        if not (hasattr(optuna_plots, "_extract_trial_data")):
+            raise AssertionError("Assertion failed.")
+        if not (hasattr(optuna_plots, "_compute_best_scores")):
+            raise AssertionError("Assertion failed.")
 
     def test_extract_trial_data(self, sample_classification_study: object) -> None:
         """Test _extract_trial_data private method."""
@@ -111,10 +116,14 @@ class TestOptunaPlots:
 
         trial_numbers, values = optuna_plots._extract_trial_data(study)
 
-        assert len(trial_numbers) == len(study.trials)
-        assert len(values) == len(study.trials)
-        assert trial_numbers[0] == 1
-        assert trial_numbers[-1] == len(study.trials)
+        if not (len(trial_numbers) == len(study.trials)):
+            raise AssertionError("Assertion failed.")
+        if not (len(values) == len(study.trials)):
+            raise AssertionError("Assertion failed.")
+        if not (trial_numbers[0] == 1):
+            raise AssertionError("Assertion failed.")
+        if not (trial_numbers[-1] == len(study.trials)):
+            raise AssertionError("Assertion failed.")
 
     def test_compute_best_scores_maximize(
         self,
@@ -127,10 +136,12 @@ class TestOptunaPlots:
         _, values = optuna_plots._extract_trial_data(study)
         best_scores = optuna_plots._compute_best_scores(values, "maximize")
 
-        assert len(best_scores) == len(values)
+        if not (len(best_scores) == len(values)):
+            raise AssertionError("Assertion failed.")
 
         for i in range(1, len(best_scores)):
-            assert best_scores[i] >= best_scores[i - 1]
+            if not (best_scores[i] >= best_scores[i - 1]):
+                raise AssertionError("Assertion failed.")
 
     def test_compute_best_scores_minimize(
         self,
@@ -143,10 +154,12 @@ class TestOptunaPlots:
         _, values = optuna_plots._extract_trial_data(study)
         best_scores = optuna_plots._compute_best_scores(values, "minimize")
 
-        assert len(best_scores) == len(values)
+        if not (len(best_scores) == len(values)):
+            raise AssertionError("Assertion failed.")
 
         for i in range(1, len(best_scores)):
-            assert best_scores[i] <= best_scores[i - 1]
+            if not (best_scores[i] <= best_scores[i - 1]):
+                raise AssertionError("Assertion failed.")
 
     def test_plot_optuna_optimization_history_basic(
         self,
@@ -281,9 +294,11 @@ class TestOptunaPlots:
 
         with pytest.raises(ValueError) as excinfo:
             optuna_plots.plot_optuna_param_importance(study=study)
-        assert "Cannot evaluate parameter importances without completed trials" in str(
-            excinfo.value
-        )
+        if not (
+            "Cannot evaluate parameter importances without completed trials"
+            in str(excinfo.value)
+        ):
+            raise AssertionError("Assertion failed.")
 
     def test_parameter_validation_dimensions(
         self,
@@ -335,9 +350,11 @@ class TestOptunaPlots:
         with pytest.raises(ValueError) as excinfo:
             optuna_plots.plot_optuna_param_importance(study=study)
 
-        assert "Cannot evaluate parameter importances with only a single trial" in str(
-            excinfo.value
-        )
+        if not (
+            "Cannot evaluate parameter importances with only a single trial"
+            in str(excinfo.value)
+        ):
+            raise AssertionError("Assertion failed.")
 
     def test_direction_parameter_validation(
         self,

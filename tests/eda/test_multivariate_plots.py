@@ -31,7 +31,8 @@ class TestMultivariatePlotsCorrelationPlot:
             height=800,
         )
 
-        assert True, "Method should execute without errors"
+        if not (True):
+            raise AssertionError("Method should execute without errors")
 
     def test_correlation_plot_handles_numpy_array_input(
         self, sample_numpy_array: np.ndarray
@@ -59,7 +60,8 @@ class TestMultivariatePlotsCorrelationPlot:
             height=600,
         )
 
-        assert True, "Method should handle numpy array input"
+        if not (True):
+            raise AssertionError("Method should handle numpy array input")
 
     def test_correlation_plot_handles_custom_feature_names(
         self, sample_dataframe: pd.DataFrame
@@ -84,7 +86,8 @@ class TestMultivariatePlotsCorrelationPlot:
             height=800,
         )
 
-        assert True, "Method should execute without errors"
+        if not (True):
+            raise AssertionError("Method should execute without errors")
 
     def test_correlation_plot_handles_different_correlation_methods(
         self, sample_dataframe: pd.DataFrame
@@ -113,7 +116,8 @@ class TestMultivariatePlotsCorrelationPlot:
                 height=600,
             )
 
-        assert True, "Method should handle different correlation methods"
+        if not (True):
+            raise AssertionError("Method should handle different correlation methods")
 
     def test_correlation_plot_applies_show_upper_parameter(
         self, sample_dataframe: pd.DataFrame
@@ -146,7 +150,8 @@ class TestMultivariatePlotsCorrelationPlot:
             plot_title="Hide Upper Triangle Test",
         )
 
-        assert True, "Method should apply show_upper parameter correctly"
+        if not (True):
+            raise AssertionError("Method should apply show_upper parameter correctly")
 
     def test_correlation_plot_handles_different_colorscales(
         self, sample_dataframe: pd.DataFrame
@@ -182,7 +187,8 @@ class TestMultivariatePlotsCorrelationPlot:
             plot_title="Invalid Colorscale Test",
         )
 
-        assert True, "Method should handle different colorscales"
+        if not (True):
+            raise AssertionError("Method should handle different colorscales")
 
     def test_correlation_plot_handles_non_numeric_columns(
         self, sample_dataframe: pd.DataFrame
@@ -206,9 +212,10 @@ class TestMultivariatePlotsCorrelationPlot:
             plot_title="Mixed Data Types Correlation",
         )
 
-        assert (
-            True
-        ), "Method should handle mixed data types when numeric features are specified"
+        if not (True):
+            raise AssertionError(
+                "Method should handle mixed data types when numeric features are specified"
+            )
 
     def test_correlation_plot_handles_automatic_feature_selection(
         self, test_settings: object
@@ -240,7 +247,10 @@ class TestMultivariatePlotsCorrelationPlot:
             plot_title="Automatic Feature Selection Test",
         )
 
-        assert True, "Method should handle automatic feature selection on numeric data"
+        if not (True):
+            raise AssertionError(
+                "Method should handle automatic feature selection on numeric data"
+            )
 
     def test_correlation_plot_applies_custom_parameters(
         self, sample_dataframe: pd.DataFrame
@@ -265,7 +275,8 @@ class TestMultivariatePlotsCorrelationPlot:
             height=1000,
         )
 
-        assert True, "Method should execute without errors"
+        if not (True):
+            raise AssertionError("Method should execute without errors")
 
 
 class TestMultivariatePlotsScatterMatrix:
@@ -294,7 +305,8 @@ class TestMultivariatePlotsScatterMatrix:
             height=1200,
         )
 
-        assert True, "Method should execute without errors"
+        if not (True):
+            raise AssertionError("Method should execute without errors")
 
     def test_scatter_matrix_handles_automatic_feature_selection(
         self, sample_dataframe: pd.DataFrame
@@ -319,7 +331,8 @@ class TestMultivariatePlotsScatterMatrix:
             height=1000,
         )
 
-        assert True, "Method should handle automatic feature selection"
+        if not (True):
+            raise AssertionError("Method should handle automatic feature selection")
 
     def test_scatter_matrix_handles_feature_limit(
         self,
@@ -348,7 +361,8 @@ class TestMultivariatePlotsScatterMatrix:
             height=800,
         )
 
-        assert True, "Method should handle feature limiting"
+        if not (True):
+            raise AssertionError("Method should handle feature limiting")
 
     def test_scatter_matrix_handles_hue_parameter(
         self, sample_dataframe: pd.DataFrame
@@ -373,7 +387,8 @@ class TestMultivariatePlotsScatterMatrix:
             marker_size=6,
         )
 
-        assert True, "Method should execute without errors"
+        if not (True):
+            raise AssertionError("Method should execute without errors")
 
     def test_scatter_matrix_handles_custom_marker_size(
         self, sample_dataframe: pd.DataFrame
@@ -402,7 +417,8 @@ class TestMultivariatePlotsScatterMatrix:
                 height=600,
             )
 
-        assert True, "Method should execute without errors"
+        if not (True):
+            raise AssertionError("Method should execute without errors")
 
 
 class TestMultivariatePlotsParallelCoordinates:
@@ -431,7 +447,8 @@ class TestMultivariatePlotsParallelCoordinates:
             height=600,
         )
 
-        assert True, "Method should execute without errors"
+        if not (True):
+            raise AssertionError("Method should execute without errors")
 
     def test_parallel_coordinates_handles_hue_parameter_numeric(
         self, sample_dataframe: pd.DataFrame
@@ -455,7 +472,8 @@ class TestMultivariatePlotsParallelCoordinates:
             plot_title="Parallel Coordinates with Numeric Hue",
         )
 
-        assert True, "Method should execute without errors"
+        if not (True):
+            raise AssertionError("Method should execute without errors")
 
     def test_parallel_coordinates_handles_hue_parameter_categorical(
         self, sample_dataframe: pd.DataFrame
@@ -480,7 +498,8 @@ class TestMultivariatePlotsParallelCoordinates:
             plot_title="Parallel Coordinates with Categorical Hue",
         )
 
-        assert True, "Method should execute without errors"
+        if not (True):
+            raise AssertionError("Method should execute without errors")
 
     def test_parallel_coordinates_applies_normalization(
         self, sample_dataframe: pd.DataFrame
@@ -511,7 +530,8 @@ class TestMultivariatePlotsParallelCoordinates:
             plot_title="Non-normalized Parallel Coordinates",
         )
 
-        assert True, "Method should execute without errors"
+        if not (True):
+            raise AssertionError("Method should execute without errors")
 
     def test_parallel_coordinates_handles_all_features(
         self, sample_dataframe: pd.DataFrame
@@ -536,7 +556,8 @@ class TestMultivariatePlotsParallelCoordinates:
             height=700,
         )
 
-        assert True, "Method should execute without errors"
+        if not (True):
+            raise AssertionError("Method should execute without errors")
 
     def test_parallel_coordinates_handles_missing_values(
         self,
@@ -568,7 +589,8 @@ class TestMultivariatePlotsParallelCoordinates:
             data=df_with_na, features=["A", "B", "C"], plot_title="Missing Values Test"
         )
 
-        assert True, "Method should handle missing values"
+        if not (True):
+            raise AssertionError("Method should handle missing values")
 
 
 class TestMultivariatePlotsErrorHandling:

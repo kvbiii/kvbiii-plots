@@ -11,10 +11,14 @@ import kvbiii_plots.eda as eda_module
 def test_eda_imports() -> None:
     """Test that all expected classes can be imported from eda package."""
 
-    assert ContinuousPlots is not None
-    assert CategoricalPlots is not None
-    assert TimeSeriesPlots is not None
-    assert MultivariatePlots is not None
+    if not (ContinuousPlots is not None):
+        raise AssertionError("Assertion failed.")
+    if not (CategoricalPlots is not None):
+        raise AssertionError("Assertion failed.")
+    if not (TimeSeriesPlots is not None):
+        raise AssertionError("Assertion failed.")
+    if not (MultivariatePlots is not None):
+        raise AssertionError("Assertion failed.")
 
 
 def test_eda_all_exports() -> None:
@@ -25,26 +29,35 @@ def test_eda_all_exports() -> None:
         "TimeSeriesPlots",
         "MultivariatePlots",
     ]
-    assert hasattr(eda_module, "__all__")
-    assert set(eda_module.__all__) == set(expected_exports)
+    if not (hasattr(eda_module, "__all__")):
+        raise AssertionError("Assertion failed.")
+    if not (set(eda_module.__all__) == set(expected_exports)):
+        raise AssertionError("Assertion failed.")
 
 
 def test_eda_classes_inherit_from_baseplots() -> None:
     """Test that all eda classes properly inherit from BasePlots."""
-    assert issubclass(ContinuousPlots, BasePlots)
-    assert issubclass(CategoricalPlots, BasePlots)
-    assert issubclass(TimeSeriesPlots, BasePlots)
-    assert issubclass(MultivariatePlots, BasePlots)
+    if not (issubclass(ContinuousPlots, BasePlots)):
+        raise AssertionError("Assertion failed.")
+    if not (issubclass(CategoricalPlots, BasePlots)):
+        raise AssertionError("Assertion failed.")
+    if not (issubclass(TimeSeriesPlots, BasePlots)):
+        raise AssertionError("Assertion failed.")
+    if not (issubclass(MultivariatePlots, BasePlots)):
+        raise AssertionError("Assertion failed.")
 
 
 def test_eda_package_docstring() -> None:
     """Test that eda package has proper documentation."""
-    assert eda_module.__doc__ is not None
-    assert (
+    if not (eda_module.__doc__ is not None):
+        raise AssertionError("Assertion failed.")
+    if not (
         "eda" in eda_module.__doc__.lower()
         or "exploratory" in eda_module.__doc__.lower()
-    )
-    assert "plotting" in eda_module.__doc__.lower()
+    ):
+        raise AssertionError("Assertion failed.")
+    if not ("plotting" in eda_module.__doc__.lower()):
+        raise AssertionError("Assertion failed.")
 
 
 def test_eda_classes_have_docstrings() -> None:
@@ -56,8 +69,10 @@ def test_eda_classes_have_docstrings() -> None:
         MultivariatePlots,
     ]
     for cls in classes:
-        assert cls.__doc__ is not None
-        assert len(cls.__doc__.strip()) > 0
+        if not (cls.__doc__ is not None):
+            raise AssertionError("Assertion failed.")
+        if not (len(cls.__doc__.strip()) > 0):
+            raise AssertionError("Assertion failed.")
 
 
 def test_eda_classes_instantiation() -> None:
@@ -68,10 +83,14 @@ def test_eda_classes_instantiation() -> None:
     time_series_plots = TimeSeriesPlots()
     multivariate_plots = MultivariatePlots()
 
-    assert hasattr(continuous_plots, "default_template")
-    assert hasattr(categorical_plots, "default_template")
-    assert hasattr(time_series_plots, "default_template")
-    assert hasattr(multivariate_plots, "default_template")
+    if not (hasattr(continuous_plots, "default_template")):
+        raise AssertionError("Assertion failed.")
+    if not (hasattr(categorical_plots, "default_template")):
+        raise AssertionError("Assertion failed.")
+    if not (hasattr(time_series_plots, "default_template")):
+        raise AssertionError("Assertion failed.")
+    if not (hasattr(multivariate_plots, "default_template")):
+        raise AssertionError("Assertion failed.")
 
 
 def test_eda_classes_have_expected_methods() -> None:
@@ -86,8 +105,10 @@ def test_eda_classes_have_expected_methods() -> None:
 
     continuous_plots = ContinuousPlots()
     for method in continuous_methods:
-        assert hasattr(continuous_plots, method)
-        assert callable(getattr(continuous_plots, method))
+        if not (hasattr(continuous_plots, method)):
+            raise AssertionError("Assertion failed.")
+        if not (callable(getattr(continuous_plots, method))):
+            raise AssertionError("Assertion failed.")
 
     categorical_methods = [
         "barplot",
@@ -99,8 +120,10 @@ def test_eda_classes_have_expected_methods() -> None:
 
     categorical_plots = CategoricalPlots()
     for method in categorical_methods:
-        assert hasattr(categorical_plots, method)
-        assert callable(getattr(categorical_plots, method))
+        if not (hasattr(categorical_plots, method)):
+            raise AssertionError("Assertion failed.")
+        if not (callable(getattr(categorical_plots, method))):
+            raise AssertionError("Assertion failed.")
 
     time_series_methods = [
         "plot_time_series_mean",
@@ -111,8 +134,10 @@ def test_eda_classes_have_expected_methods() -> None:
 
     time_series_plots = TimeSeriesPlots()
     for method in time_series_methods:
-        assert hasattr(time_series_plots, method)
-        assert callable(getattr(time_series_plots, method))
+        if not (hasattr(time_series_plots, method)):
+            raise AssertionError("Assertion failed.")
+        if not (callable(getattr(time_series_plots, method))):
+            raise AssertionError("Assertion failed.")
 
     multivariate_methods = [
         "correlation_plot",
@@ -122,5 +147,7 @@ def test_eda_classes_have_expected_methods() -> None:
 
     multivariate_plots = MultivariatePlots()
     for method in multivariate_methods:
-        assert hasattr(multivariate_plots, method)
-        assert callable(getattr(multivariate_plots, method))
+        if not (hasattr(multivariate_plots, method)):
+            raise AssertionError("Assertion failed.")
+        if not (callable(getattr(multivariate_plots, method))):
+            raise AssertionError("Assertion failed.")

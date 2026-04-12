@@ -46,8 +46,10 @@ def test_timeseriesplots_prepare_time_series_data_handles_single_target(
         data=time_series_dataframe.reset_index(), date_feature="date", feature="value1"
     )
 
-    assert isinstance(result, pd.DataFrame), "Result should be DataFrame"
-    assert "value1" in result.columns, "Target column should be present"
+    if not (isinstance(result, pd.DataFrame)):
+        raise AssertionError("Result should be DataFrame")
+    if not ("value1" in result.columns):
+        raise AssertionError("Target column should be present")
 
 
 def test_timeseriesplots_prepare_time_series_data_handles_multiple_targets(
@@ -71,9 +73,12 @@ def test_timeseriesplots_prepare_time_series_data_handles_multiple_targets(
         feature=["value1", "value2"],
     )
 
-    assert isinstance(result, pd.DataFrame), "Result should be DataFrame"
-    assert "value1" in result.columns, "First target should be present"
-    assert "value2" in result.columns, "Second target should be present"
+    if not (isinstance(result, pd.DataFrame)):
+        raise AssertionError("Result should be DataFrame")
+    if not ("value1" in result.columns):
+        raise AssertionError("First target should be present")
+    if not ("value2" in result.columns):
+        raise AssertionError("Second target should be present")
 
 
 def test_timeseriesplots_plot_time_series_mean_handles_monthly_aggregation(
@@ -101,7 +106,8 @@ def test_timeseriesplots_plot_time_series_mean_handles_monthly_aggregation(
         height=800,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_timeseriesplots_plot_time_series_mean_applies_custom_parameters(
@@ -130,7 +136,8 @@ def test_timeseriesplots_plot_time_series_mean_applies_custom_parameters(
         plot_title="Custom Parameters Test",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_timeseriesplots_plot_time_series_multiple_metrics_handles_multiple_targets(
@@ -159,7 +166,8 @@ def test_timeseriesplots_plot_time_series_multiple_metrics_handles_multiple_targ
         height=800,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_timeseriesplots_plot_time_series_multiple_metrics_applies_aggregation_functions(
@@ -186,7 +194,8 @@ def test_timeseriesplots_plot_time_series_multiple_metrics_applies_aggregation_f
         plot_title="Sum Aggregation Test",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_timeseriesplots_plot_time_series_with_trend_handles_moving_average(
@@ -214,7 +223,8 @@ def test_timeseriesplots_plot_time_series_with_trend_handles_moving_average(
         height=800,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_timeseriesplots_plot_time_series_with_trend_applies_custom_colors(
@@ -243,7 +253,8 @@ def test_timeseriesplots_plot_time_series_with_trend_applies_custom_colors(
         plot_title="Custom Colors Test",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_timeseriesplots_plot_seasonal_decomposition_handles_seasonal_analysis(
@@ -271,7 +282,8 @@ def test_timeseriesplots_plot_seasonal_decomposition_handles_seasonal_analysis(
         height=1000,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_timeseriesplots_plot_seasonal_decomposition_applies_custom_parameters(
@@ -302,7 +314,8 @@ def test_timeseriesplots_plot_seasonal_decomposition_applies_custom_parameters(
         plot_title="Custom Decomposition Test",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_timeseriesplots_plot_seasonal_decomposition_handles_different_frequencies(
@@ -329,7 +342,8 @@ def test_timeseriesplots_plot_seasonal_decomposition_handles_different_frequenci
         vertical_spacing=0.1,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_timeseriesplots_raises_error_missing_columns() -> None:
@@ -397,7 +411,8 @@ def test_timeseriesplots_plot_time_series_boxplot_executes(
         top_n_periods=10,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_timeseriesplots_plot_feature_distribution_by_category_over_time_executes(
@@ -415,7 +430,8 @@ def test_timeseriesplots_plot_feature_distribution_by_category_over_time_execute
         top_n_categories=2,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_timeseriesplots_plot_feature_distribution_by_numeric_feature_over_time_executes(
@@ -433,7 +449,8 @@ def test_timeseriesplots_plot_feature_distribution_by_numeric_feature_over_time_
         n_bins=3,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_timeseriesplots_plot_auto_and_partial_correlation_executes(
@@ -449,7 +466,8 @@ def test_timeseriesplots_plot_auto_and_partial_correlation_executes(
         max_lag=20,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_timeseriesplots_plot_cross_correlation_heatmap_executes(
@@ -467,4 +485,5 @@ def test_timeseriesplots_plot_cross_correlation_heatmap_executes(
         max_lag=12,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")

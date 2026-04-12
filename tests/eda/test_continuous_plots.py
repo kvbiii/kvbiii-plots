@@ -32,7 +32,8 @@ def test_continuousplots_scatter_plot_handles_2d_array_input(
         height=600,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_scatter_plot_handles_hue_parameter(
@@ -61,7 +62,8 @@ def test_continuousplots_scatter_plot_handles_hue_parameter(
         yaxis_title="Feature B",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_scatter_plot_applies_custom_marker_settings(
@@ -92,7 +94,8 @@ def test_continuousplots_scatter_plot_applies_custom_marker_settings(
         show_legend=False,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_scatter_plot_handles_list_hue() -> None:
@@ -108,7 +111,8 @@ def test_continuousplots_scatter_plot_handles_list_hue() -> None:
 
     cont_plots.scatter_plot(data=test_data, hue=test_hue, plot_title="List Hue Test")
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_scatter_plot_raises_error_wrong_data_shape() -> None:
@@ -150,7 +154,8 @@ def test_continuousplots_histogram_and_box_plot_handles_series_input(
         height=800,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_histogram_and_box_plot_handles_array_input(
@@ -177,7 +182,8 @@ def test_continuousplots_histogram_and_box_plot_handles_array_input(
         yaxis_title="Frequency",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_histogram_and_box_plot_applies_custom_bin_size(
@@ -202,7 +208,8 @@ def test_continuousplots_histogram_and_box_plot_applies_custom_bin_size(
         annotations=True,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_histogram_boxplot_linear_regression_handles_dataframe_input(
@@ -229,7 +236,8 @@ def test_continuousplots_histogram_boxplot_linear_regression_handles_dataframe_i
         height=1200,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_histogram_boxplot_linear_regression_applies_custom_bins(
@@ -257,7 +265,8 @@ def test_continuousplots_histogram_boxplot_linear_regression_applies_custom_bins
         yaxis_title="Feature B",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_histogram_boxplot_linear_regression_handles_annotations(
@@ -283,7 +292,8 @@ def test_continuousplots_histogram_boxplot_linear_regression_handles_annotations
         plot_title="Annotations Test",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_histogram_boxplot_linear_regression_handles_correlation_display(
@@ -317,7 +327,8 @@ def test_continuousplots_histogram_boxplot_linear_regression_handles_correlation
         plot_title="No Correlation Display Test",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_boxplot_histogram_boxplot_by_hue_handles_multivariate_data(
@@ -344,7 +355,8 @@ def test_continuousplots_boxplot_histogram_boxplot_by_hue_handles_multivariate_d
         height=1200,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_boxplot_histogram_boxplot_by_hue_applies_custom_parameters(
@@ -372,7 +384,8 @@ def test_continuousplots_boxplot_histogram_boxplot_by_hue_applies_custom_paramet
         yaxis_title="Frequency",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_boxplot_histogram_boxplot_by_hue_handles_annotations(
@@ -398,7 +411,8 @@ def test_continuousplots_boxplot_histogram_boxplot_by_hue_handles_annotations(
         plot_title="Annotations by Hue Test",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_raises_error_invalid_input_types() -> None:
@@ -441,7 +455,8 @@ def test_continuousplots_histogram_and_box_plot_handles_list_input(
         yaxis_title="Frequency",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_histogram_and_box_plot_handles_list_annotations(
@@ -466,7 +481,8 @@ def test_continuousplots_histogram_and_box_plot_handles_list_annotations(
         plot_title="Custom Annotations Test",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_histogram_and_box_plot_no_annotations(
@@ -487,7 +503,8 @@ def test_continuousplots_histogram_and_box_plot_no_annotations(
         data=sample_series, annotations=False, plot_title="No Annotations Test"
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_histogram_boxplot_linear_regression_with_nan_data(
@@ -515,7 +532,8 @@ def test_continuousplots_histogram_boxplot_linear_regression_with_nan_data(
         plot_title="NaN Handling Test",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_histogram_boxplot_linear_regression_custom_annotations(
@@ -540,7 +558,8 @@ def test_continuousplots_histogram_boxplot_linear_regression_custom_annotations(
         plot_title="Custom Quantile Annotations Test",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_boxplot_histogram_boxplot_by_hue_handles_missing_values() -> (
@@ -566,7 +585,8 @@ def test_continuousplots_boxplot_histogram_boxplot_by_hue_handles_missing_values
         data=test_data, feature="feature", hue="hue", plot_title="Missing Values Test"
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_boxplot_histogram_boxplot_by_hue_many_categories() -> None:
@@ -591,7 +611,8 @@ def test_continuousplots_boxplot_histogram_boxplot_by_hue_many_categories() -> N
         data=test_data, feature="feature", hue="hue", plot_title="Many Categories Test"
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_boxplot_histogram_boxplot_by_hue_custom_annotations_list(
@@ -616,7 +637,8 @@ def test_continuousplots_boxplot_histogram_boxplot_by_hue_custom_annotations_lis
         plot_title="Custom Annotations by Hue Test",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_inherits_base_functionality() -> None:
@@ -629,19 +651,30 @@ def test_continuousplots_inherits_base_functionality() -> None:
     """
     cont_plots = ContinuousPlots()
 
-    assert hasattr(cont_plots, "quantiles_dict")
-    assert hasattr(cont_plots, "default_template")
-    assert hasattr(cont_plots, "default_font")
-    assert hasattr(cont_plots, "default_colors")
+    if not (hasattr(cont_plots, "quantiles_dict")):
+        raise AssertionError("Assertion failed.")
+    if not (hasattr(cont_plots, "default_template")):
+        raise AssertionError("Assertion failed.")
+    if not (hasattr(cont_plots, "default_font")):
+        raise AssertionError("Assertion failed.")
+    if not (hasattr(cont_plots, "default_colors")):
+        raise AssertionError("Assertion failed.")
 
-    assert hasattr(cont_plots, "check_data")
-    assert hasattr(cont_plots, "check_2d_data")
-    assert hasattr(cont_plots, "apply_default_layout")
-    assert hasattr(cont_plots, "filter_nan_indices")
+    if not (hasattr(cont_plots, "check_data")):
+        raise AssertionError("Assertion failed.")
+    if not (hasattr(cont_plots, "check_2d_data")):
+        raise AssertionError("Assertion failed.")
+    if not (hasattr(cont_plots, "apply_default_layout")):
+        raise AssertionError("Assertion failed.")
+    if not (hasattr(cont_plots, "filter_nan_indices")):
+        raise AssertionError("Assertion failed.")
 
-    assert cont_plots.default_template == "simple_white"
-    assert "primary" in cont_plots.default_colors
-    assert "Q1" in cont_plots.quantiles_dict
+    if not (cont_plots.default_template == "simple_white"):
+        raise AssertionError("Assertion failed.")
+    if not ("primary" in cont_plots.default_colors):
+        raise AssertionError("Assertion failed.")
+    if not ("Q1" in cont_plots.quantiles_dict):
+        raise AssertionError("Assertion failed.")
 
 
 def test_continuousplots_check_data_validation(
@@ -661,14 +694,17 @@ def test_continuousplots_check_data_validation(
     cont_plots = ContinuousPlots()
 
     result_series = cont_plots.check_data(sample_series)
-    assert isinstance(result_series, np.ndarray)
+    if not (isinstance(result_series, np.ndarray)):
+        raise AssertionError("Assertion failed.")
 
     result_array = cont_plots.check_data(sample_numpy_array)
-    assert isinstance(result_array, np.ndarray)
+    if not (isinstance(result_array, np.ndarray)):
+        raise AssertionError("Assertion failed.")
 
     test_list = [1, 2, 3, 4, 5]
     result_list = cont_plots.check_data(test_list)
-    assert isinstance(result_list, np.ndarray)
+    if not (isinstance(result_list, np.ndarray)):
+        raise AssertionError("Assertion failed.")
 
 
 def test_continuousplots_check_2d_data_validation(
@@ -687,14 +723,19 @@ def test_continuousplots_check_2d_data_validation(
     cont_plots = ContinuousPlots()
 
     result = cont_plots.check_2d_data(sample_dataframe[["A", "B"]])
-    assert isinstance(result, np.ndarray)
-    assert result.ndim == 2
-    assert result.shape[1] == 2
+    if not (isinstance(result, np.ndarray)):
+        raise AssertionError("Assertion failed.")
+    if not (result.ndim == 2):
+        raise AssertionError("Assertion failed.")
+    if not (result.shape[1] == 2):
+        raise AssertionError("Assertion failed.")
 
     test_2d = np.random.rand(10, 3)
     result_2d = cont_plots.check_2d_data(test_2d)
-    assert isinstance(result_2d, np.ndarray)
-    assert result_2d.ndim == 2
+    if not (isinstance(result_2d, np.ndarray)):
+        raise AssertionError("Assertion failed.")
+    if not (result_2d.ndim == 2):
+        raise AssertionError("Assertion failed.")
 
 
 def test_continuousplots_filter_nan_indices_functionality(
@@ -713,11 +754,13 @@ def test_continuousplots_filter_nan_indices_functionality(
     cont_plots = ContinuousPlots()
 
     non_nan_indices = cont_plots.filter_nan_indices(dataframe_with_nan, "values")
-    assert isinstance(non_nan_indices, (pd.Series, np.ndarray))
+    if not (isinstance(non_nan_indices, (pd.Series, np.ndarray))):
+        raise AssertionError("Assertion failed.")
 
     total_count = len(dataframe_with_nan)
     non_nan_count = non_nan_indices.sum()
-    assert non_nan_count < total_count
+    if not (non_nan_count < total_count):
+        raise AssertionError("Assertion failed.")
 
 
 def test_continuousplots_error_handling_invalid_data_types() -> None:
@@ -757,10 +800,12 @@ def test_continuousplots_empty_data_handling() -> None:
         cont_plots.check_data(empty_array)
         cont_plots.check_2d_data(empty_df)
 
-        assert True, "Empty data handled gracefully"
+        if not (True):
+            raise AssertionError("Empty data handled gracefully")
     except (ValueError, IndexError):
 
-        assert True, "Empty data errors are handled appropriately"
+        if not (True):
+            raise AssertionError("Empty data errors are handled appropriately")
 
 
 def test_continuousplots_scatter_plot_handles_duplicate_hue_values(
@@ -790,7 +835,8 @@ def test_continuousplots_scatter_plot_handles_duplicate_hue_values(
         show_legend=True,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_histogram_and_box_plot_handles_named_series() -> None:
@@ -809,7 +855,8 @@ def test_continuousplots_histogram_and_box_plot_handles_named_series() -> None:
         data=named_series, plot_title="Named Series Test", annotations=True
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_histogram_and_box_plot_handles_dataframe_input(
@@ -836,7 +883,8 @@ def test_continuousplots_histogram_and_box_plot_handles_dataframe_input(
         annotations=False,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_scatter_plot_handles_extreme_marker_sizes() -> None:
@@ -860,7 +908,8 @@ def test_continuousplots_scatter_plot_handles_extreme_marker_sizes() -> None:
         data=test_data, hue=test_hue, marker_size=25, plot_title="Large Markers Test"
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_histogram_boxplot_linear_regression_handles_perfect_correlation() -> (
@@ -888,7 +937,8 @@ def test_continuousplots_histogram_boxplot_linear_regression_handles_perfect_cor
         show_correlation=True,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_histogram_boxplot_linear_regression_handles_no_correlation() -> (
@@ -917,7 +967,8 @@ def test_continuousplots_histogram_boxplot_linear_regression_handles_no_correlat
         show_correlation=True,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_boxplot_histogram_boxplot_by_hue_handles_single_category() -> (
@@ -943,7 +994,8 @@ def test_continuousplots_boxplot_histogram_boxplot_by_hue_handles_single_categor
         plot_title="Single Category Test",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_boxplot_histogram_boxplot_by_hue_handles_numeric_hue() -> None:
@@ -964,7 +1016,8 @@ def test_continuousplots_boxplot_histogram_boxplot_by_hue_handles_numeric_hue() 
         data=numeric_hue_df, feature="feature", hue="hue", plot_title="Numeric Hue Test"
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_continuousplots_apply_default_layout_integration() -> None:
@@ -988,11 +1041,16 @@ def test_continuousplots_apply_default_layout_integration() -> None:
         yaxis_title="Test Y",
     )
 
-    assert fig.layout.width == 1200
-    assert fig.layout.height == 800
-    assert fig.layout.title.text == "<b>Test Layout</b>"
-    assert fig.layout.xaxis.title.text == "Test X"
-    assert fig.layout.yaxis.title.text == "Test Y"
+    if not (fig.layout.width == 1200):
+        raise AssertionError("Assertion failed.")
+    if not (fig.layout.height == 800):
+        raise AssertionError("Assertion failed.")
+    if not (fig.layout.title.text == "<b>Test Layout</b>"):
+        raise AssertionError("Assertion failed.")
+    if not (fig.layout.xaxis.title.text == "Test X"):
+        raise AssertionError("Assertion failed.")
+    if not (fig.layout.yaxis.title.text == "Test Y"):
+        raise AssertionError("Assertion failed.")
 
 
 def test_continuousplots_create_subplot_layout_functionality() -> None:
@@ -1009,6 +1067,9 @@ def test_continuousplots_create_subplot_layout_functionality() -> None:
         rows=1, cols=3, subplot_types=[["box", "histogram", "scatter"]]
     )
 
-    assert fig is not None
-    assert hasattr(fig, "add_trace")
-    assert hasattr(fig, "update_layout")
+    if not (fig is not None):
+        raise AssertionError("Assertion failed.")
+    if not (hasattr(fig, "add_trace")):
+        raise AssertionError("Assertion failed.")
+    if not (hasattr(fig, "update_layout")):
+        raise AssertionError("Assertion failed.")

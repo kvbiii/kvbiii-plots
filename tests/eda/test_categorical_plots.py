@@ -27,7 +27,8 @@ def test_categoricalplots_barplot_handles_series_input(
         height=600,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_categoricalplots_barplot_handles_dict_input() -> None:
@@ -48,7 +49,8 @@ def test_categoricalplots_barplot_handles_dict_input() -> None:
         yaxis_title="Values",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_categoricalplots_barplot_applies_custom_dimensions() -> None:
@@ -71,7 +73,8 @@ def test_categoricalplots_barplot_applies_custom_dimensions() -> None:
         yaxis_title="Test Values",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_categoricalplots_barplot_handles_empty_input() -> None:
@@ -88,7 +91,8 @@ def test_categoricalplots_barplot_handles_empty_input() -> None:
 
     cat_plots.barplot(data=empty_series.value_counts())
     cat_plots.barplot(data=empty_dict)
-    assert True, "Empty input should be handled gracefully"
+    if not (True):
+        raise AssertionError("Empty input should be handled gracefully")
 
 
 def test_categoricalplots_pie_barplot_handles_dataframe_input(
@@ -114,7 +118,8 @@ def test_categoricalplots_pie_barplot_handles_dataframe_input(
         height=800,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_categoricalplots_pie_barplot_applies_custom_hole_size(
@@ -141,7 +146,8 @@ def test_categoricalplots_pie_barplot_applies_custom_hole_size(
         yaxis_title="Count",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_categoricalplots_pie_barplot_handles_missing_feature() -> None:
@@ -184,7 +190,8 @@ def test_categoricalplots_boxplot_by_categorical_handles_valid_input(
         height=800,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_categoricalplots_boxplot_by_categorical_applies_custom_titles(
@@ -211,7 +218,8 @@ def test_categoricalplots_boxplot_by_categorical_applies_custom_titles(
         yaxis_title="Custom Y Axis",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_categoricalplots_pie_boxplot_by_categorical_handles_top_n_parameter(
@@ -239,7 +247,8 @@ def test_categoricalplots_pie_boxplot_by_categorical_handles_top_n_parameter(
         height=800,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_categoricalplots_pie_boxplot_by_categorical_handles_custom_hole_size(
@@ -265,7 +274,8 @@ def test_categoricalplots_pie_boxplot_by_categorical_handles_custom_hole_size(
         plot_title="Custom Hole Size Box Plot Test",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_categoricalplots_pie_stacked_barplot_by_hue_handles_multivariate_data() -> (
@@ -296,7 +306,8 @@ def test_categoricalplots_pie_stacked_barplot_by_hue_handles_multivariate_data()
         height=800,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_categoricalplots_pie_stacked_barplot_by_hue_applies_custom_parameters() -> (
@@ -328,7 +339,8 @@ def test_categoricalplots_pie_stacked_barplot_by_hue_applies_custom_parameters()
         hole_size=0.6,
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_categoricalplots_raises_error_invalid_dataframe_input() -> None:
@@ -394,7 +406,8 @@ def test_categoricalplots_apply_top_n_categories_no_limit() -> None:
 
     np.testing.assert_array_equal(result_labels, labels)
     np.testing.assert_array_equal(result_freq, frequency)
-    assert other_labels is None
+    if not (other_labels is None):
+        raise AssertionError("Assertion failed.")
 
     result_labels, result_freq, other_labels = cat_plots._apply_top_n_categories(
         labels, frequency, top_n=10
@@ -402,7 +415,8 @@ def test_categoricalplots_apply_top_n_categories_no_limit() -> None:
 
     np.testing.assert_array_equal(result_labels, labels)
     np.testing.assert_array_equal(result_freq, frequency)
-    assert other_labels is None
+    if not (other_labels is None):
+        raise AssertionError("Assertion failed.")
 
 
 def test_categoricalplots_apply_top_n_categories_custom_other_label() -> None:
@@ -427,7 +441,8 @@ def test_categoricalplots_apply_top_n_categories_custom_other_label() -> None:
 
     np.testing.assert_array_equal(result_labels, expected_labels)
     np.testing.assert_array_equal(result_freq, expected_freq)
-    assert "Remaining" in result_labels
+    if not ("Remaining" in result_labels):
+        raise AssertionError("Assertion failed.")
 
 
 def test_categoricalplots_apply_top_n_categories_edge_cases() -> None:
@@ -449,7 +464,8 @@ def test_categoricalplots_apply_top_n_categories_edge_cases() -> None:
 
     np.testing.assert_array_equal(result_labels, single_labels)
     np.testing.assert_array_equal(result_freq, single_freq)
-    assert other_labels is None
+    if not (other_labels is None):
+        raise AssertionError("Assertion failed.")
 
     labels = np.array(["A", "B", "C"])
     frequency = np.array([30, 20, 10])
@@ -484,7 +500,8 @@ def test_categoricalplots_barplot_with_top_n_parameter() -> None:
         other_category="All Others",
     )
 
-    assert True, "Method should execute without errors"
+    if not (True):
+        raise AssertionError("Method should execute without errors")
 
 
 def test_categoricalplots_barplot_parameter_variations() -> None:
@@ -511,4 +528,5 @@ def test_categoricalplots_barplot_parameter_variations() -> None:
 
     cat_plots.barplot(data=test_data)
 
-    assert True, "All parameter combinations should work"
+    if not (True):
+        raise AssertionError("All parameter combinations should work")

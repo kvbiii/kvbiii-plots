@@ -110,12 +110,18 @@ class TestSHAPPlots:
     def test_shap_plots_initialization(self) -> None:
         """Test SHAPPlots class initialization."""
         shap_plots = SHAPPlots()
-        assert shap_plots is not None
-        assert hasattr(shap_plots, "plot_shap_bar")
-        assert hasattr(shap_plots, "plot_custom_shap_beeswarm")
-        assert hasattr(shap_plots, "plot_shap_categorical_box")
-        assert hasattr(shap_plots, "plot_shap_numerical_scatter")
-        assert hasattr(shap_plots, "plot_shap_force")
+        if not (shap_plots is not None):
+            raise AssertionError("Assertion failed.")
+        if not (hasattr(shap_plots, "plot_shap_bar")):
+            raise AssertionError("Assertion failed.")
+        if not (hasattr(shap_plots, "plot_custom_shap_beeswarm")):
+            raise AssertionError("Assertion failed.")
+        if not (hasattr(shap_plots, "plot_shap_categorical_box")):
+            raise AssertionError("Assertion failed.")
+        if not (hasattr(shap_plots, "plot_shap_numerical_scatter")):
+            raise AssertionError("Assertion failed.")
+        if not (hasattr(shap_plots, "plot_shap_force")):
+            raise AssertionError("Assertion failed.")
 
     def test_plot_shap_bar_basic(
         self,
@@ -456,34 +462,46 @@ class TestSHAPPlotsPrivateMethods:
             explanation, top_n=20, class_id=0
         )
 
-        assert len(names) == 3
-        assert len(importance) == 3
-        assert all(isinstance(imp, (float, np.floating)) for imp in importance)
-        assert isinstance(names, np.ndarray)
+        if not (len(names) == 3):
+            raise AssertionError("Assertion failed.")
+        if not (len(importance) == 3):
+            raise AssertionError("Assertion failed.")
+        if not (all(isinstance(imp, (float, np.floating)) for imp in importance)):
+            raise AssertionError("Assertion failed.")
+        if not (isinstance(names, np.ndarray)):
+            raise AssertionError("Assertion failed.")
 
         _, names_limited, importance_limited = shap_plots._compute_shap_importance(
             explanation, top_n=2, class_id=0
         )
 
-        assert len(names_limited) == 2
-        assert len(importance_limited) == 2
+        if not (len(names_limited) == 2):
+            raise AssertionError("Assertion failed.")
+        if not (len(importance_limited) == 2):
+            raise AssertionError("Assertion failed.")
 
-        assert importance_limited[0] >= importance_limited[1]
+        if not (importance_limited[0] >= importance_limited[1]):
+            raise AssertionError("Assertion failed.")
 
     def test_get_dynamic_colors(self) -> None:
         """Test _get_dynamic_colors private method."""
         shap_plots = SHAPPlots()
 
         colors_small = shap_plots._get_dynamic_colors(5, use_qualitative=True)
-        assert len(colors_small) == 5
-        assert isinstance(colors_small, list)
+        if not (len(colors_small) == 5):
+            raise AssertionError("Assertion failed.")
+        if not (isinstance(colors_small, list)):
+            raise AssertionError("Assertion failed.")
 
         colors_large = shap_plots._get_dynamic_colors(15, use_qualitative=False)
-        assert len(colors_large) == 15
-        assert isinstance(colors_large, list)
+        if not (len(colors_large) == 15):
+            raise AssertionError("Assertion failed.")
+        if not (isinstance(colors_large, list)):
+            raise AssertionError("Assertion failed.")
 
         colors_auto = shap_plots._get_dynamic_colors(8, use_qualitative=None)
-        assert len(colors_auto) == 8
+        if not (len(colors_auto) == 8):
+            raise AssertionError("Assertion failed.")
 
     def test_clean_data_for_plotting(self) -> None:
         """Test _clean_data_for_plotting private method."""
@@ -496,10 +514,14 @@ class TestSHAPPlotsPrivateMethods:
             feature_data, shap_values
         )
 
-        assert len(cleaned_data) <= len(feature_data)
-        assert len(cleaned_shap) == len(cleaned_data)
-        assert not np.any(np.isnan(cleaned_data))
-        assert not np.any(np.isnan(cleaned_shap))
+        if not (len(cleaned_data) <= len(feature_data)):
+            raise AssertionError("Assertion failed.")
+        if not (len(cleaned_shap) == len(cleaned_data)):
+            raise AssertionError("Assertion failed.")
+        if not (not np.any(np.isnan(cleaned_data))):
+            raise AssertionError("Assertion failed.")
+        if not (not np.any(np.isnan(cleaned_shap))):
+            raise AssertionError("Assertion failed.")
 
     def test_setup_matplotlib_styling(self) -> None:
         """Test _setup_matplotlib_styling private method."""
@@ -512,8 +534,10 @@ class TestSHAPPlotsPrivateMethods:
         )
 
         current_ax = plt.gca()
-        assert current_ax.get_xlabel() == "X Label"
-        assert current_ax.get_ylabel() == "Y Label"
+        if not (current_ax.get_xlabel() == "X Label"):
+            raise AssertionError("Assertion failed.")
+        if not (current_ax.get_ylabel() == "Y Label"):
+            raise AssertionError("Assertion failed.")
 
         plt.close(fig)
 
@@ -529,11 +553,16 @@ class TestSHAPPlotsPrivateMethods:
         colorbar = ax.figure.colorbar(
             plt.cm.ScalarMappable(cmap="coolwarm"), ax=ax, label="Test Label"
         )
-        assert colorbar is not None
-        assert colorbar.ax.get_ylabel() == "Test Label"
-        assert colorbar.ax.get_yticklabels() is not None
-        assert len(colorbar.ax.get_yticklabels()) > 0
-        assert colorbar.ax.get_yticklabels()[0].get_text() == "0.0"
+        if not (colorbar is not None):
+            raise AssertionError("Assertion failed.")
+        if not (colorbar.ax.get_ylabel() == "Test Label"):
+            raise AssertionError("Assertion failed.")
+        if not (colorbar.ax.get_yticklabels() is not None):
+            raise AssertionError("Assertion failed.")
+        if not (len(colorbar.ax.get_yticklabels()) > 0):
+            raise AssertionError("Assertion failed.")
+        if not (colorbar.ax.get_yticklabels()[0].get_text() == "0.0"):
+            raise AssertionError("Assertion failed.")
 
         plt.close(fig)
 
@@ -554,18 +583,24 @@ class TestSHAPPlotsPrivateMethods:
             explanation, top_n=3, class_id=0
         )
 
-        assert len(names) == 3
-        assert len(importance) == 3
-        assert all(imp >= 0 for imp in importance)
+        if not (len(names) == 3):
+            raise AssertionError("Assertion failed.")
+        if not (len(importance) == 3):
+            raise AssertionError("Assertion failed.")
+        if not (all(imp >= 0 for imp in importance)):
+            raise AssertionError("Assertion failed.")
 
         colors = shap_plots._get_dynamic_colors(len(importance))
-        assert len(colors) == len(importance)
+        if not (len(colors) == len(importance)):
+            raise AssertionError("Assertion failed.")
 
         cleaned_data, cleaned_shap = shap_plots._clean_data_for_plotting(
             X[:, 0], shap_values[:, 0]
         )
-        assert len(cleaned_data) <= len(X[:, 0])
-        assert len(cleaned_shap) == len(cleaned_data)
+        if not (len(cleaned_data) <= len(X[:, 0])):
+            raise AssertionError("Assertion failed.")
+        if not (len(cleaned_shap) == len(cleaned_data)):
+            raise AssertionError("Assertion failed.")
 
     def test_edge_cases_private_methods(self) -> None:
         """Test edge cases for private methods."""
@@ -583,11 +618,15 @@ class TestSHAPPlotsPrivateMethods:
             single_explanation, top_n=1, class_id=0
         )
 
-        assert len(names) == 1
-        assert len(importance) == 1
+        if not (len(names) == 1):
+            raise AssertionError("Assertion failed.")
+        if not (len(importance) == 1):
+            raise AssertionError("Assertion failed.")
 
         colors_zero = shap_plots._get_dynamic_colors(0)
-        assert len(colors_zero) == 0
+        if not (len(colors_zero) == 0):
+            raise AssertionError("Assertion failed.")
 
         colors_one = shap_plots._get_dynamic_colors(1)
-        assert len(colors_one) == 1
+        if not (len(colors_one) == 1):
+            raise AssertionError("Assertion failed.")
