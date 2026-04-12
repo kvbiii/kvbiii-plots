@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.figure_factory as ff
 import plotly.graph_objects as go
+from pandas.api.types import is_numeric_dtype
 from scipy.stats import gaussian_kde
 
 from kvbiii_plots.base_plots import BasePlots
@@ -536,7 +537,7 @@ class MultivariatePlots(BasePlots):
                     )
 
         if hue:
-            if not np.issubdtype(data_subset[hue].dtype, np.number):
+            if not is_numeric_dtype(data_subset[hue].dtype):
                 color_codes, uniques = pd.factorize(data_subset[hue])
                 data_subset["_hue_code"] = color_codes
                 color_arg = "_hue_code"
@@ -550,7 +551,7 @@ class MultivariatePlots(BasePlots):
                 width=width,
                 height=height,
             )
-            if not np.issubdtype(data_subset[hue].dtype, np.number):
+            if not is_numeric_dtype(data_subset[hue].dtype):
                 fig.update_coloraxes(
                     colorbar=dict(
                         tickvals=list(range(len(uniques))),

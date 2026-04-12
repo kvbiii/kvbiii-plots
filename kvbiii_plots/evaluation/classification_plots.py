@@ -371,6 +371,49 @@ class ClassificationPlots(BasePlots):
 
         fig.show("png", width=width, height=height)
 
+    def subplot_multilabel_conf_matrix(
+        self,
+        y_true: np.ndarray | pd.Series | list[object],
+        probabilities: np.ndarray,
+        id2label: dict[int, str],
+        cutoffs: float | np.ndarray,
+        normalize: bool = False,
+        plot_title: str = "",
+        width: int = 1600,
+        height: int = 800,
+        colorscale: str = "blues",
+        show_text: bool = True,
+        font_size: int = 22,
+    ) -> None:
+        """Backward-compatible alias for subplot_conf_matrix.
+
+        Args:
+            y_true (np.ndarray | pd.Series | list[object]): True labels.
+            probabilities (np.ndarray): Predicted probabilities.
+            id2label (dict[int, str]): Mapping from class indices to labels.
+            cutoffs (float | np.ndarray): Threshold values.
+            normalize (bool, optional): Whether to normalize confusion matrices.
+            plot_title (str, optional): Custom plot title.
+            width (int, optional): Plot width in pixels.
+            height (int, optional): Plot height in pixels.
+            colorscale (str, optional): Plotly colorscale.
+            show_text (bool, optional): Whether to show values on heatmap.
+            font_size (int, optional): Font size for text elements.
+        """
+        self.subplot_conf_matrix(
+            y_true=y_true,
+            probabilities=probabilities,
+            id2label=id2label,
+            cutoffs=cutoffs,
+            normalize=normalize,
+            plot_title=plot_title,
+            width=width,
+            height=height,
+            colorscale=colorscale,
+            show_text=show_text,
+            font_size=font_size,
+        )
+
     def _create_threshold_line(
         self,
         fig: go.Figure,
