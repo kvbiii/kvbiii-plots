@@ -106,9 +106,13 @@ jobs:
             | sed 's/-/_/g' \
             | tr '[:upper:]' '[:lower:]' \
             | sort -u > installed_packages.txt
+          echo "Installed packages:"
+          cat installed_packages.txt
       - name: Infer imports with pipreqs
         run: |
           pipreqs . --force --encoding=utf-8 --ignore .venv,tests,examples --savepath requirements_from_imports.txt
+          echo "Inferred imports from source code:"
+          cat requirements_from_imports.txt
       - name: Compare imports with installed dependencies
         run: |
           grep -o '^[^=<>]*' requirements_from_imports.txt \
