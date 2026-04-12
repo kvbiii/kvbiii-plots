@@ -1,4 +1,3 @@
-
 from typing import Any
 
 import matplotlib.pyplot as plt
@@ -1688,9 +1687,7 @@ class OtherPlots(BasePlots):
         )
 
         if show_perpendicular:
-            for i, (k_value, sse_value) in enumerate(
-                zip(k_normalized, sse_normalized)
-            ):
+            for i, (k_value, sse_value) in enumerate(zip(k_normalized, sse_normalized)):
                 x_perp = (k_value + sse_value - 1) / 2
                 y_perp = 1 - x_perp
 

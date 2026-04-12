@@ -1,4 +1,3 @@
-
 import matplotlib
 
 matplotlib.use("Agg")
@@ -643,7 +642,7 @@ class SHAPPlots(BasePlots):
         Args:
             observation_shap_values (shap.Explanation): SHAP Explanation
             object for a single observation.
-            contribution_threshold (float, optional): Threshold for feature contributions display. 
+            contribution_threshold (float, optional): Threshold for feature contributions display.
             Defaults to 0.07.
             figsize (tuple[float, float], optional): Figure size as (width, height).
             Defaults to (25, 5).

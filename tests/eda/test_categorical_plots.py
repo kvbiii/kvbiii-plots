@@ -268,7 +268,9 @@ def test_categoricalplots_pie_boxplot_by_categorical_handles_custom_hole_size(
     assert True, "Method should execute without errors"
 
 
-def test_categoricalplots_pie_stacked_barplot_by_hue_handles_multivariate_data() -> None:
+def test_categoricalplots_pie_stacked_barplot_by_hue_handles_multivariate_data() -> (
+    None
+):
     """Tests pie_stacked_barplot_by_hue correctly processes multivariate categorical data.
 
     Asserts:
@@ -297,7 +299,9 @@ def test_categoricalplots_pie_stacked_barplot_by_hue_handles_multivariate_data()
     assert True, "Method should execute without errors"
 
 
-def test_categoricalplots_pie_stacked_barplot_by_hue_applies_custom_parameters() -> None:
+def test_categoricalplots_pie_stacked_barplot_by_hue_applies_custom_parameters() -> (
+    None
+):
     """Tests pie_stacked_barplot_by_hue applies custom visualization parameters.
 
     Asserts:

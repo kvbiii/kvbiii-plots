@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -134,7 +133,7 @@ class RegressionPlots(BasePlots):
 
         Args:
             fig (go.Figure): The plotly figure to add the line to.
-            line_type (str, optional): Type of line ("horizontal", "vertical", "diagonal"). 
+            line_type (str, optional): Type of line ("horizontal", "vertical", "diagonal").
             Defaults to "horizontal".
             value (float, optional): Value for horizontal/vertical lines. Defaults to 0.
             color (str | None, optional): Line color. Defaults to None.

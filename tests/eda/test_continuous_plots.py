@@ -543,7 +543,9 @@ def test_continuousplots_histogram_boxplot_linear_regression_custom_annotations(
     assert True, "Method should execute without errors"
 
 
-def test_continuousplots_boxplot_histogram_boxplot_by_hue_handles_missing_values() -> None:
+def test_continuousplots_boxplot_histogram_boxplot_by_hue_handles_missing_values() -> (
+    None
+):
     """Tests boxplot_histogram_boxplot_by_hue handles missing values correctly.
 
     Asserts:

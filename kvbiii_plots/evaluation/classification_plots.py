@@ -290,19 +290,25 @@ class ClassificationPlots(BasePlots):
 
         n_classes = probabilities.shape[1]
         if n_classes != len(id2label):
-            raise ValueError("Number of classes in probabilities must match length of id2label.")
+            raise ValueError(
+                "Number of classes in probabilities must match length of id2label."
+            )
 
         cutoffs = np.asarray(cutoffs, dtype=float)
         if cutoffs.ndim == 0:
             cutoffs = np.full(n_classes, cutoffs.item())
         elif cutoffs.shape[0] != n_classes:
-            raise ValueError(f"cutoffs shape {cutoffs.shape} does not match n_classes={n_classes}")
+            raise ValueError(
+                f"cutoffs shape {cutoffs.shape} does not match n_classes={n_classes}"
+            )
 
         y_pred_no_threshold = np.argmax(probabilities, axis=1)
-        y_pred_threshold = np.argmax(probabilities / np.clip(cutoffs, 1e-9, None), axis=1)
+        y_pred_threshold = np.argmax(
+            probabilities / np.clip(cutoffs, 1e-9, None), axis=1
+        )
 
         y_pred_no_threshold = [id2label[int(p)] for p in y_pred_no_threshold]
-        y_pred_threshold    = [id2label[int(p)] for p in y_pred_threshold]
+        y_pred_threshold = [id2label[int(p)] for p in y_pred_threshold]
 
         labels = list(id2label.values())
         thresholds_str = self._format_threshold_string(labels, cutoffs)
@@ -1208,11 +1214,6 @@ class ClassificationPlots(BasePlots):
                 y_pred = (probabilities[:, 1] >= threshold).astype(int)
                 y_pred_labels = [id2label[int(pred)] for pred in y_pred]
 
-                precision, recall, _ = precision_recall_curve(
-                    label_binarize(y_true_labels, classes=labels).ravel(),
-                    probabilities[:, 1],
-                )
-
                 cm = confusion_matrix(y_true_labels, y_pred_labels, labels=labels)
                 tp = cm[1, 1]
                 fp = cm[0, 1]
@@ -1439,7 +1440,6 @@ class ClassificationPlots(BasePlots):
             f1_scores) tuples.
         """
         n_classes = probabilities.shape[1]
-        ids = list(id2label.keys())
         labels = list(id2label.values())
 
         if y_true.dtype != np.str_ and y_true.dtype != np.object_:
@@ -1509,9 +1509,9 @@ class ClassificationPlots(BasePlots):
                 (n_samples, n_classes).
             id2label (dict[int, str]): Mapping from class indices to labels.
             y_true_2 (np.ndarray | pd.Series | list | None, optional): True labels for second
-            subset. 
+            subset.
             Defaults to None.
-            probabilities_2 (np.ndarray | None, optional): Second set of predicted probabilities. 
+            probabilities_2 (np.ndarray | None, optional): Second set of predicted probabilities.
             Defaults to None.
             subset_1_name (str, optional): Name for first subset. Defaults to "Subset 1".
             subset_2_name (str, optional): Name for second subset. Defaults to "Subset 2".
@@ -1558,7 +1558,6 @@ class ClassificationPlots(BasePlots):
                 "Number of classes in probabilities must match length of id2label."
             )
 
-        labels = list(id2label.values())
         fig = go.Figure()
 
         results_1 = self._compute_f1_at_thresholds(

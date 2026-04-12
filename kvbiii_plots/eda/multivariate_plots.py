@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -510,7 +509,7 @@ class MultivariatePlots(BasePlots):
         Args:
             data (pd.DataFrame): Input DataFrame with features.
             features (list[str] | None): List of feature columns to include.
-               
+
                 If None, uses all numeric columns.
             hue (str | None): Column name for color grouping. If None, no color grouping is used.
             plot_title (str): Plot title.

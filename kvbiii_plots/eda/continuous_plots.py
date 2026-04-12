@@ -1,4 +1,3 @@
-
 import numpy as np
 import pandas as pd
 import plotly.express as px
@@ -181,7 +180,7 @@ class ContinuousPlots(BasePlots):
             plot_title (str, optional): Title for the plot. Defaults to "".
             width (int, optional): Width of the plot. Defaults to 1200.
             height (int, optional): Height of the plot. Defaults to 800.
-            bin_size (float | None, optional): Size of histogram bins. If None, auto-calculated. 
+            bin_size (float | None, optional): Size of histogram bins. If None, auto-calculated.
             Defaults to None.
             xaxis_title (str, optional): Title for the x-axis.
             Defaults to data name if available, otherwise "".
@@ -284,10 +283,10 @@ class ContinuousPlots(BasePlots):
             width (int, optional): Width of the plot. Defaults to 1600.
             height (int, optional): Height of the plot. Defaults to 800.
             annotations (bool | list[str] | None, optional): Whether to show quantile annotations
-            or specific quantiles. 
+            or specific quantiles.
             Defaults to None.
             bin_size (float | None, optional): Size of histogram bins. If None, automatically
-            calculated using Freedman-Diaconis rule. 
+            calculated using Freedman-Diaconis rule.
             Defaults to None.
             xaxis_title (str, optional): Title for the x-axis.
             Defaults to data name if available, otherwise "".
@@ -368,10 +367,10 @@ class ContinuousPlots(BasePlots):
             plot_title (str, optional): Title for the plot. Defaults to "".
             width (int, optional): Width of the plot. Defaults to 2000.
             height (int, optional): Height of the plot. Defaults to 800.
-            annotations (bool | list[str] | None, optional): Whether to show quantile annotations. 
+            annotations (bool | list[str] | None, optional): Whether to show quantile annotations.
             Defaults to None.
             bin_size (float | None, optional): Size of histogram bins. If None, automatically
-            calculated using Freedman-Diaconis rule. 
+            calculated using Freedman-Diaconis rule.
             Defaults to None.
             xaxis_title (str, optional): Title for the x-axis. Defaults to feature name.
             yaxis_title (str, optional): Title for the y-axis. Defaults to target name.
@@ -499,10 +498,10 @@ class ContinuousPlots(BasePlots):
             plot_title (str, optional): Title for the plot. Defaults to "".
             width (int, optional): Width of the plot. Defaults to 2000.
             height (int, optional): Height of the plot. Defaults to 1000.
-            annotations (bool | list[str] | None, optional): Whether to show quantile annotations. 
+            annotations (bool | list[str] | None, optional): Whether to show quantile annotations.
             Defaults to None.
             bin_size (float | None, optional): Size of histogram bins. If None, automatically
-            calculated using Freedman-Diaconis rule. 
+            calculated using Freedman-Diaconis rule.
             Defaults to None.
             xaxis_title (str, optional): Title for the x-axis. Defaults to feature/hue names.
             yaxis_title (str, optional): Title for the y-axis. Defaults to feature name.
