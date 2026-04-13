@@ -13,6 +13,8 @@ The modular design allows for easy extension and maintenance of plotting functio
 from __future__ import annotations
 import importlib
 from importlib.metadata import PackageNotFoundError, version
+from . import eda, evaluation, ml
+from .base_plots import BasePlots
 
 __version__ = "0+unknown"
 try:
