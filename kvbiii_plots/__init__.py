@@ -10,7 +10,26 @@ This package provides a structured approach to data visualization with:
 The modular design allows for easy extension and maintenance of plotting functionality.
 """
 
-from . import eda, evaluation, ml
-from .base_plots import BasePlots
+from __future__ import annotations
+import importlib
+from importlib.metadata import PackageNotFoundError, version
 
-__all__ = ["BasePlots", "eda", "ml", "evaluation"]
+__version__ = "0+unknown"
+try:
+    __version__ = version("kvbiii_plots")
+except PackageNotFoundError:
+    pass
+
+__all__ = [
+    "__version__",
+    "BasePlots",
+    "eda",
+    "ml",
+    "evaluation",
+]
+
+
+def __getattr__(name: str):
+    if name in __all__:
+        return importlib.import_module(f"{__name__}.{name}")
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
