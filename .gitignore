@@ -6,8 +6,8 @@ __pycache__/
 !.gitignore
 !/kvbiii_plots
 !/tests
-!install_package.sh
 !pyproject.toml
 !README.md
 !requirements.txt
+!setup_venv.sh
 !*.ipynb

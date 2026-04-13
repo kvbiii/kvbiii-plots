@@ -57,12 +57,11 @@
 ┃  ┣━ 🐍 conftest.py
 ┃  ┣━ 🐍 test_base_plots.py
 ┃  ┗━ 🐍 test_main_init.py
-┣━ 📄 .env
 ┣━ 👻 .gitignore
-┣━ 🐚 install_package.sh
 ┣━ ⚙️ pyproject.toml
 ┣━ 📖 README.md
-┗━ 📃 requirements.txt
+┣━ 📃 requirements.txt
+┗━ 🐚 setup_venv.sh
 ```
 
 ## Files Description
@@ -118,12 +117,11 @@
 	- 🐍 `conftest.py`: Pytest configuration.
 	- 🐍 `test_base_plots.py`: Tests for base plotting utilities.
 	- 🐍 `test_main_init.py`: Tests for main package initialization.
-* 📄 `.env`: Environment variable definitions.
 * 👻 `.gitignore`: Git ignored files specification.
-* 🐚 `install_package.sh`: Shell script for package installation.
 * ⚙️ `pyproject.toml`: Project metadata and build configuration.
 * 📖 `README.md`: Main project documentation.
 * 📃 `requirements.txt`: Python dependencies list.
+* 🐚 `setup_venv.sh`: Shell script for setting up a virtual environment.
 
 ## Installation
 To install the repository, follow these steps:
@@ -139,7 +137,7 @@ cd kvbiii-plots
 
 3. Create a virtual environment (optional but recommended):
 ```bash
-python -m venv <venv_name>
+bash setup_venv.sh
 ```
 
 4. Activate the virtual environment:
@@ -153,4 +151,4 @@ You can check the example Jupyter notebooks in the `examples` folders within eac
 For instance, see [categorical_plots_examples.ipynb](https://github.com/kvbiii/kvbiii-plots/blob/main/kvbiii_plots/eda/examples/categorical_plots_examples.ipynb).
 
 -------------------------------------------
-**Last updated on 2025-09-03 18:05:55**
+**Last updated on 2026-04-13 20:25:10**

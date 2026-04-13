@@ -157,7 +157,7 @@ class ClassificationPlots(BasePlots):
         y_true: np.ndarray | pd.Series | list[object],
         probabilities: np.ndarray,
         id2label: dict[int, str],
-        cutoffs: float | np.ndarray | None = None,
+        cutoffs: float | np.ndarray | list | None = None,
         normalize: bool = False,
         plot_title: str = "",
         width: int = 1000,
@@ -172,7 +172,7 @@ class ClassificationPlots(BasePlots):
             y_true (np.ndarray | pd.Series | list): True labels.
             probabilities (np.ndarray): Predicted probabilities (n_samples, n_classes).
             id2label (dict[int, str]): Mapping from class indices to labels.
-            cutoffs (float | np.ndarray | None, optional): Threshold values for each class.
+            cutoffs (float | np.ndarray | list | None, optional): Threshold values for each class.
             Defaults to None.
             normalize (bool, optional): Whether to normalize confusion matrix. Defaults to False.
             plot_title (str, optional): Custom plot title. Defaults to "".
@@ -201,9 +201,19 @@ class ClassificationPlots(BasePlots):
         elif isinstance(cutoffs, np.ndarray):
             if cutoffs.shape == ():
                 cutoffs = np.full(n_classes, float(cutoffs))
+            elif cutoffs.shape[0] == 1 and n_classes == 2:
+                cutoffs = np.array([1 - cutoffs[0], cutoffs[0]])
             elif cutoffs.shape[0] != n_classes:
                 raise ValueError(
                     f"cutoffs shape {cutoffs.shape} does not match number of classes {n_classes}"
+                )
+        elif isinstance(cutoffs, list):
+            cutoffs = np.array(cutoffs, dtype=float)
+            if cutoffs.shape[0] == 1 and n_classes == 2:
+                cutoffs = np.array([1 - cutoffs[0], cutoffs[0]])
+            elif cutoffs.shape[0] != n_classes:
+                raise ValueError(
+                    f"cutoffs length {len(cutoffs)} does not match number of classes {n_classes}"
                 )
         else:
             raise TypeError("cutoffs must be None, float, int, or np.ndarray")
