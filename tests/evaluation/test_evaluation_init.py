@@ -1,5 +1,10 @@
 from kvbiii_plots.base_plots import BasePlots
-from kvbiii_plots.evaluation import ClassificationPlots, RegressionPlots, SHAPPlots
+from kvbiii_plots.evaluation import (
+    ClassificationPlots,
+    RegressionPlots,
+    SHAPPlots,
+    TimeSeriesPlots,
+)
 import kvbiii_plots.evaluation as evaluation_module
 
 
@@ -12,11 +17,18 @@ def test_evaluation_imports() -> None:
         raise AssertionError("Assertion failed.")
     if not (SHAPPlots is not None):
         raise AssertionError("Assertion failed.")
+    if not (TimeSeriesPlots is not None):
+        raise AssertionError("Assertion failed.")
 
 
 def test_evaluation_all_exports() -> None:
     """Test that __all__ contains expected exports."""
-    expected_exports = ["ClassificationPlots", "RegressionPlots", "SHAPPlots"]
+    expected_exports = [
+        "ClassificationPlots",
+        "RegressionPlots",
+        "SHAPPlots",
+        "TimeSeriesPlots",
+    ]
     if not (hasattr(evaluation_module, "__all__")):
         raise AssertionError("Assertion failed.")
     if not (set(evaluation_module.__all__) == set(expected_exports)):
@@ -30,6 +42,8 @@ def test_evaluation_classes_inherit_from_baseplots() -> None:
     if not (issubclass(RegressionPlots, BasePlots)):
         raise AssertionError("Assertion failed.")
     if not (issubclass(SHAPPlots, BasePlots)):
+        raise AssertionError("Assertion failed.")
+    if not (issubclass(TimeSeriesPlots, BasePlots)):
         raise AssertionError("Assertion failed.")
 
 
@@ -45,7 +59,7 @@ def test_evaluation_package_docstring() -> None:
 
 def test_evaluation_classes_have_docstrings() -> None:
     """Test that all evaluation classes have proper docstrings."""
-    classes = [ClassificationPlots, RegressionPlots, SHAPPlots]
+    classes = [ClassificationPlots, RegressionPlots, SHAPPlots, TimeSeriesPlots]
     for cls in classes:
         if not (cls.__doc__ is not None):
             raise AssertionError("Assertion failed.")
@@ -59,12 +73,15 @@ def test_evaluation_classes_instantiation() -> None:
     classification_plots = ClassificationPlots()
     regression_plots = RegressionPlots()
     shap_plots = SHAPPlots()
+    time_series_plots = TimeSeriesPlots()
 
     if not (hasattr(classification_plots, "default_template")):
         raise AssertionError("Assertion failed.")
     if not (hasattr(regression_plots, "default_template")):
         raise AssertionError("Assertion failed.")
     if not (hasattr(shap_plots, "default_template")):
+        raise AssertionError("Assertion failed.")
+    if not (hasattr(time_series_plots, "default_template")):
         raise AssertionError("Assertion failed.")
 
 
@@ -111,4 +128,19 @@ def test_evaluation_classes_have_expected_methods() -> None:
         if not (hasattr(shap_plots, method)):
             raise AssertionError("Assertion failed.")
         if not (callable(getattr(shap_plots, method))):
+            raise AssertionError("Assertion failed.")
+
+    time_series_methods = [
+        "plot_actual_vs_predicted_over_time",
+        "plot_residuals_over_time",
+        "plot_prediction_interval_fan",
+        "plot_rolling_error_over_time",
+        "plot_historical_and_future_forecast",
+    ]
+
+    time_series_plots = TimeSeriesPlots()
+    for method in time_series_methods:
+        if not (hasattr(time_series_plots, method)):
+            raise AssertionError("Assertion failed.")
+        if not (callable(getattr(time_series_plots, method))):
             raise AssertionError("Assertion failed.")
