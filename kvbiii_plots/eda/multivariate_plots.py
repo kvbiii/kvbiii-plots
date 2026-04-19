@@ -892,7 +892,6 @@ class MultivariatePlots(BasePlots):
         fig.update_yaxes(title_text=y_axis_label, row=2, col=1)
 
         fig.update_xaxes(showticklabels=False, row=1, col=1)
-        fig.update_xaxes(showticklabels=False, row=2, col=2)
         fig.update_yaxes(showticklabels=False, row=2, col=2)
 
         fig.update_layout(
