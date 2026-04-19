@@ -576,12 +576,50 @@ class MultivariatePlots(BasePlots):
 
         fig.show("png", width=width, height=height)
 
+    def _coerce_vector_input(
+        self,
+        values: pd.Series | np.ndarray | list | tuple,
+        label: str,
+    ) -> pd.Series:
+        """Convert supported vector-like inputs to a one-dimensional Series."""
+        if isinstance(values, pd.Series):
+            return values.reset_index(drop=True)
+
+        if isinstance(values, np.ndarray):
+            if values.ndim != 1:
+                raise ValueError(f"{label} must be one-dimensional.")
+            return pd.Series(values)
+
+        if isinstance(values, (list, tuple)):
+            if len(values) == 0:
+                return pd.Series(dtype=float)
+
+            has_nested_vectors = all(
+                isinstance(item, (pd.Series, np.ndarray, list, tuple))
+                for item in values
+            )
+            if has_nested_vectors:
+                series_parts = [
+                    self._coerce_vector_input(item, label) for item in values
+                ]
+                return pd.concat(series_parts, ignore_index=True)
+
+            return pd.Series(values)
+
+        raise TypeError(
+            f"{label} must be a pandas Series, numpy array, list, or tuple."
+        )
+
     def scatter_with_marginals(
         self,
-        data: pd.DataFrame,
-        x: str,
-        y: str,
-        hue: str | None = None,
+        data: pd.DataFrame | None = None,
+        x: str | None = None,
+        y: str | None = None,
+        X: pd.Series | np.ndarray | list | tuple | None = None,
+        Y: pd.Series | np.ndarray | list | tuple | None = None,
+        hue: str | pd.Series | np.ndarray | list | tuple | None = None,
+        x_label: str = "",
+        y_label: str = "",
         plot_title: str = "",
         width: int = 1000,
         height: int = 1000,
@@ -598,10 +636,19 @@ class MultivariatePlots(BasePlots):
         on the top and right axes. Optionally supports color grouping by a hue column.
 
         Args:
-            data (pd.DataFrame): Input DataFrame containing the variables to plot.
-            x (str): Column name for x-axis variable.
-            y (str): Column name for y-axis variable.
-            hue (str | None): Column name for color grouping. If None, uses default color.
+            data (pd.DataFrame | None): Input DataFrame containing the variables to plot.
+                Use together with x and y column names.
+            x (str | None): Column name for x-axis variable when data is provided.
+            y (str | None): Column name for y-axis variable when data is provided.
+            X (pd.Series | np.ndarray | list | tuple | None): Direct x-values input.
+                Supports one vector or a list/tuple of vectors.
+            Y (pd.Series | np.ndarray | list | tuple | None): Direct y-values input.
+                Supports one vector or a list/tuple of vectors.
+            hue (str | pd.Series | np.ndarray | list | tuple | None): Color grouping.
+                Use a column name string when data is provided, or a direct vector when
+                X and Y are provided.
+            x_label (str): X-axis label override. Defaults to empty string.
+            y_label (str): Y-axis label override. Defaults to empty string.
             plot_title (str): Plot title. Defaults to empty string.
             width (int): Plot width in pixels. Defaults to 1000.
             height (int): Plot height in pixels. Defaults to 1000.
@@ -612,18 +659,74 @@ class MultivariatePlots(BasePlots):
             font_size (int): Font size for plot title and axis labels. Defaults to 22.
             showlegend (bool): If True, display legend for hue groups. Defaults to True.
 
+        Returns:
+            None
+
         Note:
             O(n) time complexity where n is the number of rows in the data.
             Handles missing values by dropping them before plotting.
         """
-        if x not in data.columns or y not in data.columns:
-            missing = [col for col in [x, y] if col not in data.columns]
-            raise ValueError(f"Columns {missing} not found in DataFrame.")
+        if data is not None:
+            if not isinstance(x, str) or not isinstance(y, str):
+                raise ValueError(
+                    "When data is provided, x and y must be column name strings."
+                )
+            if x not in data.columns or y not in data.columns:
+                missing = [col for col in [x, y] if col not in data.columns]
+                raise ValueError(f"Columns {missing} not found in DataFrame.")
 
-        cols_to_select = [x, y]
-        if hue:
-            cols_to_select.append(hue)
-        data_clean = data[cols_to_select].dropna()
+            x_column = x
+            y_column = y
+            hue_column = None
+            hue_label = "hue"
+
+            cols_to_select = [x_column, y_column]
+            if hue is not None:
+                if not isinstance(hue, str):
+                    raise TypeError(
+                        "When data is provided, hue must be a column name string."
+                    )
+                if hue not in data.columns:
+                    raise ValueError(f"Column '{hue}' not found in DataFrame.")
+                cols_to_select.append(hue)
+                hue_column = hue
+                hue_label = hue
+
+            data_clean = data[cols_to_select].dropna().copy()
+            x_axis_label = x_label if x_label else x_column
+            y_axis_label = y_label if y_label else y_column
+        else:
+            if X is None or Y is None:
+                raise ValueError(
+                    "Provide either data with x and y column names or direct X and Y vectors."
+                )
+
+            x_series = self._coerce_vector_input(X, "X")
+            y_series = self._coerce_vector_input(Y, "Y")
+            if len(x_series) != len(y_series):
+                raise ValueError("X and Y must have the same number of values.")
+
+            x_column = "__x"
+            y_column = "__y"
+            data_clean = pd.DataFrame({x_column: x_series, y_column: y_series})
+            x_axis_label = x_label if x_label else (x_series.name or "X")
+            y_axis_label = y_label if y_label else (y_series.name or "Y")
+
+            hue_column = None
+            hue_label = "hue"
+            if hue is not None:
+                if isinstance(hue, str):
+                    raise ValueError(
+                        "When data is not provided, hue must be a vector-like input, not a string."
+                    )
+                hue_series = self._coerce_vector_input(hue, "hue")
+                if len(hue_series) != len(data_clean):
+                    raise ValueError(
+                        "hue must have the same number of values as X and Y."
+                    )
+                hue_column = "__hue"
+                hue_label = hue_series.name or "hue"
+                data_clean[hue_column] = hue_series.to_numpy()
 
         if data_clean.empty:
             raise ValueError("Data contains no valid rows after removing NaN values.")
@@ -641,9 +744,9 @@ class MultivariatePlots(BasePlots):
         unique_groups = None
         group_colors = None
 
-        if hue:
-            if not is_numeric_dtype(data_clean[hue].dtype):
-                unique_groups = data_clean[hue].unique()
+        if hue_column:
+            if not is_numeric_dtype(data_clean[hue_column].dtype):
+                unique_groups = data_clean[hue_column].unique()
                 group_colors = (
                     px.colors.qualitative.Set1[: len(unique_groups)]
                     + px.colors.qualitative.Set2[: max(0, len(unique_groups) - 9)]
@@ -651,15 +754,15 @@ class MultivariatePlots(BasePlots):
             else:
                 unique_groups = None
 
-        if hue and unique_groups is not None:
+        if hue_column and unique_groups is not None:
             for idx, group in enumerate(unique_groups):
-                group_data = data_clean[data_clean[hue] == group]
+                group_data = data_clean[data_clean[hue_column] == group]
                 color = group_colors[idx % len(group_colors)]
 
                 fig.add_trace(
                     go.Scatter(
-                        x=group_data[x],
-                        y=group_data[y],
+                        x=group_data[x_column],
+                        y=group_data[y_column],
                         mode="markers",
                         name=str(group),
                         marker=dict(
@@ -668,7 +771,7 @@ class MultivariatePlots(BasePlots):
                             opacity=opacity,
                             line=dict(width=0.5, color="white"),
                         ),
-                        hovertemplate=f"<b>{x}</b>: %{{x}}<br><b>{y}</b>: %{{y}}<br><b>{hue}</b>: {group}<extra></extra>",
+                        hovertemplate=f"<b>{x_axis_label}</b>: %{{x}}<br><b>{y_axis_label}</b>: %{{y}}<br><b>{hue_label}</b>: {group}<extra></extra>",
                     ),
                     row=2,
                     col=1,
@@ -676,7 +779,7 @@ class MultivariatePlots(BasePlots):
 
                 fig.add_trace(
                     go.Histogram(
-                        x=group_data[x],
+                        x=group_data[x_column],
                         name=f"{group} (marginal)",
                         marker=dict(color=color, opacity=opacity),
                         showlegend=False,
@@ -688,7 +791,7 @@ class MultivariatePlots(BasePlots):
 
                 fig.add_trace(
                     go.Histogram(
-                        y=group_data[y],
+                        y=group_data[y_column],
                         name=f"{group} (marginal)",
                         marker=dict(color=color, opacity=opacity),
                         showlegend=False,
@@ -697,23 +800,23 @@ class MultivariatePlots(BasePlots):
                     row=2,
                     col=2,
                 )
-        elif hue and unique_groups is None:
+        elif hue_column and unique_groups is None:
             fig.add_trace(
                 go.Scatter(
-                    x=data_clean[x],
-                    y=data_clean[y],
+                    x=data_clean[x_column],
+                    y=data_clean[y_column],
                     mode="markers",
                     marker=dict(
                         size=marker_size,
-                        color=data_clean[hue],
+                        color=data_clean[hue_column],
                         opacity=opacity,
                         colorscale="Viridis",
                         showscale=True,
                         line=dict(width=0.5, color="white"),
-                        colorbar=dict(title=hue, x=1.12),
+                        colorbar=dict(title=hue_label, x=1.12),
                     ),
                     name="Data",
-                    hovertemplate=f"<b>{x}</b>: %{{x}}<br><b>{y}</b>: %{{y}}<br><b>{hue}</b>: %{{marker.color}}<extra></extra>",
+                    hovertemplate=f"<b>{x_axis_label}</b>: %{{x}}<br><b>{y_axis_label}</b>: %{{y}}<br><b>{hue_label}</b>: %{{marker.color}}<extra></extra>",
                 ),
                 row=2,
                 col=1,
@@ -721,7 +824,7 @@ class MultivariatePlots(BasePlots):
 
             fig.add_trace(
                 go.Histogram(
-                    x=data_clean[x],
+                    x=data_clean[x_column],
                     name="x marginal",
                     marker=dict(color=self.default_colors["primary"], opacity=opacity),
                     showlegend=False,
@@ -733,7 +836,7 @@ class MultivariatePlots(BasePlots):
 
             fig.add_trace(
                 go.Histogram(
-                    y=data_clean[y],
+                    y=data_clean[y_column],
                     name="y marginal",
                     marker=dict(color=self.default_colors["primary"], opacity=opacity),
                     showlegend=False,
@@ -745,8 +848,8 @@ class MultivariatePlots(BasePlots):
         else:
             fig.add_trace(
                 go.Scatter(
-                    x=data_clean[x],
-                    y=data_clean[y],
+                    x=data_clean[x_column],
+                    y=data_clean[y_column],
                     mode="markers",
                     marker=dict(
                         size=marker_size,
@@ -755,7 +858,7 @@ class MultivariatePlots(BasePlots):
                         line=dict(width=0.5, color="white"),
                     ),
                     name="Data",
-                    hovertemplate=f"<b>{x}</b>: %{{x}}<br><b>{y}</b>: %{{y}}<extra></extra>",
+                    hovertemplate=f"<b>{x_axis_label}</b>: %{{x}}<br><b>{y_axis_label}</b>: %{{y}}<extra></extra>",
                 ),
                 row=2,
                 col=1,
@@ -763,7 +866,7 @@ class MultivariatePlots(BasePlots):
 
             fig.add_trace(
                 go.Histogram(
-                    x=data_clean[x],
+                    x=data_clean[x_column],
                     name="x marginal",
                     marker=dict(color=self.default_colors["primary"], opacity=opacity),
                     showlegend=False,
@@ -775,7 +878,7 @@ class MultivariatePlots(BasePlots):
 
             fig.add_trace(
                 go.Histogram(
-                    y=data_clean[y],
+                    y=data_clean[y_column],
                     name="y marginal",
                     marker=dict(color=self.default_colors["primary"], opacity=opacity),
                     showlegend=False,
@@ -785,8 +888,8 @@ class MultivariatePlots(BasePlots):
                 col=2,
             )
 
-        fig.update_xaxes(title_text=x, row=2, col=1)
-        fig.update_yaxes(title_text=y, row=2, col=1)
+        fig.update_xaxes(title_text=x_axis_label, row=2, col=1)
+        fig.update_yaxes(title_text=y_axis_label, row=2, col=1)
 
         fig.update_xaxes(showticklabels=False, row=1, col=1)
         fig.update_xaxes(showticklabels=False, row=2, col=2)
@@ -875,6 +978,26 @@ if __name__ == "__main__":
         y="feature2",
         hue="category1",
         plot_title="Scatter with Marginal Distributions Example",
+        width=900,
+        height=900,
+        marker_size=6,
+    )
+    plots.scatter_with_marginals(
+        X=[
+            df.loc[df["category1"] == "A", "feature1"],
+            df.loc[df["category1"] == "B", "feature1"],
+        ],
+        Y=[
+            df.loc[df["category1"] == "A", "feature2"],
+            df.loc[df["category1"] == "B", "feature2"],
+        ],
+        hue=[
+            pd.Series(["A"] * (df["category1"] == "A").sum()),
+            pd.Series(["B"] * (df["category1"] == "B").sum()),
+        ],
+        x_label="feature1",
+        y_label="feature2",
+        plot_title="Scatter with Marginal Distributions (Direct Vectors)",
         width=900,
         height=900,
         marker_size=6,

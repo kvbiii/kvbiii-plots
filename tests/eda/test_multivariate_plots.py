@@ -946,3 +946,63 @@ class TestMultivariatePlotsScatterWithMarginals:
 
         if not (True):
             raise AssertionError("Method should apply custom title")
+
+    def test_scatter_with_marginals_accepts_direct_numpy_vectors(self) -> None:
+        """Tests scatter_with_marginals accepts direct numpy vector inputs."""
+        mv_plots = MultivariatePlots()
+        x_values = np.array([1.0, 2.0, 3.0, 4.0])
+        y_values = np.array([1.5, 2.5, 3.5, 4.5])
+
+        mv_plots.scatter_with_marginals(
+            X=x_values,
+            Y=y_values,
+            x_label="widths",
+            y_label="heights",
+            showlegend=False,
+        )
+
+        if not (True):
+            raise AssertionError("Method should accept direct numpy vector inputs")
+
+    def test_scatter_with_marginals_accepts_vector_lists_with_hue(self) -> None:
+        """Tests scatter_with_marginals accepts list-of-vectors inputs with vector hue."""
+        mv_plots = MultivariatePlots()
+        x_values = [np.array([1.0, 2.0]), np.array([3.0, 4.0])]
+        y_values = [np.array([1.2, 2.2]), np.array([3.2, 4.2])]
+        hue_values = [pd.Series(["A", "A"]), pd.Series(["B", "B"])]
+
+        mv_plots.scatter_with_marginals(
+            X=x_values,
+            Y=y_values,
+            hue=hue_values,
+            x_label="x direct",
+            y_label="y direct",
+        )
+
+        if not (True):
+            raise AssertionError("Method should accept vector lists with hue")
+
+    def test_scatter_with_marginals_raises_error_for_direct_length_mismatch(
+        self,
+    ) -> None:
+        """Tests scatter_with_marginals raises ValueError for mismatched direct vector lengths."""
+        mv_plots = MultivariatePlots()
+
+        with pytest.raises(ValueError):
+            mv_plots.scatter_with_marginals(
+                X=np.array([1.0, 2.0, 3.0]),
+                Y=np.array([1.0, 2.0]),
+            )
+
+    def test_scatter_with_marginals_raises_error_for_string_hue_without_data(
+        self,
+    ) -> None:
+        """Tests scatter_with_marginals raises ValueError for string hue in direct-vector mode."""
+        mv_plots = MultivariatePlots()
+
+        with pytest.raises(ValueError):
+            mv_plots.scatter_with_marginals(
+                X=np.array([1.0, 2.0]),
+                Y=np.array([1.1, 2.1]),
+                hue="species",
+            )
