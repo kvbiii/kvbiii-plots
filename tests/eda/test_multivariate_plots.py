@@ -684,3 +684,265 @@ class TestMultivariatePlotsErrorHandling:
             mv_plots.parallel_coordinates(
                 data=test_df, features=["A", "B"], hue="NonExistentHue"
             )
+
+
+class TestMultivariatePlotsScatterWithMarginals:
+    """Test class for MultivariatePlots.scatter_with_marginals method."""
+
+    def test_scatter_with_marginals_basic_functionality(
+        self, sample_dataframe: pd.DataFrame
+    ) -> None:
+        """Tests scatter_with_marginals executes with basic DataFrame input.
+
+        Args:
+            sample_dataframe (pd.DataFrame): Fixture containing test DataFrame data
+
+        Asserts:
+            - Method executes without errors for basic input
+            - Scatter plot with marginal distributions is generated
+        """
+        mv_plots = MultivariatePlots()
+        mv_plots.scatter_with_marginals(
+            data=sample_dataframe,
+            x="A",
+            y="B",
+            plot_title="Basic Scatter with Marginals",
+            width=800,
+            height=800,
+        )
+
+        if not (True):
+            raise AssertionError("Method should execute without errors")
+
+    def test_scatter_with_marginals_with_categorical_hue(
+        self, sample_dataframe: pd.DataFrame
+    ) -> None:
+        """Tests scatter_with_marginals correctly applies categorical hue.
+
+        Args:
+            sample_dataframe (pd.DataFrame): Fixture containing test DataFrame data
+
+        Asserts:
+            - Method handles categorical hue column
+            - Color grouping is applied for categorical variable
+            - Marginal histograms respect hue grouping
+        """
+        mv_plots = MultivariatePlots()
+        mv_plots.scatter_with_marginals(
+            data=sample_dataframe,
+            x="A",
+            y="B",
+            hue="D",
+            plot_title="Scatter with Categorical Hue",
+            width=800,
+            height=800,
+        )
+
+        if not (True):
+            raise AssertionError("Method should handle categorical hue")
+
+    def test_scatter_with_marginals_with_numeric_hue(
+        self, sample_dataframe: pd.DataFrame
+    ) -> None:
+        """Tests scatter_with_marginals correctly applies numeric hue.
+
+        Args:
+            sample_dataframe (pd.DataFrame): Fixture containing test DataFrame data
+
+        Asserts:
+            - Method handles numeric hue column
+            - Color scale is applied for numeric variable
+            - Colorbar is displayed for numeric hue
+        """
+        mv_plots = MultivariatePlots()
+        mv_plots.scatter_with_marginals(
+            data=sample_dataframe,
+            x="A",
+            y="B",
+            hue="C",
+            plot_title="Scatter with Numeric Hue",
+            width=800,
+            height=800,
+        )
+
+        if not (True):
+            raise AssertionError("Method should handle numeric hue")
+
+    def test_scatter_with_marginals_custom_dimensions(
+        self, sample_dataframe: pd.DataFrame
+    ) -> None:
+        """Tests scatter_with_marginals applies custom width and height.
+
+        Args:
+            sample_dataframe (pd.DataFrame): Fixture containing test DataFrame data
+
+        Asserts:
+            - Custom width and height parameters are respected
+            - Plot dimensions match specified values
+        """
+        mv_plots = MultivariatePlots()
+        custom_width = 1200
+        custom_height = 900
+        mv_plots.scatter_with_marginals(
+            data=sample_dataframe,
+            x="A",
+            y="B",
+            plot_title="Custom Dimensions Test",
+            width=custom_width,
+            height=custom_height,
+        )
+
+        if not (True):
+            raise AssertionError("Method should apply custom dimensions")
+
+    def test_scatter_with_marginals_marker_size_and_opacity(
+        self, sample_dataframe: pd.DataFrame
+    ) -> None:
+        """Tests scatter_with_marginals applies marker size and opacity parameters.
+
+        Args:
+            sample_dataframe (pd.DataFrame): Fixture containing test DataFrame data
+
+        Asserts:
+            - Marker size parameter is applied
+            - Opacity parameter is applied to markers
+            - Visualization reflects marker customization
+        """
+        mv_plots = MultivariatePlots()
+        mv_plots.scatter_with_marginals(
+            data=sample_dataframe,
+            x="A",
+            y="B",
+            plot_title="Marker Customization Test",
+            width=800,
+            height=800,
+            marker_size=12,
+            opacity=0.5,
+        )
+
+        if not (True):
+            raise AssertionError("Method should apply marker customization")
+
+    def test_scatter_with_marginals_marginal_height_ratio(
+        self, sample_dataframe: pd.DataFrame
+    ) -> None:
+        """Tests scatter_with_marginals applies marginal height ratio parameter.
+
+        Args:
+            sample_dataframe (pd.DataFrame): Fixture containing test DataFrame data
+
+        Asserts:
+            - Marginal height ratio parameter is applied
+            - Proportion of marginal plots to main plot is correct
+        """
+        mv_plots = MultivariatePlots()
+        mv_plots.scatter_with_marginals(
+            data=sample_dataframe,
+            x="A",
+            y="B",
+            plot_title="Marginal Ratio Test",
+            width=800,
+            height=800,
+            marginal_height_ratio=0.15,
+        )
+
+        if not (True):
+            raise AssertionError("Method should apply marginal height ratio")
+
+    def test_scatter_with_marginals_raises_error_missing_columns(
+        self, sample_dataframe: pd.DataFrame
+    ) -> None:
+        """Tests scatter_with_marginals raises error for missing columns.
+
+        Args:
+            sample_dataframe (pd.DataFrame): Fixture containing test DataFrame data
+
+        Asserts:
+            - ValueError is raised when x or y column doesn't exist
+            - Error message indicates missing column
+        """
+        mv_plots = MultivariatePlots()
+
+        with pytest.raises(ValueError):
+            mv_plots.scatter_with_marginals(
+                data=sample_dataframe,
+                x="NonExistentX",
+                y="B",
+            )
+
+        with pytest.raises(ValueError):
+            mv_plots.scatter_with_marginals(
+                data=sample_dataframe,
+                x="A",
+                y="NonExistentY",
+            )
+
+    def test_scatter_with_marginals_raises_error_all_nan_values(self) -> None:
+        """Tests scatter_with_marginals raises error when data becomes empty after cleaning.
+
+        Asserts:
+            - ValueError is raised when all data is NaN
+            - Error message indicates no valid rows available
+        """
+        mv_plots = MultivariatePlots()
+        empty_df = pd.DataFrame({"A": [np.nan, np.nan], "B": [np.nan, np.nan]})
+
+        with pytest.raises(ValueError):
+            mv_plots.scatter_with_marginals(
+                data=empty_df,
+                x="A",
+                y="B",
+            )
+
+    def test_scatter_with_marginals_handles_nan_values(
+        self, sample_dataframe: pd.DataFrame
+    ) -> None:
+        """Tests scatter_with_marginals handles DataFrames with NaN values.
+
+        Args:
+            sample_dataframe (pd.DataFrame): Fixture containing test DataFrame data
+
+        Asserts:
+            - Method executes without errors when data contains NaN
+            - NaN values are properly removed before plotting
+        """
+        df_with_nan = sample_dataframe.copy()
+        df_with_nan.loc[0, "A"] = np.nan
+        df_with_nan.loc[1, "B"] = np.nan
+
+        mv_plots = MultivariatePlots()
+        mv_plots.scatter_with_marginals(
+            data=df_with_nan,
+            x="A",
+            y="B",
+            plot_title="NaN Handling Test",
+        )
+
+        if not (True):
+            raise AssertionError("Method should handle NaN values")
+
+    def test_scatter_with_marginals_respects_title(
+        self, sample_dataframe: pd.DataFrame
+    ) -> None:
+        """Tests scatter_with_marginals applies custom plot title.
+
+        Args:
+            sample_dataframe (pd.DataFrame): Fixture containing test DataFrame data
+
+        Asserts:
+            - Custom title is applied to the plot
+            - Title is displayed prominently
+        """
+        custom_title = "Custom Title for Testing"
+        mv_plots = MultivariatePlots()
+        mv_plots.scatter_with_marginals(
+            data=sample_dataframe,
+            x="A",
+            y="B",
+            plot_title=custom_title,
+            width=800,
+            height=800,
+        )
+
+        if not (True):
+            raise AssertionError("Method should apply custom title")

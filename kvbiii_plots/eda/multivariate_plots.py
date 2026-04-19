@@ -4,6 +4,7 @@ import plotly.express as px
 import plotly.figure_factory as ff
 import plotly.graph_objects as go
 from pandas.api.types import is_numeric_dtype
+from plotly.subplots import make_subplots
 from scipy.stats import gaussian_kde
 
 from kvbiii_plots.base_plots import BasePlots
@@ -575,6 +576,232 @@ class MultivariatePlots(BasePlots):
 
         fig.show("png", width=width, height=height)
 
+    def scatter_with_marginals(
+        self,
+        data: pd.DataFrame,
+        x: str,
+        y: str,
+        hue: str | None = None,
+        plot_title: str = "",
+        width: int = 1000,
+        height: int = 1000,
+        marker_size: int = 8,
+        marginal_height_ratio: float = 0.2,
+        opacity: float = 0.7,
+    ) -> None:
+        """
+        Create a scatter plot with marginal distributions (histograms) on axes.
+
+        Generates a joint plot with a central scatter plot and marginal histograms
+        on the top and right axes. Optionally supports color grouping by a hue column.
+
+        Args:
+            data (pd.DataFrame): Input DataFrame containing the variables to plot.
+            x (str): Column name for x-axis variable.
+            y (str): Column name for y-axis variable.
+            hue (str | None): Column name for color grouping. If None, uses default color.
+            plot_title (str): Plot title. Defaults to empty string.
+            width (int): Plot width in pixels. Defaults to 1000.
+            height (int): Plot height in pixels. Defaults to 1000.
+            marker_size (int): Size of scatter plot markers. Defaults to 8.
+            marginal_height_ratio (float): Ratio of marginal plot height relative to
+                scatter plot. Defaults to 0.2.
+            opacity (float): Opacity of scatter plot markers. Defaults to 0.7.
+
+        Returns:
+            None
+
+        Note:
+            O(n) time complexity where n is the number of rows in the data.
+            Handles missing values by dropping them before plotting.
+        """
+        if x not in data.columns or y not in data.columns:
+            missing = [col for col in [x, y] if col not in data.columns]
+            raise ValueError(f"Columns {missing} not found in DataFrame.")
+
+        cols_to_select = [x, y]
+        if hue:
+            cols_to_select.append(hue)
+        data_clean = data[cols_to_select].dropna()
+
+        if data_clean.empty:
+            raise ValueError("Data contains no valid rows after removing NaN values.")
+
+        fig = make_subplots(
+            rows=2,
+            cols=2,
+            column_widths=[marginal_height_ratio, 1 - marginal_height_ratio],
+            row_heights=[marginal_height_ratio, 1 - marginal_height_ratio],
+            horizontal_spacing=0.02,
+            vertical_spacing=0.02,
+        )
+
+        unique_groups = None
+        group_colors = None
+
+        if hue:
+            if not is_numeric_dtype(data_clean[hue].dtype):
+                unique_groups = data_clean[hue].unique()
+                group_colors = (
+                    px.colors.qualitative.Set1[: len(unique_groups)]
+                    + px.colors.qualitative.Set2[: max(0, len(unique_groups) - 9)]
+                )
+            else:
+                unique_groups = None
+
+        if hue and unique_groups is not None:
+            for idx, group in enumerate(unique_groups):
+                group_data = data_clean[data_clean[hue] == group]
+                color = group_colors[idx % len(group_colors)]
+
+                fig.add_trace(
+                    go.Scatter(
+                        x=group_data[x],
+                        y=group_data[y],
+                        mode="markers",
+                        name=str(group),
+                        marker=dict(
+                            size=marker_size,
+                            color=color,
+                            opacity=opacity,
+                            line=dict(width=0.5, color="white"),
+                        ),
+                        hovertemplate=f"<b>{x}</b>: %{{x}}<br><b>{y}</b>: %{{y}}<br><b>{hue}</b>: {group}<extra></extra>",
+                    ),
+                    row=2,
+                    col=2,
+                )
+
+                fig.add_trace(
+                    go.Histogram(
+                        x=group_data[x],
+                        name=f"{group} (marginal)",
+                        marker=dict(color=color, opacity=opacity),
+                        showlegend=False,
+                        hovertemplate="<b>Count</b>: %{y}<extra></extra>",
+                    ),
+                    row=1,
+                    col=2,
+                )
+
+                fig.add_trace(
+                    go.Histogram(
+                        y=group_data[y],
+                        name=f"{group} (marginal)",
+                        marker=dict(color=color, opacity=opacity),
+                        showlegend=False,
+                        hovertemplate="<b>Count</b>: %{x}<extra></extra>",
+                    ),
+                    row=2,
+                    col=1,
+                )
+        elif hue and unique_groups is None:
+            fig.add_trace(
+                go.Scatter(
+                    x=data_clean[x],
+                    y=data_clean[y],
+                    mode="markers",
+                    marker=dict(
+                        size=marker_size,
+                        color=data_clean[hue],
+                        opacity=opacity,
+                        colorscale="Viridis",
+                        showscale=True,
+                        line=dict(width=0.5, color="white"),
+                        colorbar=dict(title=hue, x=1.12),
+                    ),
+                    name="Data",
+                    hovertemplate=f"<b>{x}</b>: %{{x}}<br><b>{y}</b>: %{{y}}<br><b>{hue}</b>: %{{marker.color}}<extra></extra>",
+                ),
+                row=2,
+                col=2,
+            )
+
+            fig.add_trace(
+                go.Histogram(
+                    x=data_clean[x],
+                    name="x marginal",
+                    marker=dict(color=self.default_colors["primary"], opacity=opacity),
+                    showlegend=False,
+                    hovertemplate="<b>Count</b>: %{y}<extra></extra>",
+                ),
+                row=1,
+                col=2,
+            )
+
+            fig.add_trace(
+                go.Histogram(
+                    y=data_clean[y],
+                    name="y marginal",
+                    marker=dict(color=self.default_colors["primary"], opacity=opacity),
+                    showlegend=False,
+                    hovertemplate="<b>Count</b>: %{x}<extra></extra>",
+                ),
+                row=2,
+                col=1,
+            )
+        else:
+            fig.add_trace(
+                go.Scatter(
+                    x=data_clean[x],
+                    y=data_clean[y],
+                    mode="markers",
+                    marker=dict(
+                        size=marker_size,
+                        color=self.default_colors["primary"],
+                        opacity=opacity,
+                        line=dict(width=0.5, color="white"),
+                    ),
+                    name="Data",
+                    hovertemplate=f"<b>{x}</b>: %{{x}}<br><b>{y}</b>: %{{y}}<extra></extra>",
+                ),
+                row=2,
+                col=2,
+            )
+
+            fig.add_trace(
+                go.Histogram(
+                    x=data_clean[x],
+                    name="x marginal",
+                    marker=dict(color=self.default_colors["primary"], opacity=opacity),
+                    showlegend=False,
+                    hovertemplate="<b>Count</b>: %{y}<extra></extra>",
+                ),
+                row=1,
+                col=2,
+            )
+
+            fig.add_trace(
+                go.Histogram(
+                    y=data_clean[y],
+                    name="y marginal",
+                    marker=dict(color=self.default_colors["primary"], opacity=opacity),
+                    showlegend=False,
+                    hovertemplate="<b>Count</b>: %{x}<extra></extra>",
+                ),
+                row=2,
+                col=1,
+            )
+
+        fig.update_xaxes(title_text=x, row=2, col=2)
+        fig.update_yaxes(title_text=y, row=2, col=2)
+
+        fig.update_xaxes(showticklabels=False, row=1, col=2)
+        fig.update_yaxes(showticklabels=False, row=2, col=1)
+
+        fig.update_layout(
+            title=f"<b>{plot_title}</b>" if plot_title else "",
+            title_x=0.5,
+            width=width,
+            height=height,
+            template="simple_white",
+            font=dict(family="Times New Roman", size=14, color="Black"),
+            showlegend=True,
+            hovermode="closest",
+        )
+
+        fig.show("png", width=width, height=height)
+
 
 if __name__ == "__main__":
     np.random.seed(0)
@@ -627,4 +854,14 @@ if __name__ == "__main__":
         categorical_columns=["category1", "category2"],
         width=800,
         height=600,
+    )
+    plots.scatter_with_marginals(
+        df,
+        x="feature1",
+        y="feature2",
+        hue="category1",
+        plot_title="Scatter with Marginal Distributions Example",
+        width=900,
+        height=900,
+        marker_size=6,
     )
