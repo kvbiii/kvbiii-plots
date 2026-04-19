@@ -588,6 +588,8 @@ class MultivariatePlots(BasePlots):
         marker_size: int = 8,
         marginal_height_ratio: float = 0.2,
         opacity: float = 0.7,
+        font_size: int = 22,
+        showlegend: bool = True,
     ) -> None:
         """
         Create a scatter plot with marginal distributions (histograms) on axes.
@@ -607,9 +609,8 @@ class MultivariatePlots(BasePlots):
             marginal_height_ratio (float): Ratio of marginal plot height relative to
                 scatter plot. Defaults to 0.2.
             opacity (float): Opacity of scatter plot markers. Defaults to 0.7.
-
-        Returns:
-            None
+            font_size (int): Font size for plot title and axis labels. Defaults to 22.
+            showlegend (bool): If True, display legend for hue groups. Defaults to True.
 
         Note:
             O(n) time complexity where n is the number of rows in the data.
@@ -630,7 +631,8 @@ class MultivariatePlots(BasePlots):
         fig = make_subplots(
             rows=2,
             cols=2,
-            column_widths=[marginal_height_ratio, 1 - marginal_height_ratio],
+            specs=[[{"type": "xy"}, None], [{"type": "xy"}, {"type": "xy"}]],
+            column_widths=[1 - marginal_height_ratio, marginal_height_ratio],
             row_heights=[marginal_height_ratio, 1 - marginal_height_ratio],
             horizontal_spacing=0.02,
             vertical_spacing=0.02,
@@ -669,7 +671,7 @@ class MultivariatePlots(BasePlots):
                         hovertemplate=f"<b>{x}</b>: %{{x}}<br><b>{y}</b>: %{{y}}<br><b>{hue}</b>: {group}<extra></extra>",
                     ),
                     row=2,
-                    col=2,
+                    col=1,
                 )
 
                 fig.add_trace(
@@ -681,7 +683,7 @@ class MultivariatePlots(BasePlots):
                         hovertemplate="<b>Count</b>: %{y}<extra></extra>",
                     ),
                     row=1,
-                    col=2,
+                    col=1,
                 )
 
                 fig.add_trace(
@@ -693,7 +695,7 @@ class MultivariatePlots(BasePlots):
                         hovertemplate="<b>Count</b>: %{x}<extra></extra>",
                     ),
                     row=2,
-                    col=1,
+                    col=2,
                 )
         elif hue and unique_groups is None:
             fig.add_trace(
@@ -714,7 +716,7 @@ class MultivariatePlots(BasePlots):
                     hovertemplate=f"<b>{x}</b>: %{{x}}<br><b>{y}</b>: %{{y}}<br><b>{hue}</b>: %{{marker.color}}<extra></extra>",
                 ),
                 row=2,
-                col=2,
+                col=1,
             )
 
             fig.add_trace(
@@ -726,7 +728,7 @@ class MultivariatePlots(BasePlots):
                     hovertemplate="<b>Count</b>: %{y}<extra></extra>",
                 ),
                 row=1,
-                col=2,
+                col=1,
             )
 
             fig.add_trace(
@@ -738,7 +740,7 @@ class MultivariatePlots(BasePlots):
                     hovertemplate="<b>Count</b>: %{x}<extra></extra>",
                 ),
                 row=2,
-                col=1,
+                col=2,
             )
         else:
             fig.add_trace(
@@ -756,7 +758,7 @@ class MultivariatePlots(BasePlots):
                     hovertemplate=f"<b>{x}</b>: %{{x}}<br><b>{y}</b>: %{{y}}<extra></extra>",
                 ),
                 row=2,
-                col=2,
+                col=1,
             )
 
             fig.add_trace(
@@ -768,7 +770,7 @@ class MultivariatePlots(BasePlots):
                     hovertemplate="<b>Count</b>: %{y}<extra></extra>",
                 ),
                 row=1,
-                col=2,
+                col=1,
             )
 
             fig.add_trace(
@@ -780,14 +782,15 @@ class MultivariatePlots(BasePlots):
                     hovertemplate="<b>Count</b>: %{x}<extra></extra>",
                 ),
                 row=2,
-                col=1,
+                col=2,
             )
 
-        fig.update_xaxes(title_text=x, row=2, col=2)
-        fig.update_yaxes(title_text=y, row=2, col=2)
+        fig.update_xaxes(title_text=x, row=2, col=1)
+        fig.update_yaxes(title_text=y, row=2, col=1)
 
-        fig.update_xaxes(showticklabels=False, row=1, col=2)
-        fig.update_yaxes(showticklabels=False, row=2, col=1)
+        fig.update_xaxes(showticklabels=False, row=1, col=1)
+        fig.update_xaxes(showticklabels=False, row=2, col=2)
+        fig.update_yaxes(showticklabels=False, row=2, col=2)
 
         fig.update_layout(
             title=f"<b>{plot_title}</b>" if plot_title else "",
@@ -795,9 +798,20 @@ class MultivariatePlots(BasePlots):
             width=width,
             height=height,
             template="simple_white",
-            font=dict(family="Times New Roman", size=14, color="Black"),
-            showlegend=True,
+            font=dict(family="Times New Roman", size=font_size, color="Black"),
+            showlegend=showlegend,
             hovermode="closest",
+            margin=dict(l=80, r=0, t=90, b=80),
+        )
+        fig.update_layout(
+            legend=dict(
+                x=0.92,
+                y=0.85,
+                xanchor="right",
+                yanchor="bottom",
+                bordercolor="black",
+                borderwidth=1,
+            )
         )
 
         fig.show("png", width=width, height=height)
