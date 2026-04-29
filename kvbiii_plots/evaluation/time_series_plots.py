@@ -1120,10 +1120,10 @@ class TimeSeriesPlots(BasePlots):
 
 if __name__ == "__main__":
     np.random.seed(42)
-    n_points = 60
-    time_points = pd.date_range("2024-01-01", periods=n_points, freq="W")
-    signal = np.cumsum(np.random.normal(loc=0.25, scale=0.8, size=n_points)) + 20
-    forecast = signal + np.random.normal(loc=0.0, scale=0.6, size=n_points)
+    N_POINTS = 60
+    time_points = pd.date_range("2024-01-01", periods=N_POINTS, freq="W")
+    signal = np.cumsum(np.random.normal(loc=0.25, scale=0.8, size=N_POINTS)) + 20
+    forecast = signal + np.random.normal(loc=0.0, scale=0.6, size=N_POINTS)
     lower = forecast - 1.8
     upper = forecast + 1.8
 
@@ -1165,11 +1165,11 @@ if __name__ == "__main__":
         height=500,
     )
 
-    future_points = 12
+    FUTURE_POINTS = 12
     future_index = pd.date_range(
-        time_points[-1] + pd.Timedelta(weeks=1), periods=future_points, freq="W"
+        time_points[-1] + pd.Timedelta(weeks=1), periods=FUTURE_POINTS, freq="W"
     )
-    future_forecast = np.linspace(forecast[-1] + 0.2, forecast[-1] + 2.6, future_points)
+    future_forecast = np.linspace(forecast[-1] + 0.2, forecast[-1] + 2.6, FUTURE_POINTS)
     plots.plot_historical_and_future_forecast(
         y_true=signal,
         y_pred=forecast,

@@ -77,7 +77,7 @@ jobs:
           python -m pylint $python_files \
           --disable=all \
           --enable=unused-import,wrong-import-order,unused-variable,import-outside-toplevel,missing-function-docstring,invalid-name,bare-except \
-          --good-names=X,X_train,X_test,X_valid
+          --good-names=X,X_train,X_test,X_valid,Y,Y_train,Y_test,Y_valid
 
   requirements-check:
     name: requirements-check
