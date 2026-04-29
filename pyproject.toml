@@ -10,7 +10,7 @@ include = ["kvbiii_plots", "kvbiii_plots.*"]
 
 [project]
 name = "kvbiii_plots"
-version = "2.0.0"
+version = "2.0.1"
 description = "A collection of plotting functions for data visualization in Python."
 readme = { file = "README.md", content-type = "text/markdown" }
 license = { text = "MIT" }

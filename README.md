@@ -127,7 +127,7 @@
 To install the repository, follow these steps:
 1. Clone the repository:
 ```bash
-git clone <repo_url>
+git clone https://github.com/kvbiii/kvbiii-plots.git
 ```
 
 2. Navigate to the repository directory:
@@ -142,7 +142,7 @@ bash setup_venv.sh
 
 4. Activate the virtual environment:
 ```bash
-source <venv_name>/bin/activate
+source kvbiii-plots_venv/bin/activate
 ```
 
 ## Usage
@@ -151,4 +151,4 @@ You can check the example Jupyter notebooks in the `examples` folders within eac
 For instance, see [categorical_plots_examples.ipynb](https://github.com/kvbiii/kvbiii-plots/blob/main/kvbiii_plots/eda/examples/categorical_plots_examples.ipynb).
 
 -------------------------------------------
-**Last updated on 2026-04-13 20:25:10**
+**Last updated on 2026-04-29 18:36:10**
