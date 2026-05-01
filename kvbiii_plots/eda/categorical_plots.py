@@ -485,6 +485,7 @@ class CategoricalPlots(BasePlots):
             )
 
         crosstab = pd.crosstab(data_copy[hue], data_copy[feature])
+        crosstab = crosstab[labels]
         n_colors = len(crosstab.columns)
         colors = self._get_colors(n_colors)
 
