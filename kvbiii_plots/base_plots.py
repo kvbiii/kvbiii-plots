@@ -226,10 +226,11 @@ class BasePlots:
         for annotation in annotations:
             if annotation in quantiles_dict:
                 quantile_value = np.quantile(data, quantiles_dict[annotation])
+                formatted_value = f"{quantile_value:.5f}".rstrip("0").rstrip(".")
                 fig.add_annotation(
                     x=x_position,
                     y=quantile_value,
-                    text=f"{annotation}: {np.round(quantile_value, 3)}",
+                    text=f"{annotation}: {formatted_value}",
                     showarrow=False,
                     yshift=0,
                     font=dict(size=22, color="black"),

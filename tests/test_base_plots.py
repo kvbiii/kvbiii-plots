@@ -256,6 +256,15 @@ def test_baseplots_add_quantile_annotations_adds_annotations_to_figure(
 
     if not (len(fig.layout.annotations) > 0):
         raise AssertionError("Annotations should be added to figure")
+    if not all(
+        annotation.text is not None
+        and annotation.text.split(": ")[-1].count(".") == 1
+        and len(annotation.text.split(": ")[-1].split(".")[-1]) <= 5
+        for annotation in fig.layout.annotations
+    ):
+        raise AssertionError(
+            "Quantile annotations should display up to five decimal places"
+        )
 
 
 def test_baseplots_calculate_dynamic_dimensions_returns_appropriate_size() -> None:

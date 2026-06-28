@@ -461,7 +461,7 @@ class ContinuousPlots(BasePlots):
                 borderpad=4,
                 bgcolor="white",
             )
-        self.add_quantile_annotations(fig, clean_df[feature].values, annotations)
+        self.add_quantile_annotations(fig, clean_df[feature], annotations)
         self.apply_default_layout(
             fig, plot_title, width, height, xaxis_title, yaxis_title
         )
