@@ -95,6 +95,17 @@ class TimeSeriesPlots(BasePlots):
         """
         return value.strftime("%Y-%m-%d")
 
+    def _format_plotly_time_values(self, time_values: pd.DatetimeIndex) -> list[str]:
+        """Convert pandas datetime values to renderer-safe ISO strings.
+
+        Args:
+            time_values (pd.DatetimeIndex): Datetime values to format.
+
+        Returns:
+            list[str]: ISO-8601 string representation of each timestamp.
+        """
+        return [timestamp.isoformat() for timestamp in time_values]
+
     def _normalize_period_frequency(self, agg_freq: str) -> str:
         """Normalize pandas offset aliases for Period conversion.
 
@@ -257,7 +268,7 @@ class TimeSeriesPlots(BasePlots):
         fig = go.Figure()
         fig.add_trace(
             go.Scatter(
-                x=resampled_data.index,
+                x=self._format_plotly_time_values(resampled_data.index),
                 y=resampled_data.values,
                 mode=mode,
                 line=dict(color=resolved_line_color, width=line_width),
@@ -330,7 +341,7 @@ class TimeSeriesPlots(BasePlots):
             )
             fig.add_trace(
                 go.Scatter(
-                    x=resampled_data.index,
+                    x=self._format_plotly_time_values(resampled_data.index),
                     y=resampled_data.values,
                     mode=mode,
                     line=dict(color=colors[index], width=line_width),
@@ -402,11 +413,12 @@ class TimeSeriesPlots(BasePlots):
         resolved_original_color = original_color or self.default_colors["secondary"]
         resolved_trend_color = trend_color or self.default_colors["primary"]
         resolved_yaxis_title = yaxis_title or feature
+        plot_time_values = self._format_plotly_time_values(data_copy.index)
 
         fig = go.Figure()
         fig.add_trace(
             go.Scatter(
-                x=data_copy.index,
+                x=plot_time_values,
                 y=data_copy[feature],
                 mode="lines",
                 line=dict(color=resolved_original_color, width=original_line_width),
@@ -417,7 +429,7 @@ class TimeSeriesPlots(BasePlots):
         )
         fig.add_trace(
             go.Scatter(
-                x=data_copy.index,
+                x=plot_time_values,
                 y=data_copy["trend"],
                 mode=trend_mode,
                 line=dict(color=resolved_trend_color, width=trend_line_width),
@@ -501,6 +513,7 @@ class TimeSeriesPlots(BasePlots):
         resolved_trend_color = trend_color or self.default_colors["accent"]
         resolved_seasonal_color = seasonal_color or self.default_colors["secondary"]
         resolved_yaxis_title = yaxis_title or feature
+        plot_decomposition_index = self._format_plotly_time_values(decomposition_index)
 
         trend_values = pd.Series(values).rolling(window=freq, center=True).mean().values
 
@@ -523,7 +536,7 @@ class TimeSeriesPlots(BasePlots):
 
         fig.add_trace(
             go.Scatter(
-                x=decomposition_index,
+                x=plot_decomposition_index,
                 y=values,
                 mode="lines",
                 name="Original",
@@ -535,7 +548,7 @@ class TimeSeriesPlots(BasePlots):
         )
         fig.add_trace(
             go.Scatter(
-                x=decomposition_index,
+                x=plot_decomposition_index,
                 y=trend_values,
                 mode="lines",
                 name="Trend",
@@ -547,7 +560,7 @@ class TimeSeriesPlots(BasePlots):
         )
         fig.add_trace(
             go.Scatter(
-                x=decomposition_index,
+                x=plot_decomposition_index,
                 y=seasonal_values,
                 mode="lines",
                 name="Seasonal",
@@ -559,7 +572,7 @@ class TimeSeriesPlots(BasePlots):
         )
         fig.add_trace(
             go.Scatter(
-                x=decomposition_index,
+                x=plot_decomposition_index,
                 y=residual_values,
                 mode="lines",
                 name="Residual",
