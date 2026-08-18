@@ -328,14 +328,15 @@ class TimeSeriesPlots(BasePlots):
         if split_timestamp is None:
             return
 
+        plot_split_timestamp = split_timestamp.isoformat()
         fig.add_vline(
-            x=split_timestamp,
+            x=plot_split_timestamp,
             line_color=split_color,
             line_width=split_line_width,
             line_dash="dash",
         )
         fig.add_annotation(
-            x=split_timestamp,
+            x=plot_split_timestamp,
             y=1,
             xref="x",
             yref="paper",
@@ -345,6 +346,13 @@ class TimeSeriesPlots(BasePlots):
             yanchor="bottom",
             font=dict(color=split_color, size=20),
         )
+
+    def _format_plotly_time_values(
+        self,
+        time_values: pd.DatetimeIndex,
+    ) -> list[str]:
+        """Convert pandas datetime values to renderer-safe ISO strings."""
+        return [timestamp.isoformat() for timestamp in time_values]
 
     def plot_actual_vs_predicted_over_time(
         self,
@@ -432,11 +440,12 @@ class TimeSeriesPlots(BasePlots):
         )
         split_line_color = split_color or self.default_time_series_colors["split_line"]
         split_timestamp = self._resolve_split_timestamp(split_point, time_values)
+        plot_time_values = self._format_plotly_time_values(time_values)
 
         fig = go.Figure()
         fig.add_trace(
             go.Scatter(
-                x=time_values,
+                x=plot_time_values,
                 y=y_true_array,
                 mode=actual_mode,
                 line=dict(color=actual_line_color, width=actual_line_width),
@@ -451,7 +460,7 @@ class TimeSeriesPlots(BasePlots):
         )
         fig.add_trace(
             go.Scatter(
-                x=time_values,
+                x=plot_time_values,
                 y=y_pred_array,
                 mode="lines",
                 line=dict(
@@ -580,11 +589,12 @@ class TimeSeriesPlots(BasePlots):
 
         split_line_color = split_color or self.default_time_series_colors["split_line"]
         split_timestamp = self._resolve_split_timestamp(split_point, time_values)
+        plot_time_values = self._format_plotly_time_values(time_values)
 
         fig = go.Figure()
         fig.add_trace(
             go.Bar(
-                x=time_values,
+                x=plot_time_values,
                 y=residual_values,
                 marker=dict(color=bar_colors),
                 opacity=bar_opacity,
@@ -711,6 +721,7 @@ class TimeSeriesPlots(BasePlots):
 
         split_line_color = split_color or self.default_time_series_colors["split_line"]
         split_timestamp = self._resolve_split_timestamp(split_point, time_values)
+        plot_time_values = self._format_plotly_time_values(time_values)
 
         full_title = plot_title or "Forecast with Prediction Interval"
 
@@ -718,7 +729,7 @@ class TimeSeriesPlots(BasePlots):
         if y_true_sorted is not None:
             fig.add_trace(
                 go.Scatter(
-                    x=time_values,
+                    x=plot_time_values,
                     y=y_true_sorted,
                     mode=actual_mode,
                     line=dict(color=self.default_time_series_colors["actual"], width=1),
@@ -734,7 +745,7 @@ class TimeSeriesPlots(BasePlots):
 
         fig.add_trace(
             go.Scatter(
-                x=time_values,
+                x=plot_time_values,
                 y=upper_sorted,
                 mode="lines",
                 line=dict(color=resolved_interval_line, width=0),
@@ -744,7 +755,7 @@ class TimeSeriesPlots(BasePlots):
         )
         fig.add_trace(
             go.Scatter(
-                x=time_values,
+                x=plot_time_values,
                 y=lower_sorted,
                 mode="lines",
                 fill="tonexty",
@@ -756,7 +767,7 @@ class TimeSeriesPlots(BasePlots):
         )
         fig.add_trace(
             go.Scatter(
-                x=time_values,
+                x=plot_time_values,
                 y=y_pred_sorted,
                 mode="lines+markers",
                 line=dict(color=resolved_predicted_color, width=forecast_line_width),
@@ -881,6 +892,7 @@ class TimeSeriesPlots(BasePlots):
 
         split_line_color = split_color or self.default_time_series_colors["split_line"]
         split_timestamp = self._resolve_split_timestamp(split_point, time_values)
+        plot_time_values = self._format_plotly_time_values(x_values)
 
         resolved_line_color = (
             line_color or self.default_time_series_colors["rolling_error"]
@@ -889,7 +901,7 @@ class TimeSeriesPlots(BasePlots):
         fig = go.Figure()
         fig.add_trace(
             go.Scatter(
-                x=x_values,
+                x=plot_time_values,
                 y=y_values,
                 mode="lines",
                 line=dict(color=resolved_line_color, width=line_width),
@@ -1057,11 +1069,15 @@ class TimeSeriesPlots(BasePlots):
         )
         split_line_color = split_color or self.default_time_series_colors["split_line"]
         split_timestamp = pd.Timestamp(forecast_index_sorted.min()).tz_convert(None)
+        historical_plot_time_values = self._format_plotly_time_values(historical_index)
+        forecast_plot_time_values = self._format_plotly_time_values(
+            forecast_index_sorted
+        )
 
         fig = go.Figure()
         fig.add_trace(
             go.Scatter(
-                x=historical_index,
+                x=historical_plot_time_values,
                 y=y_true_sorted,
                 mode=actual_mode,
                 line=dict(color=actual_line_color, width=1),
@@ -1076,7 +1092,7 @@ class TimeSeriesPlots(BasePlots):
         )
         fig.add_trace(
             go.Scatter(
-                x=historical_index,
+                x=historical_plot_time_values,
                 y=y_pred_sorted,
                 mode="lines",
                 line=dict(
@@ -1088,7 +1104,7 @@ class TimeSeriesPlots(BasePlots):
         )
         fig.add_trace(
             go.Scatter(
-                x=forecast_index_sorted,
+                x=forecast_plot_time_values,
                 y=forecast_values_sorted,
                 mode="lines+markers",
                 line=dict(color=future_line_color, width=forecast_line_width),

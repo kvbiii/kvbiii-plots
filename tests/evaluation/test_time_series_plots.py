@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 import pytest
 
 from kvbiii_plots.evaluation.time_series_plots import TimeSeriesPlots
@@ -201,6 +202,34 @@ def test_timeseriesplots_plot_actual_vs_predicted_over_time_executes(
 
     if not (True):
         raise AssertionError("Method should execute without errors")
+
+
+def test_timeseriesplots_actual_vs_predicted_uses_serializable_datetime_values(
+    forecast_data: tuple[np.ndarray, np.ndarray, pd.DatetimeIndex],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Test that Plotly receives serializable values for datetime plot elements."""
+    ts_plots = TimeSeriesPlots()
+    y_true, y_pred, time_index = forecast_data
+    captured_figures: list[go.Figure] = []
+
+    def capture_figure(figure: go.Figure, *args: object, **kwargs: object) -> None:
+        captured_figures.append(figure)
+
+    monkeypatch.setattr(go.Figure, "show", capture_figure)
+
+    ts_plots.plot_actual_vs_predicted_over_time(
+        y_true=y_true,
+        y_pred=y_pred,
+        time_index=time_index,
+        split_point=50,
+    )
+
+    figure = captured_figures[0]
+    assert all(isinstance(value, str) for value in figure.data[0].x)
+    assert all(isinstance(value, str) for value in figure.data[1].x)
+    assert isinstance(figure.layout.shapes[0].x0, str)
+    assert isinstance(figure.layout.annotations[0].x, str)
 
 
 def test_timeseriesplots_plot_residuals_over_time_executes(
