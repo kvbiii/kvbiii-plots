@@ -1073,3 +1073,252 @@ def test_continuousplots_create_subplot_layout_functionality() -> None:
         raise AssertionError("Assertion failed.")
     if not (hasattr(fig, "update_layout")):
         raise AssertionError("Assertion failed.")
+
+
+def test_continuousplots_validate_distribution_data_cleans_nan_and_returns_dict() -> (
+    None
+):
+    """Tests _validate_distribution_data cleans NaNs and returns a dict of arrays.
+
+    Asserts:
+        - Returned mapping preserves group labels as strings
+        - NaN values are removed from each group's array
+        - Values are converted to numpy arrays
+    """
+    cont_plots = ContinuousPlots()
+
+    raw_data = {
+        "Train": np.array([1.0, 2.0, np.nan, 4.0]),
+        "Test": [5.0, 6.0],
+    }
+
+    cleaned = cont_plots._validate_distribution_data(raw_data)
+
+    if not (set(cleaned.keys()) == {"Train", "Test"}):
+        raise AssertionError("Assertion failed.")
+    if not (isinstance(cleaned["Train"], np.ndarray)):
+        raise AssertionError("Assertion failed.")
+    if not (len(cleaned["Train"]) == 3):
+        raise AssertionError("Assertion failed.")
+    if not (len(cleaned["Test"]) == 2):
+        raise AssertionError("Assertion failed.")
+
+
+def test_continuousplots_validate_distribution_data_raises_for_non_dict() -> None:
+    """Tests _validate_distribution_data raises TypeError for non-dict input.
+
+    Asserts:
+        - TypeError is raised when data is not a dict
+    """
+    cont_plots = ContinuousPlots()
+
+    with pytest.raises(TypeError):
+        cont_plots._validate_distribution_data(np.array([1.0, 2.0, 3.0]))
+
+
+def test_continuousplots_validate_distribution_data_raises_for_insufficient_groups() -> (
+    None
+):
+    """Tests _validate_distribution_data raises ValueError with fewer than two groups.
+
+    Asserts:
+        - ValueError is raised for a single group
+        - ValueError is raised when only one group remains non-empty after
+          NaN removal
+    """
+    cont_plots = ContinuousPlots()
+
+    with pytest.raises(ValueError):
+        cont_plots._validate_distribution_data({"Only": np.array([1.0, 2.0])})
+
+    with pytest.raises(ValueError):
+        cont_plots._validate_distribution_data(
+            {
+                "Train": np.array([1.0, 2.0]),
+                "Test": np.array([np.nan, np.nan]),
+            }
+        )
+
+
+def test_continuousplots_compute_shared_bins_uses_pooled_data_range() -> None:
+    """Tests _compute_shared_bins derives shared bounds from pooled group data.
+
+    Asserts:
+        - Start equals the minimum value across all groups
+        - End equals the maximum value across all groups
+        - Auto-calculated bin size matches _calculate_bin_size on pooled data
+    """
+    cont_plots = ContinuousPlots()
+
+    cleaned_data = {
+        "Train": np.array([0.0, 1.0, 2.0]),
+        "Test": np.array([-1.0, 5.0]),
+    }
+
+    start, end, size = cont_plots._compute_shared_bins(cleaned_data, bin_size=None)
+    expected_size = cont_plots._calculate_bin_size(np.array([0.0, 1.0, 2.0, -1.0, 5.0]))
+
+    if not (start == -1.0):
+        raise AssertionError("Assertion failed.")
+    if not (end == 5.0):
+        raise AssertionError("Assertion failed.")
+    if not (size == expected_size):
+        raise AssertionError("Assertion failed.")
+
+
+def test_continuousplots_compute_shared_bins_respects_custom_bin_size() -> None:
+    """Tests _compute_shared_bins passes through a user-provided bin size unchanged.
+
+    Asserts:
+        - Returned size matches the explicitly provided bin_size
+    """
+    cont_plots = ContinuousPlots()
+
+    cleaned_data = {
+        "Train": np.array([0.0, 1.0, 2.0]),
+        "Test": np.array([-1.0, 5.0]),
+    }
+
+    _, _, size = cont_plots._compute_shared_bins(cleaned_data, bin_size=0.5)
+
+    if not (size == 0.5):
+        raise AssertionError("Assertion failed.")
+
+
+def test_continuousplots_compare_distributions_plot_raises_error_single_group() -> (
+    None
+):
+    """Tests compare_distributions_plot raises ValueError with only one group.
+
+    Asserts:
+        - ValueError is raised when data has fewer than two groups
+    """
+    cont_plots = ContinuousPlots()
+
+    with pytest.raises(ValueError):
+        cont_plots.compare_distributions_plot(data={"Only": np.random.rand(50)})
+
+
+def test_continuousplots_compare_distributions_plot_raises_error_not_dict() -> None:
+    """Tests compare_distributions_plot raises TypeError when data is not a dict.
+
+    Asserts:
+        - TypeError is raised for non-dict input
+    """
+    cont_plots = ContinuousPlots()
+
+    with pytest.raises(TypeError):
+        cont_plots.compare_distributions_plot(data=np.random.rand(50))
+
+
+def test_continuousplots_compare_distributions_plot_handles_unequal_group_sizes() -> (
+    None
+):
+    """Tests compare_distributions_plot handles groups of very different sizes.
+
+    Asserts:
+        - Method executes without errors when one group has far more
+          observations than the other (e.g. 1000 vs 20)
+    """
+    cont_plots = ContinuousPlots()
+
+    np.random.seed(17)
+    cont_plots.compare_distributions_plot(
+        data={
+            "Large": np.random.normal(0, 1, 1000),
+            "Small": np.random.normal(0, 1, 20),
+        },
+        plot_title="Unequal Group Sizes Test",
+    )
+
+    if not (True):
+        raise AssertionError("Method should execute without errors")
+
+
+def test_continuousplots_compare_distributions_plot_handles_three_groups() -> None:
+    """Tests compare_distributions_plot handles more than two groups.
+
+    Asserts:
+        - Method executes without errors for three named groups
+    """
+    cont_plots = ContinuousPlots()
+
+    np.random.seed(17)
+    cont_plots.compare_distributions_plot(
+        data={
+            "Model A": np.random.normal(0, 1, 300),
+            "Model B": np.random.normal(0.5, 1, 150),
+            "Model C": np.random.normal(-0.5, 1, 75),
+        },
+        plot_title="Three Groups Test",
+    )
+
+    if not (True):
+        raise AssertionError("Method should execute without errors")
+
+
+def test_continuousplots_compare_distributions_plot_applies_custom_bin_size() -> None:
+    """Tests compare_distributions_plot applies a custom bin size.
+
+    Asserts:
+        - Method accepts a custom bin_size parameter without errors
+    """
+    cont_plots = ContinuousPlots()
+
+    np.random.seed(17)
+    cont_plots.compare_distributions_plot(
+        data={
+            "Train": np.random.rand(200),
+            "Test": np.random.rand(200),
+        },
+        bin_size=0.05,
+        plot_title="Custom Bin Size Test",
+    )
+
+    if not (True):
+        raise AssertionError("Method should execute without errors")
+
+
+def test_continuousplots_compare_distributions_plot_handles_nan_values() -> None:
+    """Tests compare_distributions_plot handles NaN values within groups.
+
+    Asserts:
+        - Method executes without errors when groups contain NaN values
+    """
+    cont_plots = ContinuousPlots()
+
+    train_data = np.random.rand(100)
+    train_data[:5] = np.nan
+    test_data = np.random.rand(30)
+    test_data[:2] = np.nan
+
+    cont_plots.compare_distributions_plot(
+        data={"Train": train_data, "Test": test_data},
+        plot_title="NaN Handling Test",
+    )
+
+    if not (True):
+        raise AssertionError("Method should execute without errors")
+
+
+def test_continuousplots_compare_distributions_plot_disables_legend() -> None:
+    """Tests compare_distributions_plot with legend disabled.
+
+    Asserts:
+        - Method executes without errors when show_legend is False
+    """
+    cont_plots = ContinuousPlots()
+
+    np.random.seed(17)
+    cont_plots.compare_distributions_plot(
+        data={
+            "Train": np.random.rand(100),
+            "Test": np.random.rand(100),
+        },
+        show_legend=False,
+        alpha=0.4,
+        plot_title="No Legend Test",
+    )
+
+    if not (True):
+        raise AssertionError("Method should execute without errors")

@@ -41,6 +41,214 @@ class CategoricalPlots(BasePlots):
             frequency = np.append(frequency[:top_n], other_count)
         return labels, frequency, other_labels
 
+    def _validate_categorical_groups(
+        self,
+        data: dict[str, pd.Series | np.ndarray | list[object]],
+    ) -> dict[str, pd.Series]:
+        """
+        Validates and cleans grouped categorical data for distribution comparison.
+
+        Args:
+            data (dict[str, pd.Series | np.ndarray | list]): Mapping of group labels
+            to their raw categorical values.
+
+        Returns:
+            dict[str, pd.Series]: Mapping of group labels to their normalized value
+            counts (proportions summing to 1.0 per group).
+
+        Raises:
+            TypeError: If data is not a dict.
+            ValueError: If fewer than two non-empty groups remain after cleaning.
+        """
+        if not isinstance(data, dict):
+            raise TypeError(
+                "data must be a dict mapping group labels to their categorical values."
+            )
+        group_proportions = {
+            str(group_label): pd.Series(group_values)
+            .dropna()
+            .value_counts(normalize=True)
+            for group_label, group_values in data.items()
+        }
+        group_proportions = {
+            group_label: proportions
+            for group_label, proportions in group_proportions.items()
+            if not proportions.empty
+        }
+        if len(group_proportions) < 2:
+            raise ValueError(
+                "compare_categorical_distributions_plot requires at least two "
+                "non-empty groups."
+            )
+        return group_proportions
+
+    def _shared_category_order(
+        self,
+        group_proportions: dict[str, pd.Series],
+        top_n: int | None,
+        other_category: str,
+    ) -> tuple[np.ndarray, np.ndarray | None]:
+        """
+        Determines shared category order across groups, ranked by summed proportion.
+
+        Args:
+            group_proportions (dict[str, pd.Series]): Mapping of group labels to
+            their normalized value counts.
+            top_n (int | None): Number of top categories to keep. None keeps all.
+            other_category (str): Label used for the aggregated category.
+
+        Returns:
+            tuple[np.ndarray, np.ndarray | None]: Ordered category labels (with the
+            aggregated label appended when truncated) and the original category
+            labels collapsed into that bucket, or None when no truncation occurred.
+        """
+        pooled_share = (
+            pd.concat(group_proportions.values(), axis=1).fillna(0.0).sum(axis=1)
+        )
+        pooled_share = pooled_share.sort_values(ascending=False)
+        labels, _, other_labels = self._apply_top_n_categories(
+            pooled_share.index.to_numpy(), pooled_share.to_numpy(), top_n, other_category
+        )
+        return labels, other_labels
+
+    def _group_values_for_labels(
+        self,
+        proportions: pd.Series,
+        labels: np.ndarray,
+        other_labels: np.ndarray | None,
+        other_category: str,
+    ) -> np.ndarray:
+        """
+        Builds a per-category proportion array for one group, aligned to shared labels.
+
+        Args:
+            proportions (pd.Series): Normalized value counts for a single group.
+            labels (np.ndarray): Shared, ordered category labels to align to.
+            other_labels (np.ndarray | None): Original categories collapsed into the
+            aggregated bucket, if any.
+            other_category (str): Label used for the aggregated bucket.
+
+        Returns:
+            np.ndarray: Proportions aligned to `labels`, in the same order.
+        """
+        values = []
+        for label in labels:
+            if label == other_category and other_labels is not None:
+                values.append(proportions.reindex(other_labels, fill_value=0.0).sum())
+            else:
+                values.append(proportions.get(label, 0.0))
+        return np.array(values)
+
+    def compare_categorical_distributions_plot(
+        self,
+        data: dict[str, pd.Series | np.ndarray | list[object]],
+        top_n: int | None = 10,
+        plot_title: str = "",
+        width: int = 1600,
+        height: int = 800,
+        xaxis_title: str = "Categories",
+        yaxis_title: str = "Proportion",
+        other_category: str = "Other",
+        show_counts: bool = True,
+        show_other: bool = True,
+        tickangle: int = 0,
+    ) -> None:
+        """
+        Creates a grouped bar chart comparing categorical (discrete) distributions
+        across named groups of any size.
+
+        Each group's categories are normalized to proportions that sum to 1.0 within
+        that group, so groups with very different sample counts (e.g. 10 000 vs 100
+        observations) remain comparable by their actual class balance rather than
+        being dominated by the larger group's raw counts. Category ordering and
+        top-n selection are based on proportions summed across groups rather than
+        pooled raw counts, so a category common in a small group is not hidden by a
+        large group's volume.
+
+        Args:
+            data (dict[str, pd.Series | np.ndarray | list]): Mapping of group labels
+            to their raw categorical values (e.g. class labels) to compare.
+            top_n (int | None, optional): Number of top categories to show
+            separately. Defaults to 10.
+            plot_title (str, optional): Title for the plot. Defaults to "".
+            width (int, optional): Width of the plot. Defaults to 1600.
+            height (int, optional): Height of the plot. Defaults to 800.
+            xaxis_title (str, optional): Title for the x-axis. Defaults to
+            "Categories".
+            yaxis_title (str, optional): Title for the y-axis. Defaults to
+            "Proportion".
+            other_category (str, optional): Label for aggregated categories.
+            Defaults to "Other".
+            show_counts (bool, optional): Whether to show percentage labels on bars.
+            Defaults to True.
+            show_other (bool, optional): Whether to include the aggregated 'Other'
+            category. Defaults to True.
+            tickangle (int, optional): Angle of the x-axis tick labels. Defaults
+            to 0.
+
+        Returns:
+            None
+
+        Raises:
+            TypeError: If data is not a dict.
+            ValueError: If fewer than two non-empty groups are provided.
+        """
+        group_proportions = self._validate_categorical_groups(data)
+        labels, other_labels = self._shared_category_order(
+            group_proportions, top_n, other_category
+        )
+        if not show_other and other_labels is not None:
+            labels = labels[labels != other_category]
+
+        colors = self._get_colors(len(group_proportions))
+
+        fig = go.Figure()
+        for idx, (group_label, proportions) in enumerate(group_proportions.items()):
+            group_values = self._group_values_for_labels(
+                proportions, labels, other_labels, other_category
+            )
+            text_values = (
+                [f"{value * 100:.1f}%" for value in group_values]
+                if show_counts
+                else None
+            )
+            fig.add_trace(
+                go.Bar(
+                    x=labels,
+                    y=group_values,
+                    name=group_label,
+                    marker=dict(
+                        color=colors[idx % len(colors)],
+                        line=dict(color="black", width=1),
+                    ),
+                    text=text_values,
+                    textposition="auto" if show_counts else None,
+                )
+            )
+        fig.update_layout(barmode="group")
+        self.apply_default_layout(
+            fig, plot_title, width, height, xaxis_title, yaxis_title
+        )
+        fig.update_xaxes(tickangle=tickangle)
+        fig.update_layout(
+            legend=dict(
+                font=dict(size=20),
+                bordercolor="black",
+                borderwidth=1,
+                bgcolor="white",
+                traceorder="normal",
+                x=0.99,
+                y=0.99,
+                xanchor="right",
+                yanchor="top",
+                orientation="v",
+                itemclick="toggleothers",
+                itemdoubleclick="toggle",
+                tracegroupgap=5,
+            )
+        )
+        fig.show("png", width=width, height=height)
+
     def barplot(
         self,
         data: dict[str, int] | pd.Series,
@@ -581,6 +789,18 @@ if __name__ == "__main__":
         height=600,
         xaxis_title="Category",
         yaxis_title="Frequency",
+    )
+
+    cat_plots.compare_categorical_distributions_plot(
+        data={
+            "Train (10k obs)": np.random.choice(
+                ["A", "B", "C", "D", "E"], 10000, p=[0.4, 0.3, 0.15, 0.1, 0.05]
+            ),
+            "Test (100 obs)": np.random.choice(
+                ["A", "B", "C", "D", "E"], 100, p=[0.35, 0.25, 0.2, 0.1, 0.1]
+            ),
+        },
+        plot_title="Class Distribution: Train vs Test",
     )
 
     cat_plots.pie_barplot(
