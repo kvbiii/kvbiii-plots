@@ -38,6 +38,146 @@ class ContinuousPlots(BasePlots):
         data_range = np.max(clean_data) - np.min(clean_data)
         return max(data_range / 100, min(bin_size, data_range / 5))
 
+    def _validate_distribution_data(
+        self,
+        data: dict[str, pd.Series | np.ndarray | list[object]],
+    ) -> dict[str, np.ndarray]:
+        """
+        Validates and cleans grouped continuous data for distribution comparison.
+
+        Args:
+            data (dict[str, pd.Series | np.ndarray | list]): Mapping of group labels
+            to their continuous values.
+
+        Returns:
+            dict[str, np.ndarray]: Mapping of group labels to cleaned, non-empty
+            NumPy arrays.
+
+        Raises:
+            TypeError: If data is not a dict.
+            ValueError: If fewer than two non-empty groups remain after cleaning.
+        """
+        if not isinstance(data, dict):
+            raise TypeError(
+                "data must be a dict mapping group labels to their continuous values."
+            )
+        cleaned_data = {
+            str(group_label): self.check_data(group_values)
+            for group_label, group_values in data.items()
+        }
+        cleaned_data = {
+            group_label: group_values
+            for group_label, group_values in cleaned_data.items()
+            if group_values.size > 0
+        }
+        if len(cleaned_data) < 2:
+            raise ValueError(
+                "compare_distributions_plot requires at least two non-empty groups."
+            )
+        return cleaned_data
+
+    def _compute_shared_bins(
+        self,
+        cleaned_data: dict[str, np.ndarray],
+        bin_size: float | None,
+    ) -> tuple[float, float, float]:
+        """
+        Computes shared histogram bin boundaries across all groups.
+
+        Args:
+            cleaned_data (dict[str, np.ndarray]): Mapping of group labels to cleaned
+            arrays.
+            bin_size (float | None): Bin width to use. If None, calculated from the
+            pooled data using the Freedman-Diaconis rule.
+
+        Returns:
+            tuple[float, float, float]: Shared (start, end, size) for histogram bins.
+        """
+        pooled_data = np.concatenate(list(cleaned_data.values()))
+        if bin_size is None:
+            bin_size = self._calculate_bin_size(pooled_data)
+        return float(np.min(pooled_data)), float(np.max(pooled_data)), float(bin_size)
+
+    def compare_distributions_plot(
+        self,
+        data: dict[str, pd.Series | np.ndarray | list[object]],
+        plot_title: str = "",
+        width: int = 1200,
+        height: int = 800,
+        bin_size: float | None = None,
+        xaxis_title: str = "Value",
+        yaxis_title: str = "Density",
+        alpha: float = 0.55,
+        show_legend: bool = True,
+    ) -> None:
+        """
+        Creates an overlaid, density-normalized histogram comparing continuous
+        distributions across named groups of any size.
+
+        Each group's histogram is normalized to a probability density (the area
+        under its curve sums to one) and all groups share the same bin edges. This
+        keeps the comparison based on each group's actual distribution shape rather
+        than its raw observation count, so a group of 10 000 values and a group of
+        100 values remain equally visible and comparable.
+
+        Args:
+            data (dict[str, pd.Series | np.ndarray | list]): Mapping of group labels
+            to their continuous values (e.g. model probabilities, predictions, or any
+            numeric feature) to compare.
+            plot_title (str, optional): Title for the plot. Defaults to "".
+            width (int, optional): Width of the plot. Defaults to 1200.
+            height (int, optional): Height of the plot. Defaults to 800.
+            bin_size (float | None, optional): Shared bin width. If None,
+            automatically calculated from the pooled data using the
+            Freedman-Diaconis rule. Defaults to None.
+            xaxis_title (str, optional): Title for the x-axis. Defaults to "Value".
+            yaxis_title (str, optional): Title for the y-axis. Defaults to "Density".
+            alpha (float, optional): Opacity for overlapping histograms (0.0 to 1.0).
+            Defaults to 0.55.
+            show_legend (bool, optional): Whether to show the legend. Defaults to
+            True.
+
+        Returns:
+            None
+
+        Raises:
+            TypeError: If data is not a dict.
+            ValueError: If fewer than two non-empty groups are provided.
+        """
+        cleaned_data = self._validate_distribution_data(data)
+        start, end, size = self._compute_shared_bins(cleaned_data, bin_size)
+        colors = self._get_colors(len(cleaned_data))
+
+        fig = go.Figure()
+        for idx, (group_label, group_values) in enumerate(cleaned_data.items()):
+            fig.add_trace(
+                go.Histogram(
+                    x=group_values,
+                    name=group_label,
+                    histnorm="probability density",
+                    xbins=dict(start=start, end=end, size=size),
+                    marker=dict(color=colors[idx % len(colors)], opacity=alpha),
+                    showlegend=show_legend,
+                )
+            )
+        fig.update_layout(barmode="overlay")
+        self.apply_default_layout(
+            fig, plot_title, width, height, xaxis_title, yaxis_title
+        )
+        if show_legend:
+            fig.update_layout(
+                legend=dict(
+                    x=0.99,
+                    y=0.99,
+                    xanchor="right",
+                    yanchor="top",
+                    bgcolor="rgba(255,255,255,0.8)",
+                    bordercolor="black",
+                    borderwidth=1,
+                )
+            )
+        fig.show("png", width=width, height=height)
+
     def scatter_plot(
         self,
         data: np.ndarray,
@@ -617,6 +757,15 @@ if __name__ == "__main__":
         yaxis_title="Frequency",
         alpha=0.6,
         show_legend=True,
+    )
+
+    plots.compare_distributions_plot(
+        data={
+            "Train (10k obs)": np.random.normal(50, 15, 10000),
+            "Test (100 obs)": np.random.normal(55, 18, 100),
+        },
+        plot_title="Feature Distribution: Train vs Test",
+        xaxis_title="Feature Value",
     )
 
     plots.scatter_plot(
