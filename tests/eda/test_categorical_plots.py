@@ -659,9 +659,7 @@ def test_categoricalplots_compare_categorical_distributions_plot_raises_error_si
     cat_plots = CategoricalPlots()
 
     with pytest.raises(ValueError):
-        cat_plots.compare_categorical_distributions_plot(
-            data={"Only": ["A", "B", "C"]}
-        )
+        cat_plots.compare_categorical_distributions_plot(data={"Only": ["A", "B", "C"]})
 
 
 def test_categoricalplots_compare_categorical_distributions_plot_raises_error_not_dict() -> (

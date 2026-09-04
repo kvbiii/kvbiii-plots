@@ -107,7 +107,10 @@ class CategoricalPlots(BasePlots):
         )
         pooled_share = pooled_share.sort_values(ascending=False)
         labels, _, other_labels = self._apply_top_n_categories(
-            pooled_share.index.to_numpy(), pooled_share.to_numpy(), top_n, other_category
+            pooled_share.index.to_numpy(),
+            pooled_share.to_numpy(),
+            top_n,
+            other_category,
         )
         return labels, other_labels
 

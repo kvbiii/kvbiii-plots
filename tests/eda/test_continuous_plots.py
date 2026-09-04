@@ -1185,9 +1185,7 @@ def test_continuousplots_compute_shared_bins_respects_custom_bin_size() -> None:
         raise AssertionError("Assertion failed.")
 
 
-def test_continuousplots_compare_distributions_plot_raises_error_single_group() -> (
-    None
-):
+def test_continuousplots_compare_distributions_plot_raises_error_single_group() -> None:
     """Tests compare_distributions_plot raises ValueError with only one group.
 
     Asserts:
