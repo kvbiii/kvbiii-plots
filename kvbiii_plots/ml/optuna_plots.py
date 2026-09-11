@@ -192,17 +192,21 @@ class OptunaPlots(BasePlots):
             sort_descending (bool, optional): Whether to sort parameters by
             importance descending. Defaults to True.
         """
-        try:
-            importances = optuna.importance.get_param_importances(study)
-        except ValueError as e:
-            if "Cannot evaluate parameter importances with only a single trial" in str(
-                e
-            ):
-                raise ValueError(
-                    "Cannot evaluate parameter importances with only a single trial."
-                ) from e
-            else:
-                raise
+        completed_trials = [
+            trial
+            for trial in study.trials
+            if trial.state == optuna.trial.TrialState.COMPLETE
+        ]
+        if len(completed_trials) == 0:
+            raise ValueError(
+                "Cannot evaluate parameter importances without completed trials."
+            )
+        if len(completed_trials) == 1:
+            raise ValueError(
+                "Cannot evaluate parameter importances with only a single trial."
+            )
+
+        importances = optuna.importance.get_param_importances(study)
 
         if not importances:
             raise ValueError(
