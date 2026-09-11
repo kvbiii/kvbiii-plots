@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import plotly.express as px
-import plotly.figure_factory as ff
 import plotly.graph_objects as go
 from pandas.api.types import is_numeric_dtype
 from plotly.subplots import make_subplots
@@ -73,15 +72,11 @@ class MultivariatePlots(BasePlots):
             )
             color_scale = px.colors.diverging.RdBu
 
-        fig = ff.create_annotated_heatmap(
+        fig = self._create_annotated_heatmap(
             z=data_mask.to_numpy(),
             x=data_mask.columns.tolist(),
             y=data_mask.columns.tolist(),
             colorscale=color_scale,
-            hoverinfo="none",
-            showscale=True,
-            ygap=1,
-            xgap=1,
         )
 
         fig.update_xaxes(side="bottom")
@@ -98,10 +93,6 @@ class MultivariatePlots(BasePlots):
             title_x=0.5,
             font=dict(family="Times New Roman", size=26, color="Black"),
         )
-
-        for _, annotation in enumerate(fig.layout.annotations):
-            if annotation.text == "nan":
-                annotation.text = ""
 
         fig.show("png", width=width, height=height)
 
@@ -192,18 +183,15 @@ class MultivariatePlots(BasePlots):
             font_size = 26
             annotation_font_size = 10
 
-        fig = ff.create_annotated_heatmap(
+        fig = self._create_annotated_heatmap(
             z=mat_masked_rounded,
             x=mat_masked.columns.tolist(),
             y=mat_masked.index.tolist(),
             colorscale=colorscale,
-            hoverinfo="none",
-            showscale=True,
-            ygap=1,
-            xgap=1,
             zmin=zmin,
             zmax=zmax,
         )
+        fig.update_traces(textfont=dict(size=annotation_font_size))
 
         fig.update_xaxes(side="bottom")
         fig.update_layout(
@@ -219,12 +207,6 @@ class MultivariatePlots(BasePlots):
             title_x=0.5,
             font=dict(family="Times New Roman", size=font_size, color="Black"),
         )
-
-        for _, annotation in enumerate(fig.layout.annotations):
-            if annotation.text == "nan":
-                annotation.text = ""
-            else:
-                annotation.font.size = annotation_font_size
 
         fig.show("png", width=width, height=height)
 
@@ -575,6 +557,53 @@ class MultivariatePlots(BasePlots):
         )
 
         fig.show("png", width=width, height=height)
+
+    def _create_annotated_heatmap(
+        self,
+        z: np.ndarray,
+        x: list[str],
+        y: list[str],
+        colorscale: str | list[str] | list[list[float | str]],
+        zmin: float | None = None,
+        zmax: float | None = None,
+    ) -> go.Figure:
+        """Build a heatmap figure annotated with per-cell text values.
+
+        Replaces the removed ``plotly.figure_factory.create_annotated_heatmap``
+        helper with an equivalent ``go.Heatmap``-based figure. Missing values are
+        rendered as empty cells with no annotation text.
+
+        Args:
+            z (np.ndarray): 2D array of values to visualize.
+            x (list[str]): Column labels for the x-axis.
+            y (list[str]): Row labels for the y-axis.
+            colorscale (str | list[str] | list[list[float | str]]): Plotly colorscale
+                name or explicit colorscale definition.
+            zmin (float | None, optional): Minimum value for the color scale. Defaults
+                to None.
+            zmax (float | None, optional): Maximum value for the color scale. Defaults
+                to None.
+
+        Returns:
+            go.Figure: Heatmap figure with text annotations for non-missing cells.
+        """
+        text = [["" if pd.isna(value) else str(value) for value in row] for row in z]
+        return go.Figure(
+            data=go.Heatmap(
+                z=z,
+                x=x,
+                y=y,
+                colorscale=colorscale,
+                zmin=zmin,
+                zmax=zmax,
+                hoverinfo="none",
+                showscale=True,
+                ygap=1,
+                xgap=1,
+                text=text,
+                texttemplate="%{text}",
+            )
+        )
 
     def _coerce_vector_input(
         self,
